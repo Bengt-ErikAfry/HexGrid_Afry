@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
+  m_Name: Miner
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemName: Miner Ship
+  icon: {fileID: 0}
+  itemType: 4
+  moduleType: 0
+  maxHealth: 0
+  description: Used To mine Asteroids
+  size: 1
+  energyCost: 0
+  energyConsumtion_Boost: 0
+  wear: 0
+  wearModifier_Boost: 0
+  craftingTime: 3
+  requiredItems:
+  - item: {fileID: 11400000, guid: 6447b0cc648b72c469fb6d4d4c9a05ee, type: 2}
+    amount: 2
+  startModules:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  damage: 0
+  range: 0
+  ammoType: 0
+  rangeAccuracyModifier: 0
+  rangeDamageModifier: 0
+  damage_Boost: 0
+  range_Boost: 0
+  rangeAccuracyModifier_Boost: 0
+  rangeDamageModifier_Boost: 0
+  movmentRange: 0
+  movmentRange_Boost: 0
+  health_Boost: 0
+  energyStartPowerBoost: 0
+  energyMaxStorage: 0
+  energyProduction: 0
+  extraStartPowerBoost_Boost: 0
+  energyProduction_Boost: 0
+  energyStorage_Boost: 0

@@ -1,0 +1,14 @@
+{
+    "shipId": "frigate_mk1",
+    "imagePath": "Sprite/MotherShip",
+    "slots": [
+        {
+            "slotId": "0",
+            "moduleType": "engine1",
+            "pos": [
+                0.7048472166061401,
+                0.7346070408821106
+            ]
+        }
+    ]
+}

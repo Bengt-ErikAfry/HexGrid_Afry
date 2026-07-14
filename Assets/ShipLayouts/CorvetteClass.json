@@ -1,0 +1,139 @@
+{
+    "shipId": "CorvetteClass",
+    "imagePath": "Sprite/corvette",
+    "slots": [
+        {
+            "slotId": 0,
+            "acceptedModuleTypes": [
+                2
+            ],
+            "pos": [
+                0.4570346176624298,
+                0.5444067716598511
+            ]
+        },
+        {
+            "slotId": 1,
+            "acceptedModuleTypes": [
+                3
+            ],
+            "pos": [
+                0.33240771293640139,
+                0.5444067716598511
+            ]
+        },
+        {
+            "slotId": 2,
+            "acceptedModuleTypes": [
+                1
+            ],
+            "pos": [
+                0.07503560185432434,
+                0.8187127709388733
+            ]
+        },
+        {
+            "slotId": 3,
+            "acceptedModuleTypes": [
+                1
+            ],
+            "pos": [
+                0.07503560185432434,
+                0.729891836643219
+            ]
+        },
+        {
+            "slotId": 4,
+            "acceptedModuleTypes": [
+                1
+            ],
+            "pos": [
+                0.07503560185432434,
+                0.38342949748039248
+            ]
+        },
+        {
+            "slotId": 5,
+            "acceptedModuleTypes": [
+                1
+            ],
+            "pos": [
+                0.07503560185432434,
+                0.29460859298706057
+            ]
+        },
+        {
+            "slotId": 6,
+            "acceptedModuleTypes": [
+                4,
+                6,
+                8
+            ],
+            "pos": [
+                0.3436630666255951,
+                0.8487657308578491
+            ]
+        },
+        {
+            "slotId": 7,
+            "acceptedModuleTypes": [
+                4,
+                6,
+                8
+            ],
+            "pos": [
+                0.5530123710632324,
+                0.729891836643219
+            ]
+        },
+        {
+            "slotId": 8,
+            "acceptedModuleTypes": [
+                4,
+                6,
+                8,
+                9,
+                5,
+                10
+            ],
+            "pos": [
+                0.8636597990989685,
+                0.5444067716598511
+            ]
+        },
+        {
+            "slotId": 9,
+            "acceptedModuleTypes": [
+                4,
+                6,
+                8
+            ],
+            "pos": [
+                0.5530123710632324,
+                0.3630710542201996
+            ]
+        },
+        {
+            "slotId": 10,
+            "acceptedModuleTypes": [
+                4,
+                6,
+                8
+            ],
+            "pos": [
+                0.3436630666255951,
+                0.23510360717773438
+            ]
+        },
+        {
+            "slotId": 11,
+            "acceptedModuleTypes": [
+                7
+            ],
+            "pos": [
+                0.6227955222129822,
+                0.5444067716598511
+            ]
+        }
+    ]
+}

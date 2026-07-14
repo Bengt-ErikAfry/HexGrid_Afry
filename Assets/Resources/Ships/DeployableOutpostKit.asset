@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
+  m_Name: DeployableOutpostKit
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemName: DeployableOutpostKit
+  icon: {fileID: 21300000, guid: 571d51402f4764e438dedcbbb16fd5d0, type: 3}
+  itemType: 4
+  shipType: 4
+  moduleType: 7
+  moduleClass: 3
+  itemCanStack: 0
+  maxHealth: 100
+  description: 
+  size: 1
+  energyCost: 5
+  energyConsumtion_Boost: 1.5
+  wear: 2
+  wearModifier_Boost: 2
+  craftingTime: 1
+  requiredItems:
+  - item: {fileID: 11400000, guid: 6447b0cc648b72c469fb6d4d4c9a05ee, type: 2}
+    amount: 1
+  startModules: []
+  ShipLayoutBackground: {fileID: 0}
+  shipLayoutJson: {fileID: 0}
+  assemblyResultItem: {fileID: 0}
+  assemblyResultPrefab: {fileID: 0}
+  damage: 10
+  range: 3
+  ammoType: 0
+  rangeAccuracyModifier: 0.5
+  rangeDamageModifier: 0.5
+  damage_Boost: 1.5
+  range_Boost: 1.5
+  rangeAccuracyModifier_Boost: 0.5
+  rangeDamageModifier_Boost: 0.5
+  miningSpeed: 0
+  miningSpeed_Boost: 0
+  movmentRange: 2
+  movmentRange_Boost: 1.5
+  health_Boost: 1.5
+  energyStartPowerBoost: 5
+  energyMaxStorage: 100
+  energyProduction: 5
+  extraStartPowerBoost_Boost: 2
+  energyProduction_Boost: 1.5
+  energyStorage_Boost: 1.5
+  storageSpace: 0
