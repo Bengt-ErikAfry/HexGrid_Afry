@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
+
 #if UNITY_EDITOR
 using UnityEditor;
 using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
@@ -58,9 +60,11 @@ public class SelectingState : IGameState
         Vector3 clickPoint = hits[0].point;
         var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
 
+        Debug.Log($"{hits[0].collider.gameObject.name} parent={hits[0].collider.transform.parent?.name} root={hits[0].collider.transform.root.name}");
+
         // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
         List<Unit> unitsInClickedHex = hits
-            .Select(h => h.collider.transform.root.GetComponent<Unit>())
+            .Select(h => h.collider.transform.GetComponent<Unit>())
             .Where(u => u != null)
             .Distinct() // prevent duplicates if a unit has multiple colliders
             .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
@@ -69,7 +73,7 @@ public class SelectingState : IGameState
         // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
         if (unitsInClickedHex.Count == 0)
         {
-            var firstUnit = hits.Select(h => h.collider.transform.root.GetComponent<Unit>())
+            var firstUnit = hits.Select(h => h.collider.transform.GetComponent<Unit>())
                                 .FirstOrDefault(u => u != null);
             if (firstUnit != null)
                 unitsInClickedHex.Add(firstUnit);
@@ -124,6 +128,10 @@ public class SelectingState : IGameState
 
     public void OnDrag(Vector2 delta)
     {
+        //Return if player is interacting with UI, so camera does not move when player is interacting with UI
+        if (EventSystem.current.IsPointerOverGameObject())
+            return;
+
         if (UIManager.Instance.stackViewRectTransform.gameObject.activeSelf == true) return;
         var move = new Vector3(-delta.x * 0.01f, -delta.y * 0.01f, 0);
         Camera.main.transform.Translate(move, Space.World);

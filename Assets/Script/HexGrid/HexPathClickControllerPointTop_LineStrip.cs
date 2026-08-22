@@ -1,5 +1,6 @@
 ﻿
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
@@ -107,7 +108,73 @@ public class HexPathClickControllerPointTop_LineStrip : MonoBehaviour
 
         // Record for MovementManager
         LastPath = path ?? new List<Vector2Int>();
+    }
+    //Called when player plan a path in minabelobjectVIEW.
+    //Called when player plan a path in minabelobjectVIEW.
+    public void HandleTapMiningObjectView(Vector2 screenPos)
+    {
+        // Raycast from the camera into the scene to find a tile object under the screen position.
+        var cam = Camera.main;
+        if (cam == null)
+        {
+            Debug.LogWarning("HandleTapMiningObjectView: no main camera.");
+            return;
+        }
 
+        Ray ray = cam.ScreenPointToRay(screenPos);
+        RaycastHit[] hits = Physics.RaycastAll(ray, 500f, ~0, QueryTriggerInteraction.Ignore);
+
+        if (hits == null || hits.Length == 0)
+        {
+            // nothing hit; clear path and exit
+            ClearPath();
+            LastPath = new List<Vector2Int>();
+            return;
+        }
+
+        // Sort by distance (closest first)
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        // Try to find a MiningObjectTileData on the hit objects
+        MiningObjectTileData tileComp = hits
+            .Select(h => h.collider.transform.GetComponent<MiningObjectTileData>())
+            .FirstOrDefault(tc => tc != null);
+
+        Vector2Int targetAxial;
+        Vector3 clickPoint = hits[0].point;
+
+        if (tileComp != null)
+        {
+            // Prefer the canonical axial coordinates stored on the tile data
+            targetAxial = new Vector2Int(tileComp.tileData.tileIndexCol, tileComp.tileData.tileIndexRow);
+        }
+        else
+        {
+            // Fallback: convert the hit world point to axial using the baker's hex size
+            targetAxial = WorldToAxial_PointTop(clickPoint, HexGridLinesBaker.Instance.hexSize);
+        }
+
+        // Start from selected unit's current cell (use baker's hex size)
+        var selectedUnit = SelectionService.Instance.SelectedUnit;
+        if (selectedUnit == null)
+        {
+            Debug.LogWarning("HandleTapMiningObjectView: no selected unit.");
+            return;
+        }
+
+        var startAxial = WorldToAxial_PointTop(selectedUnit.transform.position, HexGridLinesBaker.Instance.hexSize);
+
+        // Compute A* path using the same worldRadius/blocking as the game grid (baker)
+        var path = HexAStarPointTop.FindPath(startAxial, targetAxial, HexGridLinesBaker.Instance.worldRadius, HexGridLinesBaker.Instance.blocked);
+
+        // Draw and mark like normal
+        DrawLineStrip(path);
+
+        Unit unit_Script = selectedUnit.GetComponent<Unit>();
+        PlaceTurnMarkers(path, unit_Script != null ? unit_Script.shipRuntimeData.currentMovmentRange : 1);
+
+        // Save for MovementManager / later consumption
+        LastPath = path ?? new List<Vector2Int>();
     }
 
     public void HandleTapToObject(Vector3 objectPos, bool drawPath)

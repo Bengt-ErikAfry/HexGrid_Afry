@@ -30,7 +30,8 @@ public enum GameplayStateId
     SetWaypoint, // When player is adding waypoints to a unit, tap adds waypoint instead of selecting unit
     SetPickup,
     SetDrop,
-    ShowMiningObjectUI
+    ShowMiningObjectUI,
+    PlaceOrbitalUnit
 }
 
 
@@ -68,6 +69,7 @@ public class GameStateMachine : MonoBehaviour
         _states[GameplayStateId.SetPickup] = new SetPickUpState(this);
         _states[GameplayStateId.SetDrop] = new SetDropState(this);
         _states[GameplayStateId.ShowMiningObjectUI] = new ShowMiningObjectUIState(this);
+        _states[GameplayStateId.PlaceOrbitalUnit] = new PlaceOrbitalUnitState(this);
 
         //STARTING stage
         SetState(GameplayStateId.Selecting);

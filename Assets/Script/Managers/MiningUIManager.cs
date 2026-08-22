@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,18 +10,30 @@ public class MiningUIManager : MonoBehaviour
 
     [Header("Grid")]
     public GameObject tilePrefab;       // small UI button prefab representing a surface slot
-    public RectTransform tileParent;   // parent in the UI canvas to place slots into
-    public int nrOfSlots = 100;                // total number of slots to display (for testing, can be dynamic)
-    public float slotSize = 128f;
+    public Transform tileParent;   // parent in the UI canvas to place slots into 
+    public HexGridComponent uiHexGrid;              // authoritative grid used for UI layout
+    public float uiPixelsPerWorldUnit = 100f;      // how many UI pixels equal 1 world unit
+
+    // Reintroduced: allow specifying blocked axial coords in inspector
+    [Header("Blocked Tiles (axial q,r)")]
+    [Tooltip("List of blocked tile axial coordinates to disable in the UI (q,r).")]
+    public List<Vector2Int> blockedCells = new List<Vector2Int>();
 
     private MinableComponent currentMinable;
     private readonly List<GameObject> spawnedTiles = new();
+    private readonly Stack<GameObject> tilePool = new(); // pool for recycling tiles
+    private readonly Dictionary<Vector2Int, GameObject> spawnedTileMap = new();
+
+    public Unit selectedOrbitalUnit;
 
     [Header("Reference")]
-    public GameObject canvas_Game;
-    public GameObject canvas_MiningUI;
+    public GameObject Game_View;
+    public GameObject MinabelObject_View;
     public GameObject gameHexGrid;
-    public MinableComponent minableComponent;
+    public HexGridComponent sourceHexGrid;
+    public GameObject orbitingUnitView;
+    public GameObject orbitingUnitPrefab;
+    public Transform orbitingUnitsListContent;
 
     private void Awake()
     {
@@ -28,66 +41,105 @@ public class MiningUIManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
+
     public void Start()
     {
-        //SpawnTiles();
+        orbitingUnitView.SetActive(false);
     }
 
     public void HideMiningUI()
-    {        
-        canvas_MiningUI.SetActive(false);
-        canvas_Game.SetActive(true);
-        gameHexGrid.SetActive(true);
+    {
+        // Hide minable object view
+        MinabelObject_View.SetActive(false);
+        Game_View.SetActive(true);
+
+        // return UI tiles to pool (keeps them for next open)
+        spawnedTileMap.Clear();
+        ReturnAllTilesToPool();
+
+        orbitingUnitView.SetActive(false);
+
         GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
     }
 
     // Show a minable in the UI (call when selecting an asteroid/planet)
     public void ShowMinable(MinableComponent minable)
     {
+        // Set the current minable to the one passed in
         currentMinable = minable;
         if (currentMinable == null) return;
 
-        minableComponent =minable;   //for furture use.
-        canvas_MiningUI.SetActive(true);
-        canvas_Game.SetActive(false);
-        gameHexGrid.SetActive(false);
+        // Show minableobject view
+        MinabelObject_View.SetActive(true);
+        Game_View.SetActive(false);
 
-        GameStateMachine.Instance.SetState(GameplayStateId.ShowMiningObjectUI);
+        // Populate UI (reuses pooled tiles)
+        SpawnTiles(currentMinable);
+        UpdateSummary();
 
-        SpawnTiles(minable);
+        //Populate list with units in orbit.
+        UpdateOrbitingUnitView();
+
+        //Clear selection
+        SelectionService.Instance.ClearSelection();
+
+        //Hide buttons
+        UIManager.Instance.HideAllUI();
+
+        //Show turnebuttons
+        UIManager.Instance.ShowTruenButtons();
     }
 
-    /*
-    public void LoadAllTiles(MinableComponent minable)
+    public void UpdateOrbitingUnitView()
     {
-        if(minable == null)
+        // Show view
+        orbitingUnitView.SetActive(true);
+
+        //Clear out the OrbitingView
+        foreach (Transform child in orbitingUnitsListContent)
         {
-            Debug.LogWarning("LoadAllTiles called with null minable. Cannot load tiles."); return;
+            Destroy(child.gameObject);
         }
 
-        ClearUI();
+        // Get all units in orbit around the current minable
+        var orbitingUnits = GameManager.Instance.GetPlayerUnitsInOrbit(currentMinable.transform.position);
 
-        SpawnTiles();
-
-        /*
-        // Update each spawned tile to reflect the corresponding surface slot data
-        for (int i = 0; i < minable.tiles.Count; i++)
+        foreach (var orbitingUnit in orbitingUnits)
         {
-            var tileData = minable.tiles[i];
-            var tileGO = spawnedTiles[i];
-            var miningobjecttiledata = tileGO.GetComponent<MiningObjectTileData>();
-            // Update the tileGO to reflect tileData (e.g., change color, text, etc.)
-            // Optionally, change the visual appearance based on slotData
-
-            miningobjecttiledata.fogGO.SetActive(!tileData.isSurveyed); // Show fog if not surveyed
-
-            var image = tileGO.transform.GetChild(0).GetComponent<Image>();
-            if (image != null)
+            var orbUnit= Instantiate(orbitingUnitPrefab, orbitingUnitsListContent);
+            var orbUnitComp = orbUnit.GetComponent<OrbitingUnitPrefab_Entery>();
+            if (orbUnitComp != null)
             {
-                image.color = tileData.isSurveyed ? Color.green : Color.red;
+                orbUnitComp.SetUnit(orbitingUnit);
             }
+
         }
-    }*/
+    }
+
+    public void RemoveUnitFromOrbit(MiningObjectTileData tileToMoveTO)
+    {
+        //Move GO in hirarcy
+        selectedOrbitalUnit.gameObject.transform.parent = tileParent.root;
+
+        //Move GO in world space
+        selectedOrbitalUnit.transform.position = tileToMoveTO.transform.position;
+
+        //Set unit location to tile location
+        selectedOrbitalUnit.unitLocationType = Unit.UnitLocationType.MinableObject;
+
+        //Remove from orbiting units list
+        UpdateOrbitingUnitView();
+
+        //Remove FOG.
+        tileToMoveTO.SetRevealed(true);
+
+        //Set selected unit.
+        SelectionService.Instance.ClearSelection();
+        SelectionService.Instance.SetSelectedUnit(selectedOrbitalUnit);
+
+        //Change to selecting unit state
+        GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+    }
 
     private void UpdateSummary()
     {
@@ -97,175 +149,183 @@ public class MiningUIManager : MonoBehaviour
         outpostCountText.text = $"Outposts: {currentMinable.GetOutpostCount()}";*/
     }
 
-    // Instantiate nrOfSlots prefabs in a hex-shaped layout and parent them to surfaceSlotsParent.
-    // Uses point-top axial coordinates. slotSize is passed to the axial->world math to control spacing.
-    private void SpawnTiles(MinableComponent minable)
+    // Pool helpers
+    private GameObject GetPooledTile()
     {
-        if (tilePrefab == null) Debug.LogWarning("tilePrefab is null. Cannot spawn slots.");
-        if (tileParent == null) Debug.LogWarning("tileParent is null. Cannot spawn slots.");
-        if (minable.nrOfTiles <= 0) Debug.LogWarning("nrOfSlots is non-positive. Cannot spawn slots.");
-
-        // Build axial cell list for a hex with minimal radius R containing at least nrOfSlots
-        int R = 0;
-        var cells = new List<Vector2Int>();
-        while (true)
+        GameObject go;
+        if (tilePool.Count > 0)
         {
-            cells.Clear();
-            for (int rAx = -R; rAx <= R; rAx++)
-                for (int q = -R; q <= R; q++)
-                {
-                    int x = q, z = rAx, y = -x - z;
-                    if (Mathf.Max(Mathf.Abs(x), Mathf.Abs(y), Mathf.Abs(z)) <= R)
-                        cells.Add(new Vector2Int(q, rAx));
-                }
-
-            if (cells.Count >= minable.nrOfTiles) break;
-            R++;
-            if (R > 200) break;
+            go = tilePool.Pop();
+            go.SetActive(true);
+            return go;
         }
 
-        // Sort by distance to center so layout is compact
-        cells.Sort((a, b) =>
+        if (tilePrefab == null)
         {
-            int da = Mathf.Max(Mathf.Abs(a.x), Mathf.Abs(a.y), Mathf.Abs(-a.x - a.y));
-            int db = Mathf.Max(Mathf.Abs(b.x), Mathf.Abs(b.y), Mathf.Abs(-b.x - b.y));
-            if (da != db) return da.CompareTo(db);
-            if (a.x != b.x) return a.x.CompareTo(b.x);
-            return a.y.CompareTo(b.y);
-        });
+            Debug.LogWarning("tilePrefab is null. Cannot create tile.");
+            return null;
+        }
 
-        int count = Mathf.Min(minable.nrOfTiles, cells.Count);
+        go = Instantiate(tilePrefab, tileParent);
+        go.transform.localScale = Vector3.one;
+        return go;
+    }
 
-        // We want center-to-center neighbor distance == slotSize (in UI pixels).
-        // For point-top hexes the neighbor center distance = cornerRadius * sqrt(3).
-        // So choose cornerRadius = slotSize / sqrt(3).
-        float sqrt3 = Mathf.Sqrt(3f);
-        float cornerRadius = slotSize / sqrt3;
+    private void ReturnTileToPool(GameObject go)
+    {
+        if (go == null) return;
+        go.SetActive(false);
+        go.transform.SetParent(tileParent, false);
+        tilePool.Push(go);
+    }
 
-        // Convert axial -> UI local pixels via HexGridLinesBaker using cornerRadius.
-        // Use direct pixel mapping (assumes surfaceSlotsParent pivot is centered and Canvas uses pixel units).
+    private void ReturnAllTilesToPool()
+    {
+        for (int i = spawnedTiles.Count - 1; i >= 0; i--)
+        {
+            var go = spawnedTiles[i];
+            if (go == null) continue;
+            ReturnTileToPool(go);
+        }
+        spawnedTiles.Clear();
+    }
+
+    // Instantiate or reuse tiles in a hex-shaped layout and parent them to tileParent.
+    // Uses point-top axial coordinates. uiPixelsPerWorldUnit maps world units -> UI pixels.
+    private void SpawnTiles(MinableComponent minable)
+    {
+        if (minable == null)
+        {
+            Debug.LogWarning("SpawnTiles called with null minable. Cannot spawn slots.");
+            return;
+        }
+
+        if (tilePrefab == null) Debug.LogWarning("tilePrefab is null. Cannot spawn slots.");
+        if (tileParent == null) Debug.LogWarning("tileParent is null. Cannot spawn slots.");
+
+        // return any previously spawned tiles to pool
+        ReturnAllTilesToPool();
+
+        // Resolve authoritative hex size to use for placement so UI spacing matches the game grid:
+        // precedence: sourceHexGrid -> uiHexGrid -> minable
+        HexGridComponent authoritativeGrid = sourceHexGrid != null ? sourceHexGrid : uiHexGrid;
+        float authoritativeHexSize;
+        if (authoritativeGrid != null)
+        {
+            if (authoritativeGrid.useMinableComponentHexGridSize && authoritativeGrid.minableReference != null)
+                authoritativeHexSize = authoritativeGrid.minableReference.hexSize;
+            else
+                authoritativeHexSize = authoritativeGrid.hexSize;
+        }
+        else
+        {
+            authoritativeHexSize = (minable != null) ? minable.hexSize : 1f;
+        }
+
+        // Determine effective pixels-per-world-unit for the Canvas that contains tileParent.
+        // We factor in Canvas.referencePixelsPerUnit so a common PPU (100) doesn't multiply spacing unexpectedly.
+        var canvas = tileParent.GetComponentInParent<Canvas>();
+        float canvasRefPixelsPerUnit = (canvas != null) ? canvas.referencePixelsPerUnit : 100f;
+        float pixelsPerWorldUnit = uiPixelsPerWorldUnit / canvasRefPixelsPerUnit;
+
+        // Use canonical generator so ordering/radius match other systems
+        var cells = HexMath.GenerateCellsForCountSorted(minable.tilesData.Count > 0 ? minable.tilesData.Count : HexMath.CellsInRadius(minable.worldRadius));
+        int count = cells.Count;
+
         for (int i = 0; i < count; i++)
         {
             var axial = cells[i];
 
-            // Get center using HexGrid math (with cornerRadius that yields center spacing = slotSize)
-            Vector2 center = HexGridLinesBaker.AxialToWorldCenter_PointTop(axial, cornerRadius);
+            // Compute world center using authoritative hex size, then map to UI units (anchoredPosition)
+            Vector2 worldCenter = HexMath.AxialToWorldCenter_PointTop(axial, authoritativeHexSize);
+            Vector2 uiCenter = worldCenter * pixelsPerWorldUnit;
 
-            // Instantiate slot prefab under parent
-            var go = Instantiate(tilePrefab, tileParent);
+            // Acquire tile from pool or instantiate
+            var go = GetPooledTile();
+            if (go == null) continue;
+
             go.name = $"Slot_{axial.x}_{axial.y}_{i}";
+
+            // Ensure it's parented to tileParent
+            go.transform.SetParent(tileParent, false);
+
+            // Store and configure tile data component
             spawnedTiles.Add(go);
-            MiningObjectTileData miningObjectTileData = go.GetComponent<MiningObjectTileData>();
-            miningObjectTileData.tileIndexRow = axial.y;
-            miningObjectTileData.tileIndexCol = axial.x;    
-            miningObjectTileData.isSurveyed = minable.tiles[i].isSurveyed;
+            spawnedTileMap[new Vector2Int(axial.x, axial.y)] = go;
+            var miningObjectTileData = go.GetComponent<MiningObjectTileData>();
+            if (miningObjectTileData != null)
+            {
+                miningObjectTileData.tileData.tileIndexRow = axial.y;
+                miningObjectTileData.tileData.tileIndexCol = axial.x;
+
+                // Determine blocked state from manager's blockedCells list
+                bool isBlocked = blockedCells != null && blockedCells.Contains(axial);
+                miningObjectTileData.tileData.isBlocked = isBlocked;
+
+                // Protect against minable.tiles index overflow; assume minable.tiles exists and is ordered
+                if (i < minable.tilesData.Count)
+                {
+                    miningObjectTileData.tileData.isSurveyed = minable.tilesData[i].isSurveyed;
+                    // If Minable provided tile has its own block flag, respect it as well
+                    miningObjectTileData.tileData.isBlocked |= minable.tilesData[i].isBlocked;
+                }
+
+                // set fog GO visibility if the prefab contains it
+                if (miningObjectTileData.fogGO != null)
+                {
+                    // show fog when not surveyed or when blocked
+                    miningObjectTileData.fogGO.SetActive(!miningObjectTileData.tileData.isSurveyed || miningObjectTileData.tileData.isBlocked);
+                }
+
+                // If prefab has a Button component, disable it when blocked
+                var btn = go.GetComponent<Button>();
+                if (btn != null) btn.interactable = !miningObjectTileData.tileData.isBlocked;
+            }
 
             var rt = go.GetComponent<RectTransform>();
             if (rt != null)
             {
                 rt.localScale = Vector3.one;
-
-                // Place using local UI coordinates — parent pivot should be centered for proper centering.
-                // If your Canvas is Screen Space - Camera or uses a CanvasScaler, you may need to convert
-                // world->screen->local with the canvas camera. This code assumes 1:1 pixel mapping.
-                rt.anchoredPosition = new Vector2(center.x, center.y);
-
-                // Do not modify rt.sizeDelta here so prefab retains its own size (128x149).
+                rt.anchoredPosition = uiCenter;
             }
 
             // Optional: label the slot if prefab contains TMP_Text
             var texts = go.GetComponentsInChildren<TMP_Text>();
             if (texts.Length > 0) texts[0].text = $"#{i}";
-
-            /*
-            // Hook up button (capture index)
-            var btn = go.GetComponent<Button>();
-            int idx = i;
-            if (btn != null)
-            {
-                btn.onClick.RemoveAllListeners();
-                btn.onClick.AddListener(() => OnSlotClicked(idx));
-            }
-            */
-        }
-
-        // Sanity advice to avoid surprising scaling
-        if (tileParent.pivot != new Vector2(0.5f, 0.5f))
-            Debug.LogWarning("surfaceSlotsParent pivot is not center. Use center pivot for correct positioning.");
-        var parentCanvas = tileParent.GetComponentInParent<Canvas>();
-        if (parentCanvas != null)
-        {
-            var scaler = parentCanvas.GetComponent<UnityEngine.UI.CanvasScaler>();
-            if (scaler != null && scaler.uiScaleMode == UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize)
-                Debug.Log("CanvasScaler is ScaleWithScreenSize — UI pixel sizes will vary with resolution. Use ConstantPixelSize for fixed pixel spacing.");
         }
     }
 
-    /*
-    private void OnSlotClicked(int index)
+    public void HandleTileClick(TileData tileData)
     {
-        if (currentMinable == null) { Debug.LogWarning("currentMinable is null. Cannot process slot click."); return; }
-
-        var slot = currentMinable.tiles[index];
-
-        // If not surveyed, show survey option
-        if (!slot.isSurveyed)
+        if (tileData == null) return;
+        // Check if the tile is blocked
+        if (tileData.isBlocked)
         {
-            // Simple immediate survey for testing
-            slot.isSurveyed = true;
-            //currentMinable.StartSurvey();
-            UpdateSummary();
-            ShowMinable(currentMinable); // refresh UI
+            Debug.Log($"Tile at Row: {tileData.tileIndexRow}, Col: {tileData.tileIndexCol} is blocked. Cannot click.");
             return;
         }
-
-        /*
-        // If surveyed and no outpost -> attempt to place outpost using currently selected unit
-        if (!slot.hasMiningOutpost)
+        // Check if the tile is surveyed
+        if (!tileData.isSurveyed)
         {
-            var selected = SelectionService.Instance.SelectedUnit;
-            if (selected == null)
-            {
-                MessageSystemManager.Instance.CreateMessage("No unit selected to place outpost.", "", Vector3.zero, Color.yellow);
-                return;
-            }
-
-            // Example: require the selected unit to have a Deployable kit; UI should check that in real flow.
-            bool placed = currentMinable.PlaceOutpost(index);
-            if (placed)
-            {
-                MessageSystemManager.Instance.CreateMessage($"{selected.unitName} placed outpost.", "", selected.transform.position, Color.green);
-                UpdateSummary();
-                ShowMinable(currentMinable);
-            }
-            else
-            {
-                MessageSystemManager.Instance.CreateMessage("Cannot place outpost here.", "", selected.transform.position, Color.yellow);
-            }
+            Debug.Log($"Tile at Row: {tileData.tileIndexRow}, Col: {tileData.tileIndexCol} is not surveyed. Cannot click.");
             return;
         }
+        // Check if the tile has a mining outpost
+        if (tileData.hasMiningOutpost)
+        {
+            Debug.Log($"Tile at Row: {tileData.tileIndexRow}, Col: {tileData.tileIndexCol} has a mining outpost. Cannot click.");
+            return;
+        }
+        // Proceed with handling the tile click
+        Debug.Log($"Tile at Row: {tileData.tileIndexRow}, Col: {tileData.tileIndexCol} clicked successfully.");
 
-        // If has outpost, show slot details (placeholder)
-        MessageSystemManager.Instance.CreateMessage($"Slot {index}: Outpost present.", "", currentMinable.transform.position, Color.white);
-    }*/
+        // Implement further logic for handling the tile click, such as deploying satellites or other actions.
 
+        currentMinable.RevealTileByAxial(new Vector2Int(tileData.tileIndexCol, tileData.tileIndexRow));
+    }
     public void ClearUI()
     {
-        foreach (var go in spawnedTiles) Destroy(go);
-        spawnedTiles.Clear();
-    }
-
-    public void DeploySatelites_Bt_pressed()
-    {
-        //Get saltelites nr from ship in orbit
-
-        //Show messagebox with slider
-
-    }
-
-    public void OnDeploySatelites_OK()
-    {
-        //Get nr from slider
-        //Deploy satelites to minable
+        // return all spawned tiles to pool (do not destroy)
+        ReturnAllTilesToPool();
     }
 }

@@ -323,6 +323,25 @@ public class GameManager : MonoBehaviour
         StartCoroutine(StartPlayerTurn());
     }
 
+    public List<Unit> GetPlayerUnitsInOrbit(Vector3 OrbitPos)
+    {
+        List<Unit> unitsInOrbitList = new List<Unit>();
+
+        // Get all player ship in orbit.
+        foreach (var playerUnit in playerUnits)
+        {
+            //Check if player unit is in asteroid orbit
+            Vector2Int playerUnitCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(playerUnit.transform.position);
+            Vector2Int OrbitPosHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(OrbitPos);
+            if (playerUnitCurrentHexPos == OrbitPosHexPos)
+            {
+                unitsInOrbitList.Add(playerUnit);
+            }
+        }
+        
+        return unitsInOrbitList;
+    }
+
     //Used to get how meny missiles, soldiers and engineers in orbit around asteroid.
     public int GetAmountOfItemsInOrbit(GameObject objectTocheckAgainst, ItemDefinition itemToGet)
     {

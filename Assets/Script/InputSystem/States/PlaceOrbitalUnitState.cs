@@ -1,24 +1,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
+
 #if UNITY_EDITOR
 using UnityEditor;
 using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 #endif
 
-// What hapens when player are in selecting state:
-public class ShowMiningObjectUIState : IGameState
+public class PlaceOrbitalUnitState : IGameState
 {
     private readonly GameStateMachine _fsm;
 
-    public ShowMiningObjectUIState(GameStateMachine fsm) => _fsm = fsm;
+    public PlaceOrbitalUnitState(GameStateMachine fsm) => _fsm = fsm;
 
     // Enter State.
     public void Enter()
     {
         if (UIManager.Instance != null)
         {
-            UIManager.Instance.activeState.text = "Active state: Selecting State";
+            UIManager.Instance.activeState.text = "Active state: PlaceOrbitalUnitState State";
         }
     }
     // Exit State.
@@ -40,14 +41,14 @@ public class ShowMiningObjectUIState : IGameState
         if (hits.Length == 0)
         {
             // clear selection
-            SelectionService.Instance.ClearSelection();
+            //SelectionService.Instance.ClearSelection();
 
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-            Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
+            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+            Debug.Log("after PlaceOrbitalUnitState invoke" + GameStateMachine.Instance.Current);
 
-            Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+            Debug.Log("PlaceOrbitalUnitState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 
-            UIManager.Instance.HideSelectedUnitView();
+            //UIManager.Instance.HideSelectedUnitView();
             return;
         }
 
@@ -58,45 +59,51 @@ public class ShowMiningObjectUIState : IGameState
         Vector3 clickPoint = hits[0].point;
         var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
 
+        Debug.Log($"{hits[0].collider.gameObject.name} parent={hits[0].collider.transform.parent?.name} root={hits[0].collider.transform.root.name}");
+
         // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
-        List<Unit> unitsInClickedHex = hits
-            .Select(h => h.collider.transform.root.GetComponent<Unit>())
+        List<MiningObjectTileData> tileClickedHex = hits
+            .Select(h => h.collider.transform.GetComponent<MiningObjectTileData>())
             .Where(u => u != null)
             .Distinct() // prevent duplicates if a unit has multiple colliders
             .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
             .ToList();
 
         // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
-        if (unitsInClickedHex.Count == 0)
+        if (tileClickedHex.Count == 0)
         {
-            var firstUnit = hits.Select(h => h.collider.transform.root.GetComponent<Unit>())
+            var firstUnit = hits.Select(h => h.collider.transform.GetComponent<MiningObjectTileData>())
                                 .FirstOrDefault(u => u != null);
             if (firstUnit != null)
-                unitsInClickedHex.Add(firstUnit);
+                tileClickedHex.Add(firstUnit);
         }
 
         // (5) Use result
-        if (unitsInClickedHex.Count == 0)
+        if (tileClickedHex.Count == 0)
         {
-            SelectionService.Instance.ClearSelection();
+            //SelectionService.Instance.ClearSelection();
         }
-        else if (unitsInClickedHex.Count == 1)
+        else if (tileClickedHex.Count == 1)
         {
-            var unit = unitsInClickedHex[0];
+
+            MiningUIManager.Instance.RemoveUnitFromOrbit(tileClickedHex[0]);
 
             //Highlight hex under selected unit
-            HexHighlighter.Instance.HighlightHexUnderWorldPosition(unit.transform.position);
+            //HexHighlighter.Instance.HighlightHexUnderWorldPosition(tileClicked.transform.position);
 
             // select unit via selection service
-            SelectionService.Instance.SetSelectedUnit(unit);
+            //SelectionService.Instance.SetSelectedUnit(tileClicked);
 
             //Show Route if exsisting
-            if (unit.routeComponent.routeActions.Count > 0)
+            /*if (tileClicked.routeComponent != null)
             {
-                HexPathClickControllerPointTop_LineStrip.Instance.CalculateRoutePath(unit);
-            }
+                if (tileClicked.routeComponent.routeActions.Count > 0)
+                {
+                    HexPathClickControllerPointTop_LineStrip.Instance.CalculateRoutePath(tileClicked);
+                }
+            }*/
 
-            Debug.Log($"SelectAsteroid mode selected and {unit.unitName} is clicked.");
+            Debug.Log($"place unit mode selected and {tileClickedHex[0].gameObject.name} is clicked.");
 
             /*      ----Remove when new mining system is ok
             // start mining mission using selected unit
@@ -109,9 +116,9 @@ public class ShowMiningObjectUIState : IGameState
         }
         else
         {
-            UIManager.Instance.ShowStackView(unitsInClickedHex, screenPos);
+            //UIManager.Instance.ShowStackView(tileClickedHex, screenPos);
 
-            var defaultUnit = unitsInClickedHex
+            var defaultUnit = tileClickedHex
                 .OrderBy(u => Vector3.SqrMagnitude(u.transform.position - clickPoint))
                 .First();
 
@@ -121,24 +128,11 @@ public class ShowMiningObjectUIState : IGameState
 
     public void OnDrag(Vector2 delta)
     {
-        Debug.Log("OnDrag called with delta: " + delta);
-        // If the mining UI is open, move its content instead of panning the world camera.
-        var mining = MiningUIManager.Instance;
-        if (mining != null && mining.tileParent != null && mining.tileParent.gameObject.activeInHierarchy)
-        {
-            // delta is screen pixels from the InputReader. Move the UI content by that amount.
-            // Invert if you want drag direction to feel opposite (finger-drag moves content).
-            //var rt = mining.tileParent;
-            Vector2 newPos = new Vector2(mining.MinabelObject_View.transform.position.x + delta.x, mining.MinabelObject_View.transform.position.y + delta.y);
-            mining.MinabelObject_View.transform.position = newPos;
+        //Return if player is interacting with UI, so camera does not move when player is interacting with UI
+        if (EventSystem.current.IsPointerOverGameObject())
             return;
-        }
 
-        // If a stack view is open, do not drag camera or UI.
-        if (UIManager.Instance != null && UIManager.Instance.stackViewRectTransform != null
-            && UIManager.Instance.stackViewRectTransform.gameObject.activeSelf) return;
-
-        // Fallback: pan the world camera (existing behavior)
+        if (UIManager.Instance.stackViewRectTransform.gameObject.activeSelf == true) return;
         var move = new Vector3(-delta.x * 0.01f, -delta.y * 0.01f, 0);
         Camera.main.transform.Translate(move, Space.World);
     }

@@ -185,6 +185,8 @@ public class AsteroidComponent : MonoBehaviour
     {
         playerUnitsInOrbit.Clear();
 
+        playerUnitsInOrbit = GameManager.Instance.GetPlayerUnitsInOrbit(this.transform.position);
+        /*
         // Get all player ship in orbit.
         foreach (var playerUnit in GameManager.Instance.playerUnits)
         {
@@ -195,7 +197,7 @@ public class AsteroidComponent : MonoBehaviour
             {
                 playerUnitsInOrbit.Add(playerUnit);
             }
-        }
+        }*/
 
         //get random.
         /*if (playerUnitsInOrbit.Count > 0)

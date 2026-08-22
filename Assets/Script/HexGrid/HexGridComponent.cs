@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteAlways]
-public class HexGridLinesBaker : MonoBehaviour
+// Thin wrapper placed on each grid GameObject (rename your HexGridLinesBaker to inherit or compose this)
+[DisallowMultipleComponent]
+public class HexGridComponent : MonoBehaviour
 {
-    public static HexGridLinesBaker Instance { get; private set; }
-
     [Header("HexGrid")]
     [Tooltip("Hex 'radius' in cells (cube distance). World will be a hex of this radius.")]
     public int worldRadius = 10;
@@ -14,13 +13,12 @@ public class HexGridLinesBaker : MonoBehaviour
     [Tooltip("Hex size in world units (center to corner distance).")]
     public float hexSize = 1f;
 
-    [Tooltip("Line thickness in world units. For 64 PPU, 1 px ≈ 1/64 ≈ 0.015625")]
-    public float lineThickness = 0.02f;
-
-    [Header("Optional: use MinableComponent as size source")]
-    [Tooltip("If true and MinableReference is set, use that MinableComponent.worldRadius/hexSize for baking.")]
+    [Tooltip("Use the referenced MinableComponent's worldRadius/hexSize when baking this grid.")]
     public bool useMinableComponentHexGridSize = false;
     public MinableComponent minableReference;
+
+    [Tooltip("Line thickness in world units. For 64 PPU, 1 px ≈ 1/64 ≈ 0.015625")]
+    public float lineThickness = 0.02f;
 
     public Material hexGrid_Mat;   //Background hexgrid maeterial
 
@@ -32,51 +30,57 @@ public class HexGridLinesBaker : MonoBehaviour
     public GameObject highlightGO; // Highlight GameObject get modified when highlighting hex under mouse
     public int highligtSortingOrder = 1;          // Rendering order of highlight
 
-    private Mesh hexMesh; // reusable filled-hex mesh
-    private readonly Dictionary<Vector2Int, GameObject> highlighted = new();
-
-    private readonly List<GameObject> pool = new();   // pooled highlight instances
-    private readonly List<GameObject> active = new(); // currently active highlights
-
     private void Awake()
     {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        Instance = this;
-        //DontDestroyOnLoad(gameObject);
+        HexGridManager.Instance?.Register(this);
+        // If manager may not exist in scene, consider lazy-creating a GameObject with manager here.
     }
-
     private void Start()
     {
         blocked.Add(new Vector2Int(0, 0)); // Example blocked cell at center
+        blocked.Add(new Vector2Int(0, -1)); // Example blocked cell at center
+        blocked.Add(new Vector2Int(0, 1)); // Example blocked cell at center
+        blocked.Add(new Vector2Int(-1, 0)); // Example blocked cell at center
+        blocked.Add(new Vector2Int(-1, 1)); // Example blocked cell at center
+        blocked.Add(new Vector2Int(1, -1)); // Example blocked cell at center
+        blocked.Add(new Vector2Int(1, 0)); // Example blocked cell at center
     }
 
+    private void OnDestroy()
+    {
+        HexGridManager.Instance?.Unregister(this);
+    }
+
+    public void SetVisualActive(bool active)
+    {
+        // enable/disable renderers/line renderers/highlight meshes to save draw cost
+        var rs = GetComponentsInChildren<Renderer>(true);
+        foreach (var r in rs) r.enabled = active;
+    }
+
+    // Keep your Bake() logic here; use HexMath for calculations instead of static singletons.
     /// <summary>Bake one mesh of quads along all unique hex edges (seamless grid lines).</summary>
     [ContextMenu("Bake Grid Lines")]
     public void Bake()
     {
-        // Use minable settings when requested
+        // Choose authoritative geometry: either this component's values or the referenced MinableComponent
         int radius = (useMinableComponentHexGridSize && minableReference != null) ? minableReference.worldRadius : worldRadius;
         float size = (useMinableComponentHexGridSize && minableReference != null) ? minableReference.hexSize : hexSize;
 
         // 1) Collect unique edges (unordered)
         var edges = new HashSet<(Vector2 a, Vector2 b)>(new EdgeComparer());
 
-        // iterate axial region using canonical helper
-        foreach (var cell in HexMath.AxialRegion(radius))
+        foreach (var cell in HexMath.AxialInsideHex(radius))
         {
-            var dirs = NeighborDirs();
+            var dirs = HexMath.NeighborDirs();
             for (int i = 0; i < 6; i++)
             {
                 var dir = dirs[i];
                 var neighbor = cell + dir;
-                bool neighborInside = HexMath.InsideHexRadius(neighbor, radius);
+                bool neighborInside = HexMath.InsideHex(neighbor, radius);
 
                 // Add boundary and interior edges once (lexicographic tie-breaker)
-                bool add = !neighborInside || IsLexSmaller(cell, neighbor);
+                bool add = !neighborInside || HexMath.IsLexSmaller(cell, neighbor);
                 if (!add) continue;
 
                 // Edge lies on the bisector between cell centers
@@ -93,7 +97,7 @@ public class HexGridLinesBaker : MonoBehaviour
                 Vector2 p0 = m + perp * (sideLen * 0.5f);
                 Vector2 p1 = m - perp * (sideLen * 0.5f);
 
-                AddEdge(edges, p0, p1);
+                HexMath.AddEdge(edges, p0, p1);
             }
         }
 
@@ -115,6 +119,7 @@ public class HexGridLinesBaker : MonoBehaviour
 
             int idx = verts.Count;
             verts.Add(v0); verts.Add(v1); verts.Add(v2); verts.Add(v3);
+            //cols.Add(lineColor); cols.Add(lineColor); cols.Add(lineColor); cols.Add(lineColor);
 
             tris.Add(idx + 0); tris.Add(idx + 2); tris.Add(idx + 1);
             tris.Add(idx + 2); tris.Add(idx + 3); tris.Add(idx + 1);
@@ -137,39 +142,7 @@ public class HexGridLinesBaker : MonoBehaviour
         UnityEditor.EditorUtility.DisplayDialog("Hex Grid Lines",
             $"Baked {edges.Count} edges into one mesh.", "OK");
 #endif
-    }
-
-    // Instance wrapper for existing callers
-    public int AxialDistance(Vector3 targetTo, Vector3 targetFrom)
-    {
-        float size = (useMinableComponentHexGridSize && minableReference != null) ? minableReference.hexSize : hexSize;
-        return HexMath.AxialDistance(targetTo, targetFrom, size);
-    }
-
-    // ---------- Hex math ----------
-    private static readonly Vector2Int[] PointyDirs =
-    {
-        new(1, 0), new(1, -1), new(0, -1),
-        new(-1, 0), new(-1, 1), new(0, 1)
-    };
-
-    private static readonly Vector2Int[] FlatDirs =
-    {
-        new(1, 0), new(0, -1), new(-1, -1),
-        new(-1, 0), new(0, 1), new(1, 1)
-    };
-
-    private Vector2Int[] NeighborDirs() => PointyDirs; // baker uses point-top by design
-
-    private static bool IsLexSmaller(Vector2Int a, Vector2Int b)
-        => (a.x < b.x) || (a.x == b.x && a.y < b.y);
-
-    private static void AddEdge(HashSet<(Vector2 a, Vector2 b)> set, Vector2 a, Vector2 b)
-    {
-        if ((b - a).sqrMagnitude > 1e-9f)
-            set.Add((a, b));
-    }
-
+}
     private class EdgeComparer : IEqualityComparer<(Vector2 a, Vector2 b)>
     {
         private const float EPS = 1e-5f;
@@ -193,16 +166,5 @@ public class HexGridLinesBaker : MonoBehaviour
 
         private static bool Approximately(Vector2 v1, Vector2 v2)
             => (v1 - v2).sqrMagnitude < EPS * EPS;
-    }
-
-    // ---------- Point-top axial math HELP FUNCTIONS ----------
-    // (BuildFilledPointTopHex etc. unchanged — omitted for brevity)
-    // Use existing public helper methods in HexMath for conversions/regions
-
-    public Vector2Int GetGridPosFromWorldPos(Vector3 worldPos)
-    {
-        // Use MinableComponent size when configured, otherwise baker's hexSize
-        float size = (useMinableComponentHexGridSize && minableReference != null) ? minableReference.hexSize : hexSize;
-        return HexMath.GetGridPosFromWorldPos(worldPos, size);
     }
 }

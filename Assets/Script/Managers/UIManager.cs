@@ -100,7 +100,10 @@ public class UIManager : MonoBehaviour
     private void OnSelectionChanged(Unit unit)
     {
         unit_script = unit;
+
         UpdateRouteButton(unit);
+
+        //Show UI for selected unit (or hide if null)
         ShowSelectedUnitView(unit);
 
         // Hide old path when nothing is selected, or when the selected unit has no route.
@@ -146,6 +149,12 @@ public class UIManager : MonoBehaviour
         attackButton.SetActive(false);
         mineButton.SetActive(false);
         routeButtonGO.SetActive(false);
+    }
+
+    public void ShowTruenButtons()
+    {
+        endTurnButton.SetActive(true);
+        nextUnitButton.SetActive(true);
     }
 
     //Called from selectionState when player select a unit. This is to prevent player from moving enemy units.

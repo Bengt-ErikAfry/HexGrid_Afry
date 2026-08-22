@@ -32,6 +32,7 @@ public class Unit : MonoBehaviour
     public Vector3 target_LastKnownPos;
     public bool followTarget;
     public bool hasMinedThisTurn;
+    public UnitLocationType unitLocationType = UnitLocationType.GameView;
 
     [Header("Reference")]
     public LaserBeam laserBeam_Script;
@@ -250,5 +251,11 @@ public class Unit : MonoBehaviour
         EnemyShip,
         Probe,
         Satelite
+    }
+    public enum UnitLocationType
+    {
+        GameView,
+        MinableObject,
+        Outpost
     }
 }
