@@ -115,6 +115,35 @@ public class MinableComponent : MonoBehaviour
     // Reveal by axial coordinate (q,r). Updates tilesData and raises event.
     public void RevealTileByAxial(Vector2Int axial)
     {
+        // find slot index that matches axial (q = col, r = row) — ensure the axial exists in data
+        int idx = tilesData.FindIndex(t => t.tileIndexCol == axial.x && t.tileIndexRow == axial.y);
+        if (idx < 0) return;
+
+        // Try to find a corresponding MiningObjectTileData instance in the scene (children of this Minable or elsewhere).
+        // We only change the visual fog GameObject; we do NOT modify the data model (tilesData) or fire events.
+        var views = MiningUIManager.Instance.tileParent.GetComponentsInChildren<MiningObjectTileData>(true);
+        foreach (var v in views)
+        {
+            if (v == null || v.tileData == null) continue;
+            if (v.tileData.tileIndexCol == axial.x && v.tileData.tileIndexRow == axial.y)
+            {
+                if (v.fogGO != null)
+                {
+                    v.fogGO.SetActive(false);
+                }
+                // found the visual; stop searching
+                return;
+            }
+        }
+
+        // If no visual instance was found, do nothing to data or events.
+        // (Optional) you can log for debugging:
+        // Debug.Log($"RevealTileByAxial: no instantiated tile view found for axial {axial} on Minable '{name}'.");
+
+    }
+
+    public void SurvayTile(Vector2Int axial)
+    {
         // find slot index that matches axial (q = col, r = row)
         int idx = tilesData.FindIndex(t => t.tileIndexCol == axial.x && t.tileIndexRow == axial.y);
         if (idx < 0) return;
@@ -178,7 +207,6 @@ public class MinableComponent : MonoBehaviour
                 hasAbandonMiningOutpost = false,
                 oreAmount = 0f,
                 isPlayerTurnOver = false,
-                fogGO = null,
                 isBlocked = false
                 // other TileData fields keep their defaults
             };

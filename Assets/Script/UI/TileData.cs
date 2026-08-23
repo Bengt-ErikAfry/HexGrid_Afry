@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 
+//Used on the MinabelObject to store data. NOT TO SHOW/HIDE tiles in miningObject view. That is done by the TilePrefab script. This is just to store data about the tile.
 [Serializable]
 public class TileData
 {
@@ -11,7 +12,6 @@ public class TileData
     public bool hasAbandonMiningOutpost = false;
     public float oreAmount = 0f;
     public bool isPlayerTurnOver = false;
-    public GameObject fogGO;
 
     // Reintroduced: mark tile as blocked (editor / runtime can set)
     public bool isBlocked = false;

@@ -96,7 +96,7 @@ public class MovementManager : MonoBehaviour
         }
     }
 
-    // Internal animation (keeps previous implementation but no UI calls)
+    // CALLD EVERY TIME A UNIT GET TO A NEW TILE/HEX
     private IEnumerator MoveAlongCenters(Unit unit, List<Vector3> centers, int stepBudget)
     {
         float totalLen = 0f;
@@ -120,6 +120,7 @@ public class MovementManager : MonoBehaviour
         float t = 0f;
 
         int stepsDone = 0;
+        int lastRevealedStep = 0;
 
         while (t < duration)
         {
@@ -140,6 +141,29 @@ public class MovementManager : MonoBehaviour
 
                 stepsDone += canSpend;
             }
+
+            // --- Reveal tiles for any newly entered steps (only when unit is in a Minable view) ---
+            if (newSteps > lastRevealedStep)
+            {
+                // Ensure we only reveal when unit is logically inside a minable UI
+                if (unit.unitLocationType == Unit.UnitLocationType.MinableObject)
+                {
+                    var minable = MiningUIManager.Instance?.currentMinable;
+                    if (minable != null)
+                    {
+                        // reveal each center the unit has just stepped into
+                        for (int s = lastRevealedStep + 1; s <= newSteps && s < centers.Count; s++)
+                        {
+                            Vector3 centerWorld = centers[s];
+                            // Call the MinableComponent helper (world pos -> axial -> reveal)
+                            minable.RevealTileByWorldPos(centerWorld);
+                        }
+                    }
+                }
+
+                lastRevealedStep = newSteps;
+            }
+            // --- end reveal logic ---
 
             // Move position
             Vector3 pos = centers[0];

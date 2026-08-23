@@ -19,7 +19,7 @@ public class MiningUIManager : MonoBehaviour
     [Tooltip("List of blocked tile axial coordinates to disable in the UI (q,r).")]
     public List<Vector2Int> blockedCells = new List<Vector2Int>();
 
-    private MinableComponent currentMinable;
+    public MinableComponent currentMinable;
     private readonly List<GameObject> spawnedTiles = new();
     private readonly Stack<GameObject> tilePool = new(); // pool for recycling tiles
     private readonly Dictionary<Vector2Int, GameObject> spawnedTileMap = new();
@@ -269,6 +269,9 @@ public class MiningUIManager : MonoBehaviour
                     // If Minable provided tile has its own block flag, respect it as well
                     miningObjectTileData.tileData.isBlocked |= minable.tilesData[i].isBlocked;
                 }
+
+                //Set FOG GO
+                miningObjectTileData.fogGO = go.transform.GetChild(0).gameObject;
 
                 // set fog GO visibility if the prefab contains it
                 if (miningObjectTileData.fogGO != null)
