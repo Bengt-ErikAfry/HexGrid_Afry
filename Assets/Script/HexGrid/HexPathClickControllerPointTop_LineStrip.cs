@@ -1,5 +1,4 @@
-﻿
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -113,6 +112,112 @@ public class HexPathClickControllerPointTop_LineStrip : MonoBehaviour
     //Called when player plan a path in minabelobjectVIEW.
     public void HandleTapMiningObjectView(Vector2 screenPos)
     {
+        var minable = MiningUIManager.Instance?.currentMinable;
+        if (minable == null)
+        {
+            Debug.LogWarning("HandleTapMiningObjectView: no active minable.");
+            return;
+        }
+
+        // Convert screen pos to world point using camera and the tileParent's approximate depth.
+        var tileParentTransform = MiningUIManager.Instance?.tileParent;
+        var cam = Camera.main;
+        if (cam == null || tileParentTransform == null)
+        {
+            Debug.LogWarning("HandleTapMiningObjectView: missing Camera.main or tileParent.");
+            return;
+        }
+
+        // Use the tileParent world z as depth reference so ScreenToWorldPoint lands on the same plane as tiles.
+        float depthZ = cam.WorldToScreenPoint(tileParentTransform.position).z;
+        Vector3 sp = new Vector3(screenPos.x, screenPos.y, depthZ);
+        Vector3 worldPoint = cam.ScreenToWorldPoint(sp);
+
+        // Gather all instantiated tile views under tileParent and find the closest to the worldPoint.
+        var tileViews = tileParentTransform.GetComponentsInChildren<MiningObjectTileData>(true);
+        MiningObjectTileData closestTileView = null;
+        float bestDistSq = float.MaxValue;
+        foreach (var tv in tileViews)
+        {
+            if (tv == null) continue;
+            var pos = tv.transform.position;
+            float d2 = (new Vector2(pos.x, pos.y) - new Vector2(worldPoint.x, worldPoint.y)).sqrMagnitude;
+            if (d2 < bestDistSq)
+            {
+                bestDistSq = d2;
+                closestTileView = tv;
+            }
+        }
+
+        if (closestTileView == null)
+        {
+            Debug.Log("HandleTapMiningObjectView: no tile view found near pointer.");
+            ClearPath();
+            LastPath = new List<Vector2Int>();
+            return;
+        }
+
+        // Target axial is taken directly from the tile view's TileData (canonical).
+        Vector2Int targetAxial = new Vector2Int(closestTileView.tileData.tileIndexCol, closestTileView.tileData.tileIndexRow);
+
+        // Determine start axial:
+        var selectedUnit = SelectionService.Instance.SelectedUnit;
+        if (selectedUnit == null)
+        {
+            Debug.LogWarning("HandleTapMiningObjectView: no selected unit.");
+            return;
+        }
+
+        Vector2Int startAxial;
+        var parentTileOfUnit = selectedUnit.transform.GetComponentInParent<MiningObjectTileData>();
+        if (parentTileOfUnit != null)
+        {
+            // Unit already placed inside the minable UI — use that tile's axial
+            startAxial = new Vector2Int(parentTileOfUnit.tileData.tileIndexCol, parentTileOfUnit.tileData.tileIndexRow);
+        }
+        else
+        {
+            // Fallback: convert unit world position into axial relative to minable origin (minable.transform.position)
+            Vector2 unitRel = new Vector2(
+                selectedUnit.transform.position.x - minable.transform.position.x,
+                selectedUnit.transform.position.y - minable.transform.position.y);
+            startAxial = WorldToAxial_PointTop(unitRel, minable.hexSize);
+        }
+
+        // Build blocked set from minable.tilesData
+        var blocked = new HashSet<Vector2Int>();
+        foreach (var td in minable.tilesData)
+        {
+            if (td.isBlocked) blocked.Add(new Vector2Int(td.tileIndexCol, td.tileIndexRow));
+        }
+
+        // Run A* using minable grid parameters
+        var path = HexAStarPointTop.FindPath(startAxial, targetAxial, minable.worldRadius, blocked);
+
+        // Convert path to world positions using minable hex size and minable.transform.position as origin
+        if (path == null || path.Count == 0)
+        {
+            ClearPath();
+            LastPath = new List<Vector2Int>();
+            return;
+        }
+
+        lr.positionCount = path.Count;
+        for (int i = 0; i < path.Count; i++)
+        {
+            Vector2 c = AxialToWorldCenter_PointTop(path[i], minable.hexSize);
+            Vector3 worldPos = new Vector3(c.x + minable.transform.position.x, c.y + minable.transform.position.y, 0f);
+            lr.SetPosition(i, worldPos);
+        }
+
+        // Place markers using minable hex size / minable origin (uses a helper that mirrors PlaceTurnMarkers but for arbitrary hex size/origin)
+        Unit unit_Script = selectedUnit.GetComponent<Unit>();
+        int move = unit_Script != null ? unit_Script.shipRuntimeData.currentMovmentRange : 1;
+        PlaceTurnMarkers_ForMinable(path, move, minable.hexSize, minable.transform.position);
+
+        // Save path for MovementManager
+        LastPath = path ?? new List<Vector2Int>();
+        /*
         // Raycast from the camera into the scene to find a tile object under the screen position.
         var cam = Camera.main;
         if (cam == null)
@@ -174,7 +279,71 @@ public class HexPathClickControllerPointTop_LineStrip : MonoBehaviour
         PlaceTurnMarkers(path, unit_Script != null ? unit_Script.shipRuntimeData.currentMovmentRange : 1);
 
         // Save for MovementManager / later consumption
-        LastPath = path ?? new List<Vector2Int>();
+        LastPath = path ?? new List<Vector2Int>();*/
+    }
+    // Helper: variant of PlaceTurnMarkers that uses provided hexSize and origin instead of global baker values.
+    private void PlaceTurnMarkers_ForMinable(List<Vector2Int> path, int move, float hexSize, Vector3 origin)
+    {
+        ClearMarkers();
+
+        if (path == null || path.Count <= 1) return;
+        if (move <= 0) move = 1;
+
+        int steps = path.Count - 1; // number of edges to traverse
+        if (steps <= 0) return;
+
+        int movedThisTurn = Mathf.Max(0, SelectionService.Instance.SelectedUnit.movedThisTurn);
+        move = Mathf.Max(1, move);
+
+        // Compute how many steps remain in the CURRENT turn (clamped)
+        int remainingThisTurn = Mathf.Clamp(move - movedThisTurn, 0, move);
+
+        // Helper to compute turn label for a step index (edge count)
+        int ComputeTurnLabel(int stepIndex)
+        {
+            if (remainingThisTurn > 0 && stepIndex <= remainingThisTurn)
+                return 1;
+
+            int beyond = Mathf.Max(0, stepIndex - remainingThisTurn);
+            int extraTurns = (beyond + move - 1) / move;
+            return 1 + extraTurns;
+        }
+
+        // Build indices where markers go
+        var indices = new List<int>();
+
+        if (remainingThisTurn > 0 && remainingThisTurn <= steps)
+            indices.Add(remainingThisTurn);
+
+        int start = (remainingThisTurn > 0) ? (remainingThisTurn + move) : move;
+        for (int i = start; i <= steps; i += move)
+            indices.Add(i);
+
+        // Place each marker with computed labels
+        foreach (int idx in indices)
+        {
+            int turnLabel = ComputeTurnLabel(idx);
+            Vector2 center = AxialToWorldCenter_PointTop(path[idx], hexSize);
+            Vector2 worldCenter = new Vector2(center.x + origin.x, center.y + origin.y);
+            CreateMarker(turnLabel, worldCenter + markerOffset);
+        }
+
+        // Final target marker
+        int remainingAfterCurrentTurn = Mathf.Max(0, steps - remainingThisTurn);
+        int extraFullTurns = (remainingAfterCurrentTurn + move - 1) / move;
+        int finalTurn = 1 + extraFullTurns;
+
+        if (alwaysMarkTarget)
+        {
+            int targetIdx = steps;
+            bool alreadyPlaced = indices.Count > 0 && indices[indices.Count - 1] == targetIdx;
+            if (!alreadyPlaced)
+            {
+                Vector2 center = AxialToWorldCenter_PointTop(path[targetIdx], hexSize);
+                Vector2 worldCenter = new Vector2(center.x + origin.x, center.y + origin.y);
+                CreateMarker(finalTurn, worldCenter + markerOffset);
+            }
+        }
     }
 
     public void HandleTapToObject(Vector3 objectPos, bool drawPath)
@@ -273,7 +442,7 @@ public class HexPathClickControllerPointTop_LineStrip : MonoBehaviour
         Vector2Int currentStart = WorldToAxial_PointTop(unit.transform.position, HexGridLinesBaker.Instance.hexSize);
 
         var combined = new List<Vector2Int>();
-
+        Debug.Log("waypoints.Count "+waypoints.Count);
         foreach (var wp in waypoints)
         {
             Vector2Int targetAxial = WorldToAxial_PointTop(wp, HexGridLinesBaker.Instance.hexSize);
@@ -648,4 +817,27 @@ public class HexPathClickControllerPointTop_LineStrip : MonoBehaviour
 
         return new Vector2Int(rx, rz);
     }
+
+    // Unified entry that picks the correct tap handler (minable UI vs world) using both UI visibility and unit location.
+public void HandleTapUnified(Vector2 screenPos)
+{
+    var selected = SelectionService.Instance?.SelectedUnit;
+
+    // If the mining UI is open, we should interpret input in the minable view.
+    bool miningViewActive = MiningUIManager.Instance != null && MiningUIManager.Instance.MinabelObject_View != null && MiningUIManager.Instance.MinabelObject_View.activeSelf;
+
+    // If the selected unit is logically inside a minable, interpret input for minable pathing as well.
+    bool unitInMinable = selected != null && selected.unitLocationType == Unit.UnitLocationType.MinableObject;
+
+    // Prefer minable handling when either the UI is shown (for correct coordinate mapping)
+    // or when the unit is logically inside the minable (gameplay authoritative).
+    if (miningViewActive || unitInMinable)
+    {
+        HandleTapMiningObjectView(screenPos);
+    }
+    else
+    {
+        HandleTap(screenPos);
+    }
+}
 }

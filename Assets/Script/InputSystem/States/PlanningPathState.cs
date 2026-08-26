@@ -53,7 +53,8 @@ public class PlanningPathState : IGameState
         else
         {
             Debug.Log("PlaningPathState are calling for a path calculation becuse HEX CLICKED");
-            HexPathClickControllerPointTop_LineStrip.Instance.HandleTap(screenPos);
+            HexPathClickControllerPointTop_LineStrip.Instance.HandleTapUnified(screenPos);
+            //HexPathClickControllerPointTop_LineStrip.Instance.HandleTap(screenPos);
         }
 
         // Block execute if no moves left
