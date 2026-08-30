@@ -29,8 +29,9 @@ public class MiningUIManager : MonoBehaviour
     [Header("Reference")]
     public GameObject Game_View;
     public GameObject MinabelObject_View;
+    public HexGridComponent minableObjectView_hexGridComponent;
     public GameObject gameHexGrid;
-    public HexGridComponent sourceHexGrid;
+    public HexGridComponent gameView_hexGridComponent;
     public GameObject orbitingUnitView;
     public GameObject orbitingUnitPrefab;
     public Transform orbitingUnitsListContent;
@@ -53,6 +54,9 @@ public class MiningUIManager : MonoBehaviour
         MinabelObject_View.SetActive(false);
         Game_View.SetActive(true);
 
+        //Tell what hex to draw in the game view.
+        HexGridManager.Instance.SetActiveGrid(gameView_hexGridComponent); 
+
         // return UI tiles to pool (keeps them for next open)
         spawnedTileMap.Clear();
         ReturnAllTilesToPool();
@@ -72,6 +76,13 @@ public class MiningUIManager : MonoBehaviour
         // Show minableobject view
         MinabelObject_View.SetActive(true);
         Game_View.SetActive(false);
+
+        //Set active hexgrid
+        HexGridManager.Instance.SetActiveGrid(minableObjectView_hexGridComponent);
+
+        //Clear all path and markers from the hexgrid.
+        HexGridManager.Instance.ClearMarkers();
+        HexGridManager.Instance.ClearPath();
 
         // Populate UI (reuses pooled tiles)
         SpawnTiles(currentMinable);
@@ -208,7 +219,7 @@ public class MiningUIManager : MonoBehaviour
 
         // Resolve authoritative hex size to use for placement so UI spacing matches the game grid:
         // precedence: sourceHexGrid -> uiHexGrid -> minable
-        HexGridComponent authoritativeGrid = sourceHexGrid != null ? sourceHexGrid : uiHexGrid;
+        HexGridComponent authoritativeGrid = HexGridManager.Instance.CurrentHexGridComponent != null ? HexGridManager.Instance.CurrentHexGridComponent : uiHexGrid;
         float authoritativeHexSize;
         if (authoritativeGrid != null)
         {

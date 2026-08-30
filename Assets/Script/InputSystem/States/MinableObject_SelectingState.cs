@@ -96,7 +96,7 @@ public class MinableObject_SelectingState : IGameState
             {
                 if (unit.routeComponent.routeActions.Count > 0)
                 {
-                    HexPathClickControllerPointTop_LineStrip.Instance.CalculateRoutePath(unit);
+                    HexGridManager.Instance.CalculateRoutePath(unit);
                 }
             }
 

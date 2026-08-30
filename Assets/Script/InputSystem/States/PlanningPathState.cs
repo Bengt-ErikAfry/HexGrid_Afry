@@ -45,17 +45,7 @@ public class PlanningPathState : IGameState
         HexHighlighter.Instance.ClearRangeHighlights();
 
         // Set or extend path
-        if (MiningUIManager.Instance.MinabelObject_View.activeSelf)
-        {
-            Debug.Log("PlaningPathState are calling for a path calculation becuse TILE CLICKED");
-            HexPathClickControllerPointTop_LineStrip.Instance.HandleTapMiningObjectView(screenPos);
-        }
-        else
-        {
-            Debug.Log("PlaningPathState are calling for a path calculation becuse HEX CLICKED");
-            HexPathClickControllerPointTop_LineStrip.Instance.HandleTapUnified(screenPos);
-            //HexPathClickControllerPointTop_LineStrip.Instance.HandleTap(screenPos);
-        }
+        HexGridManager.Instance.HandleTapHexGrid(screenPos);
 
         // Block execute if no moves left
         if (selected.movedThisTurn >= selected.shipRuntimeData.currentMovmentRange)

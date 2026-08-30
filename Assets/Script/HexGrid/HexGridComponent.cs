@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Thin wrapper placed on each grid GameObject (rename your HexGridLinesBaker to inherit or compose this)
+//
+//Thin wrapper placed on each grid GameObject (rename your HexGridLinesBaker to inherit or compose this)
+//DO NOT change the Linereder data manualy in Inspector. This script load the data on awak.
+
 [DisallowMultipleComponent]
 public class HexGridComponent : MonoBehaviour
 {
@@ -30,10 +33,64 @@ public class HexGridComponent : MonoBehaviour
     public GameObject highlightGO; // Highlight GameObject get modified when highlighting hex under mouse
     public int highligtSortingOrder = 1;          // Rendering order of highlight
 
+    [Header("Path Line style")]
+    public float lineWidth = 0.03f;
+    public Color lineColor = new Color(1f, 0.9f, 0.1f, 0.85f); // warm yellow
+    public List<Vector2Int> LastPath { get; private set; } = new(); //used in movementManager to move unit.
+
+    // Internal
+    public LineRenderer currentLineRenderer;
+    
+    [Header("Marker style")]
+    public Color markerTextColor = Color.white;
+    public int turnMarkerFontSize = 64;                     // scale down via transform
+    public Material turnMarker_BG_Material;                       // optional custom text material
+    //public Color markerBackColor = new Color(0f, 0f, 0f, 0.6f); // semi-transparent dark bg
+    public Vector2 markerOffset = new Vector2(0f, 0.08f);       // lift labels off the line
+    public bool alwaysMarkTarget = true;
+    public float markerScale = 1f;
+    public Mesh circleMesh;
+    public int turnMarker_BG_SortingOrder = 2;
+    public int turnMarker_Text_SortingOrder = 3;
+
+    [Tooltip("Radius of the round marker background in world units.")]
+    public float markerRadius = 0.07f;               // ~4.5 px if 1 world unit = 64 px
+    [Tooltip("Number of segments used to approximate the circle (12–24 is fine).")]
+    public int circleSegments = 20;
+    private Material unlitMat;  // for optional marker backgrounds
+
+    
+
+
     private void Awake()
     {
-        HexGridManager.Instance?.Register(this);
-        // If manager may not exist in scene, consider lazy-creating a GameObject with manager here.
+        HexGridManager.Instance?.Register(this);    //To show/hide grids in the manager.
+                                                    // If manager may not exist in scene, consider lazy-creating a GameObject with manager here.
+
+        currentLineRenderer = GetComponent<LineRenderer>();
+
+        // Configure LineRenderer (unlit look)
+        currentLineRenderer.positionCount = 0;
+        currentLineRenderer.loop = false;
+        currentLineRenderer.startWidth = lineWidth;
+        currentLineRenderer.endWidth = lineWidth;
+        currentLineRenderer.useWorldSpace = true;
+        currentLineRenderer.numCornerVertices = 2;  // simple rounded corners
+        currentLineRenderer.numCapVertices = 2;     // simple end caps
+        currentLineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        currentLineRenderer.startColor = lineColor;
+        currentLineRenderer.endColor = lineColor;
+
+        // Build an unlit material for marker backgrounds (optional)
+        var shader = Shader.Find("Universal Render Pipeline/Unlit");
+        if (shader == null) shader = Shader.Find("Unlit/Color");
+        if (shader == null) shader = Shader.Find("Sprites/Default");
+        unlitMat = new Material(shader);
+        if (unlitMat.HasProperty("_BaseColor")) unlitMat.SetColor("_BaseColor", Color.white);
+        if (unlitMat.HasProperty("_Color")) unlitMat.SetColor("_Color", Color.white);
+
+        circleMesh = HexMath.BuildCircleMesh(markerRadius, circleSegments);
+
     }
     private void Start()
     {

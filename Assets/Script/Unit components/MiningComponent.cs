@@ -88,8 +88,8 @@ public class MiningComponent : MonoBehaviour
         {
             //Can move
 
-            //Set pach
-            HexPathClickControllerPointTop_LineStrip.Instance.HandleTapToObject(currentMission.targetAsteroidField.transform.position, true);
+            //Set path
+            HexGridManager.Instance.CalculatePath(currentMission.targetAsteroidField.transform.position);
 
             //Lock player input when unit moves
             GameStateMachine.Instance.SetState(GameplayStateId.BlockPlayerInput);
@@ -216,8 +216,8 @@ public class MiningComponent : MonoBehaviour
         {
             //Can move
 
-            //Set pach
-            HexPathClickControllerPointTop_LineStrip.Instance.HandleTapToObject(GameManager.Instance.MotherShip.transform.position, true);
+            //Set path
+            HexGridManager.Instance.CalculatePath(GameManager.Instance.MotherShip.transform.position);
 
             //Lock player input when unit moves
             GameStateMachine.Instance.SetState(GameplayStateId.BlockPlayerInput);

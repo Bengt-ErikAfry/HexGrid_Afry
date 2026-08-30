@@ -47,7 +47,12 @@ public class ShowMiningObjectUIState : IGameState
 
             Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 
-            UIManager.Instance.HideSelectedUnitView();
+            var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
+            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
+
+            // select unit via selection service
+            SelectionService.Instance.SetSelectedHex(hexClicked);
+
             return;
         }
 
@@ -79,6 +84,12 @@ public class ShowMiningObjectUIState : IGameState
         if (unitsInClickedHex.Count == 0)
         {
             SelectionService.Instance.ClearSelection();
+
+            var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
+            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
+
+            // select unit via selection service
+            SelectionService.Instance.SetSelectedHex(hexClicked);
         }
         else if (unitsInClickedHex.Count == 1)
         {
@@ -93,7 +104,7 @@ public class ShowMiningObjectUIState : IGameState
             //Show Route if exsisting
             if (unit.routeComponent.routeActions.Count > 0)
             {
-                HexPathClickControllerPointTop_LineStrip.Instance.CalculateRoutePath(unit);
+                HexGridManager.Instance.CalculateRoutePath(unit);
             }
 
             Debug.Log($"SelectAsteroid mode selected and {unit.unitName} is clicked.");

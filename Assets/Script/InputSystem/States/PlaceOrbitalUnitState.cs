@@ -21,6 +21,9 @@ public class PlaceOrbitalUnitState : IGameState
         {
             UIManager.Instance.activeState.text = "Active state: PlaceOrbitalUnitState State";
         }
+
+        //Hide selected highligher
+        HexHighlighter.Instance.HideHighlight();
     }
     // Exit State.
     public void Exit() { }

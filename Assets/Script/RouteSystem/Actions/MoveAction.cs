@@ -23,8 +23,8 @@ public class MoveToAction : RouteAction
         HexHighlighter.Instance.HighlightHexUnderWorldPosition(target);
 
         // Calculate path once
-        HexPathClickControllerPointTop_LineStrip.Instance.CalculatePath(target);
-        List<Vector2Int> path = HexPathClickControllerPointTop_LineStrip.Instance.LastPath;
+        HexGridManager.Instance.CalculatePath(target);
+        List<Vector2Int> path = SelectionService.Instance.SelectedUnit.currentMovePath;
 
         if (path == null || path.Count < 2)
         {

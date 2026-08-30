@@ -751,7 +751,7 @@ public class HexPathClickControllerPointTop_LineStrip : MonoBehaviour
         markerActive.Add(go);
     }
 
-
+    
     // ------------------- Circle mesh (round background) -------------------
 
     private static Mesh BuildCircleMesh(float radius, int segments)

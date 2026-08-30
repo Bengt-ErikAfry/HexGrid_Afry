@@ -218,4 +218,41 @@ public static class HexMath
 
         return Mathf.Max(dx, dy, dz);
     }
+    // ------------------- Circle mesh (round background) -------------------
+
+    public static Mesh BuildCircleMesh(float radius, int segments)
+    {
+        segments = Mathf.Clamp(segments, 8, 128); // keep it sane
+        var mesh = new Mesh { name = "MarkerCircle" };
+
+        var verts = new List<Vector3>(segments + 1);
+        var tris = new List<int>(segments * 3);
+        var cols = new List<Color>(segments + 1);
+
+        // center
+        verts.Add(Vector3.zero);
+        cols.Add(Color.white);
+
+        // ring vertices
+        for (int i = 0; i < segments; i++)
+        {
+            float angle = (i / (float)segments) * Mathf.PI * 2f;
+            verts.Add(new Vector3(radius * Mathf.Cos(angle), radius * Mathf.Sin(angle), 0f));
+            cols.Add(Color.white);
+        }
+
+        // triangle fan
+        for (int i = 1; i <= segments; i++)
+        {
+            int next = (i == segments) ? 1 : i + 1;
+            tris.Add(0); tris.Add(i); tris.Add(next);
+        }
+
+        mesh.SetVertices(verts);
+        mesh.SetColors(cols);
+        mesh.SetTriangles(tris, 0);
+        mesh.RecalculateBounds();
+        return mesh;
+    }
+
 }

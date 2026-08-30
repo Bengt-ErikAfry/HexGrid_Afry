@@ -39,6 +39,9 @@ public class MinableComponent : MonoBehaviour
     public event Action OnProduced; // fired when outpost production added to storedAmount
     public event Action<Vector2Int> OnTileSurveyedByAxial; // axial (q,r)
 
+    //[Header("HexGrid")]
+    //public HexGridComponent hexGridComponent;   //Sets on awake.
+
     private void OnEnable()
     {
         if (GameManager.Instance != null)
@@ -49,6 +52,17 @@ public class MinableComponent : MonoBehaviour
     {
         if (GameManager.Instance != null)
             GameManager.Instance.OnNewTurn -= HandleNewTurn;
+    }
+
+    public void Awake()
+    {
+        /*
+        hexGridComponent = transform.GetChild(0).GetComponent<HexGridComponent>();
+        if(hexGridComponent == null )
+        {
+             Debug.LogError("HexGridComponent not found on child of MinableComponent for " + this.transform.parent.name);
+        }
+        */
     }
 
     private void Start()

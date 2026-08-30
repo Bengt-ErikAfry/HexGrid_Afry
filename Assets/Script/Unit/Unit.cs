@@ -34,6 +34,10 @@ public class Unit : MonoBehaviour
     public bool hasMinedThisTurn;
     public UnitLocationType unitLocationType = UnitLocationType.GameView;
 
+    //public List<Vector2Int> currentMovePath { get; private set; } = new(); //used in movementManager to move unit.
+    public List<Vector2Int> currentMovePath = new(); //used in movementManager to move unit.
+
+
     [Header("Reference")]
     public LaserBeam laserBeam_Script;
     public FactoryComponent factoryComponent;
@@ -78,10 +82,10 @@ public class Unit : MonoBehaviour
             target_Unit_Script = otherInDetectionRange[0].GetComponent<Unit>();
 
             //set path to player
-            HexPathClickControllerPointTop_LineStrip.Instance.HandleTapToObject(otherInDetectionRange[0].transform.position, false);
+            HexGridManager.Instance.CalculatePath(otherInDetectionRange[0].transform.position);
 
             // movement — updated to new MovementManager API
-            var path = HexPathClickControllerPointTop_LineStrip.Instance.LastPath;
+            var path = SelectionService.Instance.SelectedUnit.currentMovePath;
             if (path != null && path.Count >= 2)
             {
                 int remainingSteps = Mathf.Max(0, shipRuntimeData.currentMovmentRange - movedThisTurn);
@@ -122,10 +126,10 @@ public class Unit : MonoBehaviour
                 if (this.transform.position != target_LastKnownPos)
                 {
                     //set path to last known location
-                    HexPathClickControllerPointTop_LineStrip.Instance.HandleTapToObject(target_LastKnownPos, false);
+                    HexGridManager.Instance.CalculatePath(target_LastKnownPos);
 
                     // movement — updated to new MovementManager API
-                    var path = HexPathClickControllerPointTop_LineStrip.Instance.LastPath;
+                    var path = SelectionService.Instance.SelectedUnit.currentMovePath;
                     if (path != null && path.Count >= 2)
                     {
                         int remainingSteps = Mathf.Max(0, shipRuntimeData.currentMovmentRange - movedThisTurn);

@@ -48,8 +48,15 @@ public class SelectingState : IGameState
             Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
 
             Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+
+            //Show hex under mouse position
+            // Convert tap -> world -> axial (point-top)
+            var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
+            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
             
-            UIManager.Instance.HideSelectedUnitView();
+            // select unit via selection service
+            SelectionService.Instance.SetSelectedHex(hexClicked);
+
             return;
         }
 
@@ -83,6 +90,14 @@ public class SelectingState : IGameState
         if (unitsInClickedHex.Count == 0)
         {
             SelectionService.Instance.ClearSelection();
+
+            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+
+            var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
+            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
+
+            // select unit via selection service
+            SelectionService.Instance.SetSelectedHex(hexClicked);
         }
         else if (unitsInClickedHex.Count == 1)
         {
@@ -99,7 +114,7 @@ public class SelectingState : IGameState
             {
                 if (unit.routeComponent.routeActions.Count > 0)
                 {
-                    HexPathClickControllerPointTop_LineStrip.Instance.CalculateRoutePath(unit);
+                    HexGridManager.Instance.CalculateRoutePath(unit);
                 }
             }
 

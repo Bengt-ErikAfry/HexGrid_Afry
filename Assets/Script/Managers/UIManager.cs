@@ -45,6 +45,8 @@ public class UIManager : MonoBehaviour
 
     private Coroutine _waitForSelectionServiceCoroutine;
 
+    public Sprite emptyHexIcon;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -79,6 +81,7 @@ public class UIManager : MonoBehaviour
             yield return null;
 
         SelectionService.Instance.OnSelectionChanged += OnSelectionChanged;
+        SelectionService.Instance.OnHexClicked += OnHexClicked;
         unit_script = SelectionService.Instance.SelectedUnit;
         //UpdateRouteButton(unit_script);
         ShowSelectedUnitView(unit_script);
@@ -89,6 +92,7 @@ public class UIManager : MonoBehaviour
     {
         if (SelectionService.Instance != null)
             SelectionService.Instance.OnSelectionChanged -= OnSelectionChanged;
+        SelectionService.Instance.OnHexClicked -= OnHexClicked;
 
         if (_waitForSelectionServiceCoroutine != null)
         {
@@ -107,11 +111,10 @@ public class UIManager : MonoBehaviour
         ShowSelectedUnitView(unit);
 
         // Hide old path when nothing is selected, or when the selected unit has no route.
-        if (HexPathClickControllerPointTop_LineStrip.Instance == null) return;
+        if (HexGridManager.Instance == null) return;
 
         if (unit == null)
         {
-            HexPathClickControllerPointTop_LineStrip.Instance.ClearPath();
             return;
         }
 
@@ -119,12 +122,13 @@ public class UIManager : MonoBehaviour
         var rc = unit.GetComponent<RouteComponent>();
         if (rc != null && rc.routeActions != null && rc.routeActions.Count > 0)
         {
-            HexPathClickControllerPointTop_LineStrip.Instance.CalculateRoutePath(unit);
+            HexGridManager.Instance.CalculateRoutePath(unit);
         }
-        else
-        {
-            HexPathClickControllerPointTop_LineStrip.Instance.ClearPath();
-        }
+    }
+    private void OnHexClicked(Vector2Int hexClicked)
+    {
+        //Show UI for selected unit (or hide if null)
+        ShowSelectedUnitView(hexClicked);
     }
 
     public void ResetUI()
@@ -193,7 +197,7 @@ public class UIManager : MonoBehaviour
         // STOP any running route for this unit (do not remove the route data by default)
         RouteExecutor.Instance?.StopRouteFor(SelectionService.Instance.SelectedUnit);
 
-        var path = HexPathClickControllerPointTop_LineStrip.Instance.LastPath;
+        var path = SelectionService.Instance.SelectedUnit.currentMovePath;
         if (path == null || path.Count < 2)
         {
             Debug.LogWarning("No path to move along.");
@@ -263,7 +267,7 @@ public class UIManager : MonoBehaviour
         if(rc.IsRouteStarted)
         {
             RouteExecutor.Instance.StopRouteFor(unit_script);
-            HexPathClickControllerPointTop_LineStrip.Instance?.ClearPath();
+            HexGridManager.Instance?.ClearPath();
             rc.IsRouteStarted = false;
             routeButtonText.text = "Run Route";
             return;
@@ -453,18 +457,15 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    /* ----- Remove with new minging system
-    public void ShowAsteroidField_SelectedUnitView()
+    public void ShowSelectedUnitView(Vector2Int hexClicked)
     {
-        if (unit_script != null && unit_script.asteroidFieldComponent.isSurveyed)
-        {
-            selectedUnitNameText.text = $"{unit_script.unitName} Rocks left: {unit_script.asteroidFieldComponent.totalAmount}";
-        }
-        else if (unit_script != null)
-        {
-            selectedUnitNameText.text = $"{unit_script.unitName} Unsurveyed.";
-        }
-    }*/
+        ResetUI();
+
+        selectedUnitView.SetActive(true);
+        if (emptyHexIcon == null) Debug.LogError("emptyHexIcon is missing. Add to UImanager.");
+        selectedUnitImage.sprite = emptyHexIcon;
+        selectedUnitNameText.text = hexClicked.ToString();
+    }
 
     public void HideSelectedUnitView()
     {

@@ -49,8 +49,6 @@ public class CameraManager : MonoBehaviour
 
     public void CenterOnSelectedObject()
     {
-        HexPathClickControllerPointTop_LineStrip.Instance.ClearPath();
-
         //Show Highlighter
         HexHighlighter.Instance.ShowHighlight();
 

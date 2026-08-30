@@ -2,7 +2,7 @@
 - Project name: HexGrid_Afry
 - Unity version: Unity 6000.4.0f1
 - Active game object:
-  - Name: BackGroundHexGrid
+  - Name: Scroll View
   - Tag: Untagged
-  - Layer: Default
+  - Layer: UI
 <!-- UNITY CODE ASSIST INSTRUCTIONS END -->

@@ -216,7 +216,8 @@ public class GameManager : MonoBehaviour
         playerTurn = false;
 
         //Clear previous path
-        HexPathClickControllerPointTop_LineStrip.Instance.ClearPath();
+        HexGridManager.Instance.ClearPath();
+        HexGridManager.Instance.ClearMarkers();
         HexHighlighter.Instance.HideHighlight();
 
         //Reset Selected
@@ -299,7 +300,8 @@ public class GameManager : MonoBehaviour
         GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
 
         //Clear previous path
-        HexPathClickControllerPointTop_LineStrip.Instance.ClearPath();
+        HexGridManager.Instance.ClearPath();
+        HexGridManager.Instance.ClearMarkers();
         HexHighlighter.Instance.HideHighlight();
 
         //Reset all enemy movment this turn and attack
