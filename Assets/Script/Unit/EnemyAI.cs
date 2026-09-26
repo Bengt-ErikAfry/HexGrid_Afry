@@ -3,8 +3,12 @@ using UnityEngine;
 
 public class EnemyAI : MonoBehaviour
 {
-    public Unit unit_script;
+
+    [Header("Enemy STATS")]
     public int enemyHitChance = 50;
+
+    [Header("Reference DO NOT SET IN THE INSPECTOR")]
+    public Unit unit_script;    //Not set in the inspector
 
     private void Start()
     {

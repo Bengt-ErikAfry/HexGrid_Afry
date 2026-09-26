@@ -15,9 +15,7 @@ MonoBehaviour:
   itemName: MotherShip
   icon: {fileID: 0}
   itemType: 4
-  shipType: 0
   moduleType: 0
-  moduleClass: 0
   itemCanStack: 0
   maxHealth: 0
   description: 
@@ -28,11 +26,6 @@ MonoBehaviour:
   wearModifier_Boost: 0
   craftingTime: 0
   requiredItems: []
-  startModules: []
-  ShipLayoutBackground: {fileID: 0}
-  shipLayoutJson: {fileID: 4900000, guid: 015bc0f0c1d5d3d4891be3e1f6519146, type: 3}
-  assemblyResultItem: {fileID: 0}
-  assemblyResultPrefab: {fileID: 0}
   damage: 0
   range: 0
   ammoType: 0
@@ -54,3 +47,6 @@ MonoBehaviour:
   energyProduction_Boost: 0
   energyStorage_Boost: 0
   storageSpace: 0
+  worldRadius: 10
+  hexSize: 0.5
+  scrollLimit: 0

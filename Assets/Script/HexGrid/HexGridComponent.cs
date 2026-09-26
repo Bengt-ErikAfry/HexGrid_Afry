@@ -26,7 +26,7 @@ public class HexGridComponent : MonoBehaviour
     public Material hexGrid_Mat;   //Background hexgrid maeterial
 
     [Header("Optional: blocked cells")]
-    public HashSet<Vector2Int> blocked = new HashSet<Vector2Int>(); // fill externally if you have obstacles
+    public HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>(); // fill externally if you have obstacles
 
     [Header("Highlight Hex")]
     public Material hexHighlight_Mat;       // Highlight material
@@ -94,13 +94,13 @@ public class HexGridComponent : MonoBehaviour
     }
     private void Start()
     {
-        blocked.Add(new Vector2Int(0, 0)); // Example blocked cell at center
-        blocked.Add(new Vector2Int(0, -1)); // Example blocked cell at center
-        blocked.Add(new Vector2Int(0, 1)); // Example blocked cell at center
-        blocked.Add(new Vector2Int(-1, 0)); // Example blocked cell at center
-        blocked.Add(new Vector2Int(-1, 1)); // Example blocked cell at center
-        blocked.Add(new Vector2Int(1, -1)); // Example blocked cell at center
-        blocked.Add(new Vector2Int(1, 0)); // Example blocked cell at center
+        blockedCells.Add(new Vector2Int(0, 0)); // Example blocked cell at center
+        blockedCells.Add(new Vector2Int(0, -1)); // Example blocked cell at center
+        blockedCells.Add(new Vector2Int(0, 1)); // Example blocked cell at center
+        blockedCells.Add(new Vector2Int(-1, 0)); // Example blocked cell at center
+        blockedCells.Add(new Vector2Int(-1, 1)); // Example blocked cell at center
+        blockedCells.Add(new Vector2Int(1, -1)); // Example blocked cell at center
+        blockedCells.Add(new Vector2Int(1, 0)); // Example blocked cell at center
     }
 
     private void OnDestroy()

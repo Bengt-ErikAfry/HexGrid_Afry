@@ -45,7 +45,7 @@ public class SelectingState : IGameState
             SelectionService.Instance.ClearSelection();
 
             HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-            Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
+            //Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
 
             Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 

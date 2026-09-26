@@ -30,7 +30,7 @@ public class BoardingState : IGameState
     public void OnTap(Vector2 screenPos)
     {
 
-        Debug.Log("AttackingState OnTap at " + screenPos);
+        Debug.Log("BoardingState OnTap at " + screenPos);
         if (CameraManager.Instance.isMovingCamera) return;
 
         //Remove Range Highlight
@@ -50,7 +50,7 @@ public class BoardingState : IGameState
             SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
 
             HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-            Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
+            Debug.Log("after BoardingState invoke" + GameStateMachine.Instance.Current);
             return;
         }
 
@@ -129,7 +129,7 @@ public class BoardingState : IGameState
             SelectionService.Instance.SelectedUnit.target_Unit_Script = defaultUnit;
         }
 
-        Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
+        Debug.Log("after BoardingState invoke" + GameStateMachine.Instance.Current);
 
     }
 

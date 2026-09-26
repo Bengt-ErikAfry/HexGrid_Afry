@@ -24,8 +24,8 @@ public class GameManager : MonoBehaviour
     public bool activateFogOfWar = true;
 
     public List<Unit> unitsList = new List<Unit>();     //All units. Sets in the inspector.
-    public List<Unit> playerUnits = new List<Unit>();   //Player controled units. Sets in the inspector
-    public List<Unit> enemyUnits = new List<Unit>();    //Enemy list. Sets in the inspector.
+    public List<Unit> playerUnits = new List<Unit>();   //Player controled units. DO NOT Set in the inspector
+    public List<Unit> enemyUnits = new List<Unit>();    //Enemy list. DO NOT Set in the inspector
 
     public bool playerTurn;
     private int remainingEnemies;   //used to determine if all enemy have moved/attacked before switching back to player turn.

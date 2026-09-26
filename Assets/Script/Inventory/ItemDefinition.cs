@@ -76,6 +76,15 @@ public class ItemDefinition : ScriptableObject
 
     [Header("Storage")]
     public int storageSpace = 0;
+
+    [Header("BoardingHexData")]
+    [Tooltip("Hex 'radius' in cells (cube distance). World will be a hex of this radius.")]
+    public int worldRadius = 10;
+    [Tooltip("Hex size in world units (center to corner distance).")]
+    public float hexSize = 0.5f;
+    public int scrollLimit;
+
+    public HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>(); // fill externally if you have obstacles
 }
 public enum ItemType
 {

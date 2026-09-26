@@ -59,12 +59,13 @@ public class AttackingState : IGameState
 
         if (hits.Length == 0)
         {
-            //Remove targets if exsist
+            Debug.Log("AttackingState: No hits, deselecting target.");
+
             SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
             GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
 
             HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-            Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
+            Debug.Log("after AttackingState invoke" + GameStateMachine.Instance.Current);
             return;
         }
 
@@ -79,7 +80,7 @@ public class AttackingState : IGameState
 
         // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
         List<Unit> unitsInClickedHex = hits
-            .Select(h => h.collider.transform.root.GetComponent<Unit>())
+            .Select(h => h.collider.transform.GetComponent<Unit>())
             .Where(u => u != null)
             .Distinct() // prevent duplicates if a unit has multiple colliders
             .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
@@ -87,17 +88,20 @@ public class AttackingState : IGameState
 
         // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
         // Optionally, if you also want to include the one you directly hit even if hex-mapping fails:
-        if (unitsInClickedHex.Count == 0)
+        
+        /*if (unitsInClickedHex.Count == 0)
         {
             var firstUnit = hits.Select(h => h.collider.transform.root.GetComponent<Unit>())
                                 .FirstOrDefault(u => u != null);
             if (firstUnit != null)
                 unitsInClickedHex.Add(firstUnit);
-        }
+        }*/
 
         // (5) Use result
         if (unitsInClickedHex.Count == 0)
         {
+            Debug.Log("AttackingState: No units in clicked hex, deselecting target.");
+
             //No units in hex → deselect target
             SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
             GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
@@ -105,16 +109,19 @@ public class AttackingState : IGameState
         }
         else if (unitsInClickedHex.Count == 1)
         {
+            Debug.Log("AttackingState: One unit in clicked hex " + unitsInClickedHex[0].unitName + " in hex.");
+
             //Dont hit your self
             if (unitsInClickedHex[0] == SelectionService.Instance.SelectedUnit)
             {
+                Debug.Log("AttackingState: Clicked on self, deselecting target.");
                 SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
                 GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
                 return;
             }
             else
             { 
-                //Trying to attack other then your self
+                Debug.Log("AttackingState: Trying to attack " + unitsInClickedHex[0].unitName);
 
                 // Single unit in hex → select it and immediately try to attack
                 var unit = unitsInClickedHex[0];
@@ -128,7 +135,7 @@ public class AttackingState : IGameState
         }
         else
         {
-            // Multiple in same hex → show a selection UI to the player
+            Debug.Log("AttackingState: Multiple units in clicked hex, showing selection UI.");
 
             //Set Enemy input state
             //GameStateMachine.Instance.SetState(GameplayStateId.UIOnly);
@@ -145,7 +152,7 @@ public class AttackingState : IGameState
             SelectionService.Instance.SelectedUnit.target_Unit_Script = defaultUnit;
         }
 
-        Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
+        Debug.Log("after AttackingState invoke" + GameStateMachine.Instance.Current);
 
     }
 
