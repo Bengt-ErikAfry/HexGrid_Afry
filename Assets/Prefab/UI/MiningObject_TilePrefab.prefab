@@ -171,7 +171,6 @@ MonoBehaviour:
     hasAbandonMiningOutpost: 0
     oreAmount: 0
     isPlayerTurnOver: 0
-    fogGO: {fileID: 5616911746345798023}
     isBlocked: 0
     health_Defence: 10
     health_CommandCenter: 10

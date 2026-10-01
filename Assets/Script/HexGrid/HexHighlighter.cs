@@ -6,16 +6,15 @@ public class HexHighlighter : MonoBehaviour
 {
     public static HexHighlighter Instance { get; private set; }
 
-    [Header("Highlight Hex")]
+    //This you get from hexcomponent
+    //[Header("Highlight Hex")]
     public Material hexHighlight_Mat;       // Highlight material
     public Material weaponRange_Mat;        // Range highlight material (can be different)  
     public Material movmentRange_Mat;        // Movment range material
-    public GameObject highlightGO; // Highlight GameObject get modified when highlighting hex under mouse
+     public GameObject highlightGO; // Highlight GameObject get modified when highlighting hex under mouse
     public int highligtSortingOrder = 1;          // Rendering order of highlight
-
     private Mesh hexMesh; // reusable filled-hex mesh
     private readonly Dictionary<Vector2Int, GameObject> highlighted = new();
-
     private readonly List<GameObject> pool = new();   // pooled highlight instances
     private readonly List<GameObject> active = new(); // currently active highlights
 
@@ -29,21 +28,22 @@ public class HexHighlighter : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
-
+    /*
     private void Start()
     {
+        
         // Create the reusable filled hex mesh for highlighting
         if (hexMesh == null)
         {
             hexMesh = BuildFilledPointTopHex(HexGridLinesBaker.Instance.hexSize, Color.yellow);
         }
-    }
+    }*/
 
     // ---------- Hex Highlighting HEX----------
     public void HighlightHexUnderScreenPosition(Vector2 screenPos)  //!!! SCREEN POSITION !!!
     {
         // show the highlightGO if it's not active
-        ShowHighlight();
+        //ShowHighlight();
 
         //Debug.Log("HighlightHexUnderScreenPosition called " + screenPos);
         // --- Highlight the hex under the selected object ---
@@ -56,13 +56,14 @@ public class HexHighlighter : MonoBehaviour
 
         //Check if inside world radius
         //Debug.Log("Inside world radius: " + InsideHexRadius(axial, worldRadius));
-        if (!InsideHexRadius(axial, HexGridLinesBaker.Instance.worldRadius)) return;
+        //if (!InsideHexRadius(axial, HexGridManager.Instance.CurrentHexGridComponent.worldRadius)) return;
 
         // Compute the exact center of that hex in world space
-        Vector2 center = AxialToWorldCenter_PointTop(axial, HexGridLinesBaker.Instance.hexSize);
+        //Vector2 center = AxialToWorldCenter_PointTop(axial, HexGridLinesBaker.Instance.hexSize);
         //Debug.Log("World center of hex: " + center);
 
         // Create the highlight the first time, or move it
+        /*
         var mf = highlightGO.GetComponent<MeshFilter>();
         var mr = highlightGO.GetComponent<MeshRenderer>();
         mf.sharedMesh = hexMesh;          // created once in Awake (filled point-top hex of radius hexSize)
@@ -70,16 +71,21 @@ public class HexHighlighter : MonoBehaviour
         mr.sortingOrder = highligtSortingOrder; // ensure it renders above your background 
         highlightGO.transform.position = new Vector3(center.x, center.y, 0f);
         highlightGO.transform.eulerAngles = new Vector3(0, 180, 0); // Flip to face camera in some setups
+        */
+
+
+        HighlightTile(axial);
     }
     public void HighlightHexUnderWorldPosition(Vector3 worldpos)  //!!! SCREEN POSITION !!!
     {
         // show the highlightGO if it's not active
-        ShowHighlight();
+        //ShowHighlight();
 
         // Convert selected object's world position -> axial (POINT-TOP), clamp to world radius
         var axial = WorldToAxial_PointTop(worldpos, HexGridLinesBaker.Instance.hexSize);
         //Debug.Log("Axial coords: " + axial);
 
+        /*
         //Check if inside world radius
         //Debug.Log("Inside world radius: " + InsideHexRadius(axial, worldRadius));
         if (!InsideHexRadius(axial, HexGridLinesBaker.Instance.worldRadius)) return;
@@ -96,6 +102,26 @@ public class HexHighlighter : MonoBehaviour
         mr.sortingOrder = highligtSortingOrder; // ensure it renders above your background 
         highlightGO.transform.position = new Vector3(center.x, center.y, 0f);
         highlightGO.transform.eulerAngles = new Vector3(0, 180, 0); // Flip to face camera in some setups
+        */
+
+        HighlightTile(axial);
+    }
+
+    public void HighlightTile(Vector2Int axial)
+    {
+        //Check if inside world radius
+        //Debug.Log("Inside world radius: " + InsideHexRadius(axial, worldRadius));
+        if (!InsideHexRadius(axial, HexGridLinesBaker.Instance.worldRadius))
+        {
+            Debug.LogWarning("Axial coordinates " + axial + " are outside the world radius.");
+            return;
+        }
+
+        //UnHighligt all tiles
+        //HexGridManager.Instance.CurrentHexGridComponent.UnHighlightAllTiles();
+
+        //Get tile data from axial
+        //var tileData = HexGridManager.Instance.CurrentHexGridComponent.GetTileDataFromAxial(axial);
     }
 
     public void HideHighlight()
@@ -246,6 +272,7 @@ public class HexHighlighter : MonoBehaviour
         return results;
     }
 
+    
     /// <summary>
     /// Hide and recycle all range highlight instances.
     /// </summary>
@@ -283,9 +310,6 @@ public class HexHighlighter : MonoBehaviour
         go.AddComponent<MeshRenderer>();
         return go;
     }
-
-
-
 
 
     // ---------- Point-top axial math HELP FUNCTIONS ----------

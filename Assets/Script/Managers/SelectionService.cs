@@ -35,10 +35,10 @@ public class SelectionService : MonoBehaviour
         OnSelectionChanged?.Invoke(selectedUnitField);
     }
 
-    public void SetSelectedHex(Vector2Int hexClickedCordinat)
+    public void SetSelectedHex(Vector2Int hexClickedCordinat, bool isFound)
     {
         // update serialized field so Inspector shows it
-        OnHexClicked?.Invoke(hexClickedCordinat);
+        OnHexClicked?.Invoke(hexClickedCordinat, isFound);
     }
 
     // Set selection by GameObject (convenience)

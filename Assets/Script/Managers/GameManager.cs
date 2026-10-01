@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using TMPro;
 #if UNITY_EDITOR
@@ -123,8 +124,8 @@ public class GameManager : MonoBehaviour
         //Send message to player
         MessageSystemManager.Instance.CreateMessage("Unit " + playerUnits[currentTurnIndex].unitName + " turne started with "
             + (SelectionService.Instance.SelectedUnit.shipRuntimeData.currentMovmentRange - SelectionService.Instance.SelectedUnit.movedThisTurn) + " moves left!"
-            , null, HexGridLinesBaker.Instance.GetGridPosFromWorldPos(playerUnits[currentTurnIndex].gameObject.transform.position), Color.green);
-
+            , null, TileManager.Instance.GetTileCoordinateFromWorldPosition(playerUnits[currentTurnIndex].gameObject.transform.position), UnityEngine.Color.green);
+        
         //Reset UI
         UIManager.Instance.ResetUI();
 
@@ -241,7 +242,7 @@ public class GameManager : MonoBehaviour
             "ENEMY TURN";
         string subMessage = "";
         MessageSystemManager.Instance.CreateMessage(mainMessage, subMessage,
-        this.transform.position, Color.white);
+        this.transform.position, UnityEngine.Color.white);
 
         StartCoroutine(TakeTurn());
     }

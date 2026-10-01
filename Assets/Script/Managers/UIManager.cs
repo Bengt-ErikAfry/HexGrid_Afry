@@ -125,10 +125,10 @@ public class UIManager : MonoBehaviour
             HexGridManager.Instance.CalculateRoutePath(unit);
         }
     }
-    private void OnHexClicked(Vector2Int hexClicked)
+    private void OnHexClicked(Vector2Int hexClicked,bool isFound)
     {
         //Show UI for selected unit (or hide if null)
-        ShowSelectedUnitView(hexClicked);
+        ShowSelectedUnitView(hexClicked, isFound);
     }
 
     public void ResetUI()
@@ -419,9 +419,9 @@ public class UIManager : MonoBehaviour
     }
 
     // UPDATED: explicit parameter — show view for provided unit (no InputManager dependency)
-    public void ShowSelectedUnitView(Unit unit)
+    public void ShowSelectedUnitView(Unit unit, bool isFound)
     {
-        if (unit != null)
+        if (unit != null && isFound)
         {
             unit_script = unit;
 

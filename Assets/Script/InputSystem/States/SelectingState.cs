@@ -44,20 +44,28 @@ public class SelectingState : IGameState
             // clear selection
             SelectionService.Instance.ClearSelection();
 
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+            //Clear highlighted tiles
+            //TileManager.Instance.ClearHighlightedTiles(); NO NEED. HIGH UNDE SCREEN UNHIED ALL OTHER TILES
+
+            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
             //Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
 
-            Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+            
 
             //Show hex under mouse position
             // Convert tap -> world -> axial (point-top)
             var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
-            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
-            
-            // select unit via selection service
-            SelectionService.Instance.SetSelectedHex(hexClicked);
+            //var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
 
-            return;
+            Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + TileManager.Instance.GetTileCoordinateFromWorldPosition(worldPos) + " and WorldPos " + worldPos);
+
+            // select unit via selection service
+            SelectionService.Instance.SetSelectedHex(TileManager.Instance.GetTileCoordinateFromWorldPosition(worldPos));
+
+            //Highlight tile under mouse position
+            TileManager.Instance.HighlightTileUnderScreenPosition(screenPos);
+
+            return; 
         }
 
         // Sort closest to farthest — useful for resolving the clicked hex

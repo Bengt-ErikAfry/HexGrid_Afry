@@ -50,10 +50,10 @@ public class CameraManager : MonoBehaviour
     public void CenterOnSelectedObject()
     {
         //Show Highlighter
-        HexHighlighter.Instance.ShowHighlight();
+        //HexHighlighter.Instance.ShowHighlight();
 
         //Higlight tile under the current unit
-        HexHighlighter.Instance.HighlightHexUnderScreenPosition(Camera.main.WorldToScreenPoint(SelectionService.Instance.SelectedUnit.transform.position));
+        //HexHighlighter.Instance.HighlightHexUnderScreenPosition(Camera.main.WorldToScreenPoint(SelectionService.Instance.SelectedUnit.transform.position));
 
         //Move Camera
         StartCoroutine(MoveCameraTo(SelectionService.Instance.SelectedUnit.gameObject.transform.position, 1f, false));

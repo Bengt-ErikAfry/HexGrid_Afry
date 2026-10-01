@@ -46,7 +46,7 @@ public class PlaceOrbitalUnitState : IGameState
             // clear selection
             //SelectionService.Instance.ClearSelection();
 
-            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
             Debug.Log("after PlaceOrbitalUnitState invoke" + GameStateMachine.Instance.Current);
 
             Debug.Log("PlaceOrbitalUnitState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);

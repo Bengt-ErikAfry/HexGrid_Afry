@@ -17,7 +17,7 @@ public class PlanningPathState : IGameState
         UIManager.Instance.EnterPathPlaningMode();
 
         //Show movment range.
-        HexHighlighter.Instance.HighlightRangeUnderScreenPosition(
+       HexHighlighter.Instance.HighlightRangeUnderScreenPosition(
             SelectionService.Instance.SelectedUnit.transform.position,
             SelectionService.Instance.SelectedUnit.shipRuntimeData.currentMovmentRange - SelectionService.Instance.SelectedUnit.movedThisTurn,
             HexHighlighter.Instance.movmentRange_Mat);
