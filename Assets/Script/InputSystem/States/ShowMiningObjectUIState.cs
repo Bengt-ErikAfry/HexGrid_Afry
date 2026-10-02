@@ -51,7 +51,7 @@ public class ShowMiningObjectUIState : IGameState
             var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
 
             // select unit via selection service
-            SelectionService.Instance.SetSelectedHex(hexClicked);
+            SelectionService.Instance.SetSelectedHex(worldPos);
 
             return;
         }
@@ -89,7 +89,7 @@ public class ShowMiningObjectUIState : IGameState
             var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
 
             // select unit via selection service
-            SelectionService.Instance.SetSelectedHex(hexClicked);
+            SelectionService.Instance.SetSelectedHex(worldPos);
         }
         else if (unitsInClickedHex.Count == 1)
         {

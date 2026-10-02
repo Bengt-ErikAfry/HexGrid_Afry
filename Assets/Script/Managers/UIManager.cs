@@ -125,10 +125,10 @@ public class UIManager : MonoBehaviour
             HexGridManager.Instance.CalculateRoutePath(unit);
         }
     }
-    private void OnHexClicked(Vector2Int hexClicked,bool isFound)
+    private void OnHexClicked(Vector3 worldPos)
     {
         //Show UI for selected unit (or hide if null)
-        ShowSelectedUnitView(hexClicked, isFound);
+        ShowSelectedHexView(worldPos);
     }
 
     public void ResetUI()
@@ -419,9 +419,9 @@ public class UIManager : MonoBehaviour
     }
 
     // UPDATED: explicit parameter — show view for provided unit (no InputManager dependency)
-    public void ShowSelectedUnitView(Unit unit, bool isFound)
+    public void ShowSelectedUnitView(Unit unit)
     {
-        if (unit != null && isFound)
+        if (unit != null)
         {
             unit_script = unit;
 
@@ -457,14 +457,24 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public void ShowSelectedUnitView(Vector2Int hexClicked)
+    public void ShowSelectedHexView(Vector3 worldPos)
     {
         ResetUI();
+
+        TileManager.Instance.HighlightTileWorldPosition(worldPos);
 
         selectedUnitView.SetActive(true);
         if (emptyHexIcon == null) Debug.LogError("emptyHexIcon is missing. Add to UImanager.");
         selectedUnitImage.sprite = emptyHexIcon;
-        selectedUnitNameText.text = hexClicked.ToString();
+        HexGrid_TilePrefab hexClicked = TileManager.Instance.GetTileFromWorldPosition(worldPos);
+        if(hexClicked != null)
+        {
+            selectedUnitNameText.text = $"Hex: {hexClicked.tileIndexRow}, {hexClicked.tileIndexCol}";
+        }
+        else
+        {
+            selectedUnitNameText.text = worldPos.ToString();
+        }
     }
 
     public void HideSelectedUnitView()

@@ -14,7 +14,7 @@ public class SelectionService : MonoBehaviour
 
     // Fired whenever selection changes (SelectedUnit may be null)
     public event Action<Unit> OnSelectionChanged;
-    public event Action<Vector2Int> OnHexClicked;
+    public event Action<Vector3> OnHexClicked;
 
     private void Awake()
     {
@@ -35,10 +35,10 @@ public class SelectionService : MonoBehaviour
         OnSelectionChanged?.Invoke(selectedUnitField);
     }
 
-    public void SetSelectedHex(Vector2Int hexClickedCordinat, bool isFound)
+    public void SetSelectedHex(Vector3 worldPos)
     {
         // update serialized field so Inspector shows it
-        OnHexClicked?.Invoke(hexClickedCordinat, isFound);
+        OnHexClicked?.Invoke(worldPos);
     }
 
     // Set selection by GameObject (convenience)

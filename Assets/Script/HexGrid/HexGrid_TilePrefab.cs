@@ -5,13 +5,17 @@ public class HexGrid_TilePrefab : MonoBehaviour
 {
     public int tileIndexRow;
     public int tileIndexCol;
-    public Image tileHighlightImage;
+    public GameObject tileHighlightGameObject;
 
     public void SetHighlight(bool highlight)
     {
-        if (tileHighlightImage != null)
+        if (tileHighlightGameObject != null)
         {
-            tileHighlightImage.enabled = highlight;
+            tileHighlightGameObject.SetActive(highlight);
+        }
+        else
+        {
+            Debug.LogWarning($"Tile at row {tileIndexRow}, col {tileIndexCol} does not have a tileHighlightGameObject assigned.");
         }
     }
 }

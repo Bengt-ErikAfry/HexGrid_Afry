@@ -122,9 +122,21 @@ public class GameManager : MonoBehaviour
         }
 
         //Send message to player
+        // select unit via selection service
+        var hexClicked = TileManager.Instance.GetTileFromWorldPosition(playerUnits[currentTurnIndex].gameObject.transform.position);
+        var hexcoord = Vector2Int.zero;
+        if (hexClicked != null)
+        {
+            hexcoord = new Vector2Int(hexClicked.tileIndexRow, hexClicked.tileIndexCol);
+        }
+        else
+        {
+            Debug.LogWarning("StartPlayerTurn: Could not find hex tile for selected unit.");
+        }
+
         MessageSystemManager.Instance.CreateMessage("Unit " + playerUnits[currentTurnIndex].unitName + " turne started with "
             + (SelectionService.Instance.SelectedUnit.shipRuntimeData.currentMovmentRange - SelectionService.Instance.SelectedUnit.movedThisTurn) + " moves left!"
-            , null, TileManager.Instance.GetTileCoordinateFromWorldPosition(playerUnits[currentTurnIndex].gameObject.transform.position), UnityEngine.Color.green);
+            , null, hexcoord, UnityEngine.Color.green);
         
         //Reset UI
         UIManager.Instance.ResetUI();
