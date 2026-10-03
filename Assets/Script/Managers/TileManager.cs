@@ -202,7 +202,7 @@ public class TileManager : MonoBehaviour
     // --- Pathfinding A* over tile graph --------------------------------
 
     // Heuristic: axial (cube) distance
-    private static int AxialDistance(Vector2Int a, Vector2Int b)
+    public int AxialDistance(Vector2Int a, Vector2Int b)
     {
         int ax = a.x, az = a.y, ay = -ax - az;
         int bx = b.x, bz = b.y, by = -bx - bz;
@@ -397,7 +397,7 @@ public class TileManager : MonoBehaviour
     // --- Highlighting --------------------------------------------------
 
     // Highlight a set of axial coords by toggling each tile's highlight child via HexGrid_TilePrefab.SetHighlight(true)
-    public void HighlightCoords(IEnumerable<Vector2Int> coords)
+    public void HighlightCoords(IEnumerable<Vector2Int> coords, Color highlightColor)
     {
         ClearHighlights();
         if (coords == null) return;
@@ -405,7 +405,7 @@ public class TileManager : MonoBehaviour
         {
             if (tileLookup.TryGetValue(a, out var tile))
             {
-                tile.SetHighlight(true);
+                tile.SetHighlight(true, highlightColor);
                 activeHighlights.Add(tile);
             }
         }
@@ -416,7 +416,7 @@ public class TileManager : MonoBehaviour
         for (int i = activeHighlights.Count - 1; i >= 0; i--)
         {
             var tile = activeHighlights[i];
-            if (tile != null) tile.SetHighlight(false);
+            if (tile != null) tile.SetHighlight(false, Color.clear);
         }
         activeHighlights.Clear();
     }
@@ -450,11 +450,11 @@ public class TileManager : MonoBehaviour
                 {
                     if (tileComp.tileIndexRow == hexcoord.x && tileComp.tileIndexCol == hexcoord.y)
                     {
-                        tileComp.SetHighlight(true);
+                        tileComp.SetHighlight(true, ColorManager.Instance.hex_Select_Empty);
                     }
                     else
                     {
-                        tileComp.SetHighlight(false);
+                        tileComp.SetHighlight(false, Color.clear);
                     }
                 }
             }
@@ -474,7 +474,7 @@ public class TileManager : MonoBehaviour
             var tileComp = tileTransform.GetComponent<HexGrid_TilePrefab>();
             if (tileComp != null)
             {
-                tileComp.SetHighlight(false);
+                tileComp.SetHighlight(false, Color.clear);
             }
         }
     }

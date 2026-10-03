@@ -36,7 +36,7 @@ public class StackViewUnit_Entery : MonoBehaviour
             SelectionService.Instance.SetSelectedUnit(unit_script);
 
             // Highlight selected tile (keep your current behavior)
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(Camera.main.WorldToScreenPoint(SelectionService.Instance.SelectedUnit.transform.position));
+            TileManager.Instance.HighlightTileWorldPosition(SelectionService.Instance.SelectedUnit.transform.position);
 
             Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
 

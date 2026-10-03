@@ -8,6 +8,7 @@ using static UnityEngine.GraphicsBuffer;
 public class AttackingState : IGameState
 {
     private readonly GameStateMachine _fsm;
+    public int largestRange = 0;
 
     public AttackingState(GameStateMachine fsm) => _fsm = fsm;
 
@@ -17,7 +18,7 @@ public class AttackingState : IGameState
         UIManager.Instance.activeState.text = "Active state: Attacking State";
 
         //Get largest weapon range.
-        int largestRange = 0;
+        largestRange = 0;
         foreach (var module in SelectionService.Instance.SelectedUnit.moduleRuntimeList)
         {
             //Chech if module are NOT empty
@@ -28,21 +29,175 @@ public class AttackingState : IGameState
             }
         }
 
+        // Use TileManager to compute reachable tiles and highlight them (do not use HexHighlighter)
+        var startTile = TileManager.Instance?.GetTileFromWorldPosition(SelectionService.Instance.SelectedUnit.transform.position);
+        if (startTile == null) return;
+
+        var startCoord = new Vector2Int(startTile.tileIndexCol, startTile.tileIndexRow);
+        var reachable = TileManager.Instance.GetReachableTiles(startCoord, largestRange);
+        TileManager.Instance.HighlightCoords(reachable, ColorManager.Instance.hex_AttackRange);
+
+        /*
         HexHighlighter.Instance.HighlightRangeUnderScreenPosition(
             SelectionService.Instance.SelectedUnit.transform.position,
             largestRange,
             HexHighlighter.Instance.weaponRange_Mat);
+        */
     }
     // Exit State.
     public void Exit() 
     {
         //Remove Range Highlight
-        HexHighlighter.Instance.ClearRangeHighlights();
+        //HexHighlighter.Instance.ClearRangeHighlights();
+        TileManager.Instance?.ClearHighlights();
     }
 
     public void OnTap(Vector2 screenPos)
     {
+        Debug.Log("AttackingState OnTap at " + screenPos);
+        if (CameraManager.Instance.isMovingCamera) return;
 
+        // Remove Range Highlight
+        TileManager.Instance?.ClearHighlights();
+
+        var cam = Camera.main;
+        Ray ray = cam.ScreenPointToRay(screenPos);
+
+        // (1) Hit everything along the ray. You can restrict with a layerMask if you have an "Enemy" layer.
+        RaycastHit[] hits = Physics.RaycastAll(ray, 500f, ~0, QueryTriggerInteraction.Ignore);
+
+        // If no physics hits, highlight the tile under pointer (if any) and deselect
+        if (hits.Length == 0)
+        {
+            Debug.Log("AttackingState: No hits, deselecting target.");
+
+            SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+
+            // Determine world point on gameplay plane and highlight single tile
+            Plane plane = new Plane(Vector3.forward, Vector3.zero);
+            if (plane.Raycast(ray, out float enter))
+            {
+                Vector3 worldPos = ray.GetPoint(enter);
+                var tile = TileManager.Instance?.GetTileFromWorldPosition(worldPos);
+                if (tile != null)
+                {
+                    var coord = new Vector2Int(tile.tileIndexCol, tile.tileIndexRow);
+                    TileManager.Instance.HighlightCoords(new[] { coord }, ColorManager.Instance.hex_Select_Empty);
+                }
+            }
+
+            Debug.Log("after AttackingState invoke" + GameStateMachine.Instance.Current);
+            return;
+        }
+
+        // Sort closest to farthest — useful for resolving the clicked tile
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        // Use closest hit point to find clicked tile
+        Vector3 clickPoint = hits[0].point;
+        var clickedTile = TileManager.Instance.GetTileFromWorldPosition(clickPoint);
+        if (clickedTile == null)
+        {
+            Debug.Log("AttackingState: clicked tile not found, deselecting target.");
+            SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+            return;
+        }
+        var clickedCoord = new Vector2Int(clickedTile.tileIndexCol, clickedTile.tileIndexRow);
+
+        // Map each hit to its root Unit, then filter to units inside the same clicked tile
+        List<Unit> unitsInClickedTile = hits
+            .Select(h => h.collider.transform.GetComponent<Unit>())
+            .Where(u => u != null)
+            .Distinct()
+            .Where(u =>
+            {
+                var t = TileManager.Instance.GetTileFromWorldPosition(u.transform.position);
+                return t != null && new Vector2Int(t.tileIndexCol, t.tileIndexRow) == clickedCoord;
+            })
+            .ToList();
+
+        // Fall back: pick first unit hit if none matched by tile
+        if (unitsInClickedTile.Count == 0)
+        {
+            var firstUnit = hits.Select(h => h.collider.transform.GetComponent<Unit>())
+                                .FirstOrDefault(u => u != null);
+            if (firstUnit != null) unitsInClickedTile.Add(firstUnit);
+        }
+
+        // Use result
+        if (unitsInClickedTile.Count == 0)
+        {
+            Debug.Log("AttackingState: No units in clicked tile, deselecting target.");
+            SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+            return;
+        }
+        else if (unitsInClickedTile.Count == 1)
+        {
+            Debug.Log("AttackingState: One unit in clicked tile " + unitsInClickedTile[0].unitName + " in tile.");
+
+            // Don't hit yourself
+            if (unitsInClickedTile[0] == SelectionService.Instance.SelectedUnit)
+            {
+                Debug.Log("AttackingState: Clicked on self, deselecting target.");
+                SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+                GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+                return;
+            }
+            else
+            {
+                int rangeToTarget = AttackManager.Instance.GetRangeToTarget(SelectionService.Instance.SelectedUnit.gameObject, unitsInClickedTile[0].gameObject);
+                Debug.Log("AttackingState: Checking if target is in range. Largest weapon range: " + largestRange + ", Range to target: " + rangeToTarget);
+                if (rangeToTarget < largestRange)
+                {
+                    Debug.Log("AttackingState: Target is in range, proceeding to attack.");
+                }
+                else
+                {
+                    Debug.Log("AttackingState: Target is out of range, cannot attack.");
+                    // Optionally, you could provide feedback to the player here.
+                    SelectionService.Instance.SetSelectedUnit(unitsInClickedTile[0]);
+                    GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+                    TileManager.Instance.HighlightTileWorldPosition(unitsInClickedTile[0].transform.position);
+                    if(!unitsInClickedTile[0].isPlayerControlled) UIManager.Instance.HideAllUI();
+                    return;
+                }
+
+                Debug.Log("AttackingState: Trying to attack " + unitsInClickedTile[0].unitName);
+
+                // Single unit in tile → select it and immediately try to attack
+                var unit = unitsInClickedTile[0];
+
+                // Set player target
+                SelectionService.Instance.SelectedUnit.target_Unit_Script = unit;
+
+                // Show modules/info
+                InfoScreenManager.Instance.ShowModules();
+            }
+        }
+        else
+        {
+            Debug.Log("AttackingState: Multiple units in clicked tile, showing selection UI.");
+
+            // Show StackView for units in tile
+            UIManager.Instance.ShowStackView(unitsInClickedTile, screenPos);
+
+            // Optionally set a default (e.g., the closest one)
+            var defaultUnit = unitsInClickedTile
+                .OrderBy(u => Vector3.SqrMagnitude(u.transform.position - clickPoint))
+                .First();
+
+            // Set a default target so the player can see info about it in the UI
+            SelectionService.Instance.SelectedUnit.target_Unit_Script = defaultUnit;
+        }
+        
+
+
+
+
+        /*
         Debug.Log("AttackingState OnTap at " + screenPos);
         if (CameraManager.Instance.isMovingCamera) return;
 
@@ -96,7 +251,7 @@ public class AttackingState : IGameState
             if (firstUnit != null)
                 unitsInClickedHex.Add(firstUnit);
         }*/
-
+        /*
         // (5) Use result
         if (unitsInClickedHex.Count == 0)
         {
@@ -154,6 +309,7 @@ public class AttackingState : IGameState
 
         Debug.Log("after AttackingState invoke" + GameStateMachine.Instance.Current);
 
+    }*/
     }
 
     public void OnDrag(Vector2 delta)

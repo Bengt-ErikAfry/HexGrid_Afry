@@ -6739,6 +6739,83 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e5b832ab649861640b7ade216816e555, type: 3}
+--- !u!1001 &102908565
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 1937141063}
+    m_Modifications:
+    - target: {fileID: 6941761846271261116, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_Name
+      value: MotherShip_Pirate
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 1.748929
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -2.9672544
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8696164614095209352, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+--- !u!4 &102908566 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6966506365735312772, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+  m_PrefabInstance: {fileID: 102908565}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &102908567 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8582897828858512671, guid: 17f2b5a6f9c832b45bc24716b918fa30, type: 3}
+  m_PrefabInstance: {fileID: 102908565}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unit
 --- !u!1 &103110367
 GameObject:
   m_ObjectHideFlags: 0
@@ -9520,7 +9597,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &147991281
 Transform:
   m_ObjectHideFlags: 0
@@ -90066,6 +90143,7 @@ MonoBehaviour:
   activateFogOfWar: 1
   unitsList:
   - {fileID: 335130162}
+  - {fileID: 102908567}
   playerUnits: []
   enemyUnits: []
   playerTurn: 0
@@ -90201,7 +90279,9 @@ MonoBehaviour:
   moduleBroken: {r: 0.254902, g: 0.4117647, b: 0.882353, a: 1}
   routeSlotSelected: {r: 0.6601805, g: 1, b: 0.6462264, a: 1}
   routeSlotNotSelected: {r: 0, g: 0, b: 0, a: 1}
-  hex_Select_Empty: {r: 0.73518693, g: 0.8627675, b: 0.87169814, a: 0.16862746}
+  hex_Select_Empty: {r: 0.73518693, g: 0.8627675, b: 0.87169814, a: 0.06666667}
+  hex_AttackRange: {r: 0.96981126, g: 0, b: 0, a: 0.047058824}
+  hex_MovementRange: {r: 0.035848916, g: 1, b: 0.1335065, a: 0.047058824}
 --- !u!114 &1511860464
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -109048,7 +109128,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!23 &1798202508
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -116404,6 +116484,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 335130161}
+  - {fileID: 102908566}
   - {fileID: 1878668963}
   - {fileID: 44355428}
   - {fileID: 896525605}

@@ -254,12 +254,21 @@ public class AttackManager : MonoBehaviour
     public float CalculateRangeModifier(Unit attackingUnit, ItemInstance weaponToFire)
     {
         //Get distance to target
-        float distanceToTarget = HexGridLinesBaker.Instance.AxialDistance(attackingUnit.target_Unit_Script.transform.position, attackingUnit.transform.position);
+        float distanceToTarget = GetRangeToTarget(attackingUnit.gameObject, attackingUnit.target_Unit_Script.gameObject);
 
         //Range modifier 0-100% High is bad.
         //Range modifier is based on how far target is in weapon range. If target is at max range, range modifier is 100%. If target is point blank, range modifier is 0%.
         float rangeModifier = (distanceToTarget / weaponToFire.currentRange) * 100;
         return rangeModifier;
+    }
+
+    public int GetRangeToTarget(GameObject attacker, GameObject target)
+    {
+        //Get distance to target
+        Vector2Int attackerAxial = TileManager.Instance.WorldToAxial(attacker.transform.position);
+        Vector2Int targetAxial = TileManager.Instance.WorldToAxial(target.transform.position);
+        int distanceToTarget = TileManager.Instance.AxialDistance(attackerAxial, targetAxial);
+        return distanceToTarget;
     }
 
     public float ModuleSizeComparison(ItemInstance moduleToCompare)

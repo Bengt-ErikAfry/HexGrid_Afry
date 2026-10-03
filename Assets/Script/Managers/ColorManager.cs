@@ -12,6 +12,9 @@ public class ColorManager : MonoBehaviour
     public Color routeSlotNotSelected;
     public Color hex_Select_Empty;
 
+    public Color hex_AttackRange;
+    public Color hex_MovementRange;
+
     public static ColorManager Instance { get; private set; }
     private void Awake()
     {

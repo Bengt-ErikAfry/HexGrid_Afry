@@ -49,6 +49,8 @@ MonoBehaviour:
   tileIndexRow: 0
   tileIndexCol: 0
   tileHighlightGameObject: {fileID: 4110998946568037140}
+  walls: 000000000000
+  wallMask: 0
 --- !u!1 &4110998946568037140
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,7 +224,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 6276871556625815529, guid: 2c3d6631337761d44a8301387755aa7d, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.17735851, g: 0.17735851, b: 0.17735851, a: 0.5921569}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

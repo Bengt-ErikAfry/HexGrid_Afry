@@ -34,11 +34,13 @@ public class HexGrid_TilePrefab : MonoBehaviour
         return walls[dirIndex];
     }
 
-    public void SetHighlight(bool highlight)
+    public void SetHighlight(bool highlight, Color highlightColor)
     {
         if (tileHighlightGameObject != null)
         {
             tileHighlightGameObject.SetActive(highlight);
+            // Additional logic for setting highlight color can be added here if needed
+            tileHighlightGameObject.GetComponent<SpriteRenderer>().color = highlightColor;
         }
         else
         {

@@ -47,7 +47,7 @@ public class PlanningPathState : IGameState
 
         // Compute reachable tile coords and highlight them via TileManager
         var reachable = TileManager.Instance.GetReachableTiles(startCoord, remainingMoves);
-        TileManager.Instance.HighlightCoords(reachable);
+        TileManager.Instance.HighlightCoords(reachable, ColorManager.Instance.hex_MovementRange);
     }
 
     public void Exit()
@@ -103,7 +103,7 @@ public class PlanningPathState : IGameState
         if (remainingMoves > 0)
         {
             var reachable = TileManager.Instance.GetReachableTiles(start, remainingMoves);
-            TileManager.Instance.HighlightCoords(reachable);
+            TileManager.Instance.HighlightCoords(reachable, ColorManager.Instance.hex_MovementRange );
         }
         Debug.Log("after PlanningPathState invoke" + GameStateMachine.Instance.Current);
     }
