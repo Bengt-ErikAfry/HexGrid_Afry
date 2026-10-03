@@ -49,10 +49,10 @@ public class MovementManager : MonoBehaviour
         }
 
         // Determine start index from current world position
-        Vector2Int curAxial = WorldToAxial_PointTop(unit.transform.position, HexGridLinesBaker.Instance.hexSize);
+        Vector2Int curAxial = WorldToAxial_PointTop(unit.transform.position, TileManager.Instance.tileSize);
         int startIndex = IndexOfAxial(path, curAxial);
         if (startIndex < 0)
-            startIndex = FindNearestPathIndex(path, unit.transform.position, HexGridLinesBaker.Instance.hexSize);
+            startIndex = FindNearestPathIndex(path, unit.transform.position, TileManager.Instance.tileSize);
 
         int maxStepsOnPath = Mathf.Max(0, (path.Count - 1) - startIndex);
         int stepsToTake = Mathf.Min(maxSteps, maxStepsOnPath);
@@ -70,7 +70,7 @@ public class MovementManager : MonoBehaviour
         var centers = new List<Vector3>(stepsToTake + 1);
         for (int i = 0; i <= stepsToTake; i++)
         {
-            Vector2 c = AxialToWorldCenter_PointTop(path[startIndex + i], HexGridLinesBaker.Instance.hexSize);
+            Vector2 c = AxialToWorldCenter_PointTop(path[startIndex + i], TileManager.Instance.tileSize);
             centers.Add(new Vector3(c.x, c.y, 0f));
         }
 
@@ -81,8 +81,34 @@ public class MovementManager : MonoBehaviour
 
         int stepsUsed = Mathf.Max(0, unit.movedThisTurn - movedBefore);
 
+        // --- NEW: Trim the unit.currentMovePath so that tiles already visited are removed.
+        // Keep the remaining path starting from the tile where unit currently stands.
+        try
+        {
+            int finalIndex = startIndex + stepsUsed;
+            // Clamp finalIndex into valid range
+            if (finalIndex < 0) finalIndex = 0;
+            if (finalIndex >= path.Count)
+            {
+                // Consumed entire path
+                unit.currentMovePath = new List<Vector2Int>();
+            }
+            else
+            {
+                // Include the current tile as first item in remaining path (consistent with existing logic that expects path[0] to be current tile)
+                unit.currentMovePath = path.GetRange(finalIndex, path.Count - finalIndex);
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"MovementManager: failed trimming currentMovePath: {ex}");
+            // fallback: clear to avoid stale references
+            unit.currentMovePath = new List<Vector2Int>();
+        }
+        // --- END TRIM ---
+
         // Check if reached final path target (path end)
-        Vector2 lastCenter = AxialToWorldCenter_PointTop(path[^1], HexGridLinesBaker.Instance.hexSize);
+        Vector2 lastCenter = AxialToWorldCenter_PointTop(path[^1], TileManager.Instance.tileSize);
         float dist = Vector2.Distance(new Vector2(unit.transform.position.x, unit.transform.position.y), lastCenter);
         bool completed = dist < 0.2f;
 

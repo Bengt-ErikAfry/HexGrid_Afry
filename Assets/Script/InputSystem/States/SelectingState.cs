@@ -76,47 +76,7 @@ public class SelectingState : IGameState
             Debug.Log("SelectState OnTap at NO TILE in screenPos " + screenPos + " and Grid " + hexcoord + " and WorldPos " + worldPos);
         }
 
-        /*
-        //Did not click on a unit
-        if (hits.Length == 0)
-        {
-            // clear selection
-
-
-            //Clear highlighted tiles
-            //TileManager.Instance.ClearHighlightedTiles(); NO NEED. HIGH UNDE SCREEN UNHIED ALL OTHER TILES
-
-            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-            //Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
-
-            
-
-            //Show hex under mouse position
-            // Convert tap -> world -> axial (point-top)
-            
-            //var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
-
-            Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + TileManager.Instance.GetTileFromWorldPosition(worldPos) + " and WorldPos " + worldPos);
-
-            // select unit via selection service
-                SelectionService.Instance.SetSelectedHex(hexcoord);
-
-            //Highlight tile under mouse position
-            TileManager.Instance.HighlightTileUnderScreenPosition(screenPos);
-
-            return; 
-        }
-        */
-
-        //Hit something.
-        //if (Vector3 worldPos = ray.GetPoint(enter);
-
-// collect all raycast hits under the cursor
-//RaycastHit[] hits = Physics.RaycastAll(ray);
-//Vector3 worldPos = ray.GetPoint(enter);
-
-// collect all 2D ray intersection hits under the cursor
-//RaycastHit2D[] hits = Physics2D.GetRayIntersectionAll(ray);.Length > 0)
+        //Start check for units.
         if(hits.Length > 0)
         {
             // Sort closest to farthest — useful for resolving the clicked hex
@@ -124,8 +84,6 @@ public class SelectingState : IGameState
 
             // (2) Determine the clicked hex using the closest hit point (or use your own method if you have one)
             Vector3 clickPoint = hits[0].point;
-
-            //var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
 
             Debug.Log($"{hits[0].collider.gameObject.name} parent={hits[0].collider.transform.parent?.name} root={hits[0].collider.transform.root.name}");
 
@@ -136,11 +94,7 @@ public class SelectingState : IGameState
                 
                 var u = h.collider.transform.GetComponent<Unit>();
                 if (u == null) continue;
-                /*
-                var tile = TileManager.Instance.GetTileFromWorldPosition(u.transform.position);
-                if (tile != null && tile.tileIndexCol == hexcoord.x && tile.tileIndexRow == hexcoord.y)
-                    */
-                    unitsInClickedHex.Add(u);
+                unitsInClickedHex.Add(u);
             }
             unitsInClickedHex = unitsInClickedHex.Distinct().ToList();
 
@@ -152,32 +106,9 @@ public class SelectingState : IGameState
                 if (firstUnit != null)
                     unitsInClickedHex.Add(firstUnit);
             }
-
-            /*
-            // (5) Use result
-            if (unitsInClickedHex.Count == 0)
-            {
-                SelectionService.Instance.ClearSelection();
-
-                /*
-                HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-
-                var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
-                var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
-                */
-            /*
-                TileManager.Instance.HighlightTileUnderScreenPosition(screenPos);
-
-                // select unit via selection service
-                SelectionService.Instance.SetSelectedHex(hexcoord);
-            }
-            */
             else if (unitsInClickedHex.Count == 1)
             {
                 var unit = unitsInClickedHex[0];
-
-                //Highlight hex under selected unit
-                //HexHighlighter.Instance.HighlightHexUnderWorldPosition(unit.transform.position);
 
                 // select unit via selection service
                 SelectionService.Instance.SetSelectedUnit(unit);
@@ -192,15 +123,6 @@ public class SelectingState : IGameState
                 }
 
                 Debug.Log($"SelectAsteroid mode selected and {unit.unitName} is clicked.");
-
-                /*      ----Remove when new mining system is ok
-                // start mining mission using selected unit
-                var sel = SelectionService.Instance.SelectedUnit;
-                if (sel != null && sel.miningComponent != null)
-                {
-                    sel.miningComponent.StartMiningMission(unit.asteroidFieldComponent);
-                    sel.miningComponent.OnTurn();
-                }*/
             }
             else
             {

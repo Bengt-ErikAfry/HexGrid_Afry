@@ -104,3 +104,19 @@ The hex grid are only used for editor placement of tiles.
 
 In game i use tiles for highlighting, navigation.
 
+Do not use HexHighlighter.cs.
+
+Do not use HexGridManager.cs.
+
+Use tilemanager.cs to highlight tiles. Tiles are now Gameobjects witha child gameobject that are setactiv true to highlight and setactive false to deactivate.
+
+
+
+In tilemanager.cs do not remove HighlightTileWorldPosition() and ClearHighlightedTiles().
+
+
+
+Always mark new code with "//New" and "//End new" in code examples when adding new code.
+
+Always mark code with "//Add this" to "//Stop add" and "//Remove this" to "//Stop remove" in the code example when changing out code.
+

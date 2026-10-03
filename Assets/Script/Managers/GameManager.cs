@@ -180,6 +180,9 @@ public class GameManager : MonoBehaviour
             Debug.LogWarning("RouteExecutor.Instance is null in StartPlayerTurn — skipping auto-run routes. Ensure a RouteExecutor exists in the scene and initializes early.");
         }
 
+        // Run auto-move for units that have a queued currentMovePath
+        yield return StartCoroutine(ExecutePlayerAutoMoves());
+
         //UIManager.Instance.UpdateRouteButton(playerUnits[currentTurnIndex]);
 
         /*
@@ -229,9 +232,8 @@ public class GameManager : MonoBehaviour
         playerTurn = false;
 
         //Clear previous path
-        HexGridManager.Instance.ClearPath();
-        HexGridManager.Instance.ClearMarkers();
-        HexHighlighter.Instance.HideHighlight();
+        TileManager.Instance.ClearPath();
+        TileManager.Instance.ClearHighlights();
 
         //Reset Selected
         SelectionService.Instance.ClearSelection();
@@ -380,5 +382,63 @@ public class GameManager : MonoBehaviour
             }
         }
         return nrOfItemsInOrbit;
+    }
+
+    // Add this helper coroutine to the GameManager class (near other coroutines/methods)
+    private IEnumerator ExecutePlayerAutoMoves()
+    {
+        if (MovementManager.Instance == null)
+        {
+            Debug.LogWarning("ExecutePlayerAutoMoves: MovementManager.Instance is null.");
+            yield break;
+        }
+
+        foreach (var unit in playerUnits)
+        {
+            if (unit == null) continue;
+            if (!unit.isPlayerControlled) continue;
+
+            // queued path on unit (set earlier by player or AI)
+            var queued = unit.currentMovePath;
+            if (queued == null || queued.Count <= 1) continue;
+
+            // Skip if unit has no movement points left
+            int remainingMoves = unit.shipRuntimeData.currentMovmentRange - unit.movedThisTurn;
+            if (remainingMoves <= 0) continue;
+
+            // Visualize the path in scene before movement
+            // Use a copy so MoveAlongPath can trim unit.currentMovePath safely
+            var pathCopy = new List<Vector2Int>(queued);
+
+            // Draw full path and place turn markers
+            TileManager.Instance?.DrawLineStrip(pathCopy);
+            TileManager.Instance?.PlaceTurnMarkers(pathCopy, unit.shipRuntimeData.currentMovmentRange);
+
+            // Optionally highlight the tiles along the path:
+            // TileManager.Instance?.HighlightCoords(pathCopy);
+
+            // Start movement and wait for completion
+            MovementResult moveResult = default;
+            bool done = false;
+            yield return StartCoroutine(MovementManager.Instance.MoveAlongPath(unit, pathCopy, remainingMoves, (res) =>
+            {
+                moveResult = res;
+                done = true;
+            }));
+
+            // Movement finished. Clear previous path visuals
+            TileManager.Instance?.ClearPath();
+            TileManager.Instance?.ClearHighlights();
+
+            // If movement produced a remaining queued path (auto-continue next turns), optionally draw it
+            if (unit.currentMovePath != null && unit.currentMovePath.Count > 1)
+            {
+                TileManager.Instance?.DrawLineStrip(unit.currentMovePath);
+                TileManager.Instance?.PlaceTurnMarkers(unit.currentMovePath, unit.shipRuntimeData.currentMovmentRange);
+            }
+
+            if (moveResult.Failed)
+                Debug.LogWarning($"Auto-move failed for unit {unit.name}");
+        }
     }
 }

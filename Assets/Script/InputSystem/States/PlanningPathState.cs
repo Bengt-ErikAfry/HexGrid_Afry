@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlanningPathState : IGameState
@@ -16,16 +17,43 @@ public class PlanningPathState : IGameState
         //Toggle the buttons
         UIManager.Instance.EnterPathPlaningMode();
 
-        //Show movment range.
-       HexHighlighter.Instance.HighlightRangeUnderScreenPosition(
-            SelectionService.Instance.SelectedUnit.transform.position,
-            SelectionService.Instance.SelectedUnit.shipRuntimeData.currentMovmentRange - SelectionService.Instance.SelectedUnit.movedThisTurn,
-            HexHighlighter.Instance.movmentRange_Mat);
+        // Ensure TileManager has up-to-date lookup (safe to call; TileManager may already auto-build)
+        TileManager.Instance?.BuildTileLookup();
+
+        // Show movement range using the new tile-based system (do not use HexHighlighter)
+        var selected = SelectionService.Instance.SelectedUnit;
+        if (selected == null)
+        {
+            Debug.LogWarning("PlanningPathState.Enter: no selected unit");
+            return;
+        }
+
+        int remainingMoves = selected.shipRuntimeData.currentMovmentRange - selected.movedThisTurn;
+        if (remainingMoves <= 0)
+        {
+            // nothing to highlight
+            return;
+        }
+
+        // Find the tile under the selected unit
+        var tile = TileManager.Instance?.GetTileFromWorldPosition(selected.transform.position);
+        if (tile == null)
+        {
+            Debug.LogWarning("PlanningPathState.Enter: could not find tile for selected unit position");
+            return;
+        }
+
+        var startCoord = new Vector2Int(tile.tileIndexCol, tile.tileIndexRow);
+
+        // Compute reachable tile coords and highlight them via TileManager
+        var reachable = TileManager.Instance.GetReachableTiles(startCoord, remainingMoves);
+        TileManager.Instance.HighlightCoords(reachable);
     }
 
     public void Exit()
     {
         // Hide hints/cleanup if needed
+        TileManager.Instance?.ClearHighlights();
 
         //Toggle the buttons
         UIManager.Instance.ResetUI();
@@ -33,28 +61,50 @@ public class PlanningPathState : IGameState
 
     public void OnTap(Vector2 screenPos)
     {
-        var selected = SelectionService.Instance.SelectedUnit;
-        if (selected == null)
+        var cam = Camera.main;
+        if (cam == null) return;
+
+        // Ray -> plane intersection (gameplay plane z=0)
+        Ray ray = cam.ScreenPointToRay(screenPos);
+        Plane plane = new Plane(Vector3.forward, Vector3.zero);
+        if (!plane.Raycast(ray, out float enter)) return;
+        Vector3 worldPos = ray.GetPoint(enter);
+
+        // Find target tile under pointer
+        var targetTile = TileManager.Instance?.GetTileFromWorldPosition(worldPos);
+        if (targetTile == null)
         {
-            // No unit? Go back to selecting
-            _fsm.SetState(GameplayStateId.Selecting);
+            // nothing to path to
+            TileManager.Instance?.ClearPath();
+            SelectionService.Instance.SelectedUnit.currentMovePath = new List<Vector2Int>();
             return;
         }
+        Vector2Int target = new Vector2Int(targetTile.tileIndexCol, targetTile.tileIndexRow);
 
-        // Hide range
-        HexHighlighter.Instance.ClearRangeHighlights();
+        // Get selected unit and its start tile
+        var selected = SelectionService.Instance.SelectedUnit;
+        if (selected == null) return;
+        var startTile = TileManager.Instance?.GetTileFromWorldPosition(selected.transform.position);
+        if (startTile == null) { Debug.LogWarning("Start tile not found for selected unit."); return; }
+        Vector2Int start = new Vector2Int(startTile.tileIndexCol, startTile.tileIndexRow);
 
-        // Set or extend path
-        HexGridManager.Instance.HandleTapHexGrid(screenPos);
+        // Compute path (tile-based A*)
+        var path = TileManager.Instance.FindPath(start, target);
 
-        // Block execute if no moves left
-        if (selected.movedThisTurn >= selected.shipRuntimeData.currentMovmentRange)
+        // Visualize path and markers
+        TileManager.Instance.DrawLineStrip(path);
+        TileManager.Instance.PlaceTurnMarkers(path, selected.shipRuntimeData.currentMovmentRange);
+
+        // Save path on unit for MovementManager
+        selected.currentMovePath = path ?? new List<Vector2Int>();
+
+        // Optionally show movement range (tile-based)
+        int remainingMoves = selected.shipRuntimeData.currentMovmentRange - selected.movedThisTurn;
+        if (remainingMoves > 0)
         {
-            //No more moves left
-            UIManager.Instance.HideUnitMovmentControlls();
+            var reachable = TileManager.Instance.GetReachableTiles(start, remainingMoves);
+            TileManager.Instance.HighlightCoords(reachable);
         }
-        
-
         Debug.Log("after PlanningPathState invoke" + GameStateMachine.Instance.Current);
     }
 

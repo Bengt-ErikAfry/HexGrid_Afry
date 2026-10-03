@@ -71,6 +71,22 @@ public class HexLayoutEditor : EditorWindow
             ImportTemplateFromFile();
         }
 
+        // New: Fill all tiles within worldRadius with the selected prefab
+        if (GUILayout.Button("Fill All Tiles"))
+        {
+            if (tilePrefab == null)
+            {
+                EditorUtility.DisplayDialog("No Tile Prefab", "Assign a Tile Prefab in the editor before filling.", "OK");
+            }
+            else
+            {
+                if (EditorUtility.DisplayDialog("Fill all tiles", $"Instantiate tile prefab at every cell within radius {worldRadius}?\nExisting tiles will be preserved.", "Fill", "Cancel"))
+                {
+                    FillAllTiles();
+                }
+            }
+        }
+
         if (GUILayout.Button("Refresh From Scene"))
         {
             EnsureParent();
@@ -184,6 +200,46 @@ public class HexLayoutEditor : EditorWindow
         inst.name = $"{tilePrefab.name}_q{cell.x}_r{cell.y}";
 
         placed[cell] = inst;
+    }
+
+    // New: instantiate prefab at every axial cell inside radius (skips existing)
+    void FillAllTiles()
+    {
+        EnsureParent();
+        int created = 0;
+        foreach (var cell in HexMath.AxialInsideHex(worldRadius))
+        {
+            if (placed.ContainsKey(cell)) continue;
+            var center = HexMath.AxialToWorldCenter_PointTop(cell, hexSize);
+
+#if UNITY_2018_3_OR_NEWER
+            GameObject inst = (GameObject)PrefabUtility.InstantiatePrefab(tilePrefab);
+            if (inst == null) inst = (GameObject)Object.Instantiate(tilePrefab);
+#else
+            GameObject inst = (GameObject)Object.Instantiate(tilePrefab);
+#endif
+            Undo.RegisterCreatedObjectUndo(inst, "Fill Tile");
+            inst.transform.position = new Vector3(center.x, center.y, 0f);
+            inst.transform.SetParent(parentContainer.transform, true);
+
+            var tileScript = inst.GetComponent<HexGrid_TilePrefab>();
+            if (tileScript != null)
+            {
+                tileScript.tileIndexRow = cell.y;
+                tileScript.tileIndexCol = cell.x;
+            }
+
+            inst.name = $"{tilePrefab.name}_q{cell.x}_r{cell.y}";
+            placed[cell] = inst;
+            created++;
+        }
+
+        // Mark scene dirty and refresh
+#if UNITY_EDITOR
+        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        UnityEditor.SceneView.RepaintAll();
+#endif
+        Debug.Log($"Filled {created} tiles within radius {worldRadius}.");
     }
 
     void ClearAll()
