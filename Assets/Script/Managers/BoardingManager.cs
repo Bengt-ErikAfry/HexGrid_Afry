@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 public class BoardingManager : MonoBehaviour
 {
@@ -39,48 +40,26 @@ public class BoardingManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public void ShowBoardingView()
-    {         // Implement logic to show the boarding view
-        Debug.Log("Showing Boarding View");
-
-        // Show minableobject view
-        boardingObject_view.SetActive(true);
-        Game_View.SetActive(false);
-        moduleView.SetActive(false);
-
-        //Set active hexgrid
-        HexGridManager.Instance.SetActiveGrid(boardingObjectView_hexGridComponent);
+    public void ShowInteriorView()
+    {         // Implement logic to show the interior view
+        Debug.Log("Showing Interior View");
 
         //Clear all path and markers from the hexgrid.
-        HexGridManager.Instance.ClearMarkers();
-        HexGridManager.Instance.ClearPath();
-
-        //Set HexGrid size to match the boardingObject data.
-        boardingObjectView_hexGridComponent.worldRadius = SelectionService.Instance.SelectedUnit.target_Unit_Script.shipRuntimeData.itemDefinition.worldRadius;
-        boardingObjectView_hexGridComponent.hexSize = SelectionService.Instance.SelectedUnit.target_Unit_Script.shipRuntimeData.itemDefinition.hexSize;
-        boardingObjectView_hexGridComponent.blockedCells = SelectionService.Instance.SelectedUnit.target_Unit_Script.shipRuntimeData.itemDefinition.blockedCells;
-
-        //Rebuild the hexgrid to reflect the new size and blocked cells.
-        boardingObjectView_hexGridComponent.Bake();
-
-        // Populate UI (reuses pooled tiles)
-        //SpawnTiles(SelectionService.Instance.SelectedUnit.target_Unit_Script);
-        //UpdateSummary();
-
-        //Populate list with units in orbit.
-        //UpdateOrbitingUnitView();
-
-        //Clear selection
-        //SelectionService.Instance.ClearSelection();
+        TileManager.Instance.ClearHighlights();
+        TileManager.Instance.ClearPath();
 
         //Hide buttons
         UIManager.Instance.HideAllUI();
 
-        //Show turnebuttons
-        UIManager.Instance.ShowTruenButtons();
+        //Close the modulevie
+        InfoScreenManager.Instance.CloseModuleView();
 
         //To detect where to place the boarding enterence point.
         GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+
+        //Load the interior ship layout into the hexgrid.
+        string path = Path.Combine(Application.streamingAssetsPath, "hex_ShipIntrior_test.json");
+        TileManager.Instance.LoadLayoutFromFile(path);
     }
 
     public void HideBoardingView()

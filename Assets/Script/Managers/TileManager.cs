@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -523,4 +524,222 @@ public class TileManager : MonoBehaviour
             data.Add((key, newPrio));
         }
     }
+
+    //////////////////////////// TileLayout helpers ///////////////////////////////////////
+    
+    ///// Add these types and methods inside the existing TileManager class (append near other public API methods)
+
+    [Serializable]
+    public class RuntimeHexCell
+    {
+        public int x;
+        public int y;
+        // Editor export may contain a full asset path; at runtime we prefer a prefab name.
+        public string prefabName;
+        public string prefabPath;
+    }
+
+    [Serializable]
+    public class RuntimeHexTemplate
+    {
+        public int worldRadius;
+        public float hexSize;
+        public List<RuntimeHexCell> cells = new();
+    }
+
+    [Serializable]
+    public struct PrefabMapping
+    {
+        public string key;      // name/key used in JSON (e.g. prefab name)
+        public GameObject prefab;
+    }
+
+    // Registry you populate in inspector: map prefab names (or keys) -> prefab assets used at runtime.
+    public List<PrefabMapping> prefabRegistry = new();
+
+    // Optional fallback prefab used when a mapping is missing.
+    public GameObject defaultTilePrefab;
+
+    // Clears all instantiated tiles under tilesParent (runtime-safe).
+    public void ClearAllTiles()
+    {
+        if (tilesParent == null) return;
+
+#if UNITY_EDITOR
+        // In editor, use DestroyImmediate so the scene updates immediately
+        var children = new List<GameObject>();
+        foreach (Transform t in tilesParent) children.Add(t.gameObject);
+        foreach (var go in children)
+        {
+            if (Application.isPlaying) Destroy(go); else DestroyImmediate(go);
+        }
+#else
+    foreach (Transform t in tilesParent) Destroy(t.gameObject);
+#endif
+
+        tileLookup.Clear();
+        ClearHighlights();
+        ClearPath();
+        ClearMarkers();
+    }
+
+    // Spawn one tile GameObject at axial coordinate using the given prefab (runtime instantiate).
+    public HexGrid_TilePrefab SpawnTileAt(Vector2Int axial, GameObject prefab)
+    {
+        Debug.Log($"SpawnTileAt: axial={axial}, prefab={(prefab != null ? prefab.name : "null")}");
+        if (tilesParent == null) Debug.LogWarning("SpawnTileAt: tilesParent is null.");
+        if (prefab == null)
+        {
+            if (defaultTilePrefab != null) prefab = defaultTilePrefab;
+            else
+            {
+                Debug.LogWarning($"SpawnTileAt: no prefab supplied and no defaultTilePrefab configured for cell {axial}.");
+                return null;
+            }
+        }
+
+        var center = AxialToWorldCenter(axial);
+        var inst = GameObject.Instantiate(prefab, new Vector3(center.x, center.y, 0f), Quaternion.identity, tilesParent);
+        inst.name = $"{prefab.name}_q{axial.x}_r{axial.y}";
+
+        var tileComp = inst.GetComponent<HexGrid_TilePrefab>();
+        if (tileComp != null)
+        {
+            tileComp.tileIndexCol = axial.x;
+            tileComp.tileIndexRow = axial.y;
+        }
+
+        // Add to lookup immediately
+        if (tileComp != null) tileLookup[axial] = tileComp;
+        else
+        {
+            // If prefab doesn't include HexGrid_TilePrefab, warn and attempt to add a lightweight component
+            Debug.LogWarning($"Spawned prefab '{prefab.name}' does not contain HexGrid_TilePrefab component.");
+        }
+
+        return tileComp;
+    }
+
+    // Replace the existing ResolvePrefabForCell method with this implementation.
+    // This version ignores `prefabName` and resolves using only the `prefabPath` (filename part).
+    private GameObject ResolvePrefabForCell(RuntimeHexCell cell)
+    {
+        // prefer to resolve from the prefabPath filename (e.g. "Assets/Prefabs/Tiles/tile_Empty_Prefab.prefab" -> "tile_Empty_Prefab")
+        if (!string.IsNullOrEmpty(cell.prefabPath))
+        {
+            string fileName = Path.GetFileNameWithoutExtension(cell.prefabPath);
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                // 1) Try registry match by filename (if you populated prefabRegistry in the inspector)
+                if (prefabRegistry != null)
+                {
+                    var match = prefabRegistry.Find(m => string.Equals(m.key, fileName, StringComparison.OrdinalIgnoreCase));
+                    if (match.prefab != null)
+                    {
+                        Debug.Log($"ResolvePrefabForCell: resolved '{fileName}' from prefabRegistry -> {match.prefab.name}");
+                        return match.prefab;
+                    }
+                }
+
+                // 2) Try Resources fallback (runtime-safe). Put prefabs under Resources/Tiles/ or Resources/
+                var res = Resources.Load<GameObject>("Tiles/" + fileName) ?? Resources.Load<GameObject>(fileName);
+                if (res != null)
+                {
+                    Debug.Log($"ResolvePrefabForCell: loaded '{fileName}' from Resources.");
+                    return res;
+                }
+
+#if UNITY_EDITOR
+                // 3) Editor-only: try AssetDatabase.LoadAssetAtPath for convenience while testing in Editor
+                var ed = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(cell.prefabPath);
+                if (ed != null)
+                {
+                    Debug.Log($"ResolvePrefabForCell: loaded '{cell.prefabPath}' via AssetDatabase (Editor only) -> {ed.name}");
+                    return ed;
+                }
+#endif
+            }
+            else
+            {
+                Debug.LogWarning($"ResolvePrefabForCell: prefabPath provided but filename extraction failed: '{cell.prefabPath}'");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("ResolvePrefabForCell: no prefabPath provided in JSON cell.");
+        }
+
+        // 4) Fallback to default prefab if configured
+        if (defaultTilePrefab != null)
+        {
+            Debug.Log($"ResolvePrefabForCell: using defaultTilePrefab '{defaultTilePrefab.name}' as fallback.");
+            return defaultTilePrefab;
+        }
+
+        Debug.LogWarning($"ResolvePrefabForCell: could not resolve prefab for JSON entry prefabPath='{cell.prefabPath}'.");
+        return null;
+    }
+
+    // Load layout JSON text (already-read) and instantiate tiles accordingly.
+    // This will clear existing tiles and spawn new ones, then rebuild internal lookup.
+    public void LoadLayoutFromJsonText(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            Debug.LogWarning("LoadLayoutFromJsonText: empty json.");
+            return;
+        }
+
+        RuntimeHexTemplate templ;
+        try
+        {
+            templ = JsonUtility.FromJson<RuntimeHexTemplate>(json);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"LoadLayoutFromJsonText: failed to parse JSON: {ex}");
+            return;
+        }
+
+        ClearAllTiles();
+
+        // Adopt geometry if provided
+        if (templ.hexSize > 0) tileSize = templ.hexSize;
+
+        int created = 0;
+        foreach (var c in templ.cells)
+        {
+            Debug.Log($"LoadLayoutFromJsonText: processing cell x={c.x}, y={c.y}, prefabName={c.prefabName}, prefabPath={c.prefabPath}");
+            var axial = new Vector2Int(c.x, c.y);
+            var prefab = ResolvePrefabForCell(c);
+            var tile = SpawnTileAt(axial, prefab);
+            if (tile != null) created++;
+        }
+
+        // Rebuild any internal structures
+        BuildTileLookup();
+        BuildDoorLookup();
+
+        Debug.Log($"LoadLayoutFromJsonText: instantiated {created} tiles (template radius={templ.worldRadius}, hexSize={templ.hexSize}).");
+    }
+
+    // Convenience: load layout from a file path (useful for StreamingAssets or persistent paths).
+    // Example usage at runtime:
+    //   string path = Path.Combine(Application.streamingAssetsPath, "level1.json");
+    //   TileManager.Instance.LoadLayoutFromFile(path);
+    public void LoadLayoutFromFile(string filePath)
+    {
+        if (!File.Exists(filePath))
+        {
+            Debug.LogError($"LoadLayoutFromFile: file not found: {filePath}");
+            return;
+        }
+
+        string json = File.ReadAllText(filePath);
+        LoadLayoutFromJsonText(json);
+    }
+
+    // Editor helper: import layout assets packaged in Resources by prefab name
+    // Example: put prefab under Resources/Tiles/ and set registry keys accordingly.
+    // You can call LoadLayoutFromJsonText at runtime after supplying a registry mapping prefab keys to actual prefabs.
 }

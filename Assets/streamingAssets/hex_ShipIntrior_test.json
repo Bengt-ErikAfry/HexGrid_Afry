@@ -1,0 +1,81 @@
+{
+    "worldRadius": 1,
+    "hexSize": 1.0,
+    "cells": [
+        {
+            "x": -1,
+            "y": -1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -1,
+            "y": -2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -2,
+            "y": -2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -3,
+            "y": -2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -4,
+            "y": -2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -5,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -4,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -3,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -2,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": -1,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": 0,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": 1,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": 0,
+            "y": -2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": 3,
+            "y": -4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        },
+        {
+            "x": 2,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab"
+        }
+    ]
+}

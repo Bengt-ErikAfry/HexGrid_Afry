@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 
 [System.Serializable]
-public class HexTemplateCell { public int x; public int y; }
+public class HexTemplateCell { public int x; public int y; public string prefabPath; }
 [System.Serializable]
 public class HexTemplate { public int worldRadius; public float hexSize; public List<HexTemplateCell> cells = new(); }
 
@@ -172,23 +172,37 @@ public class HexLayoutEditor : EditorWindow
         }
     }
 
-    void PlaceTileAt(Vector2Int cell)
+    void PlaceTileAt(Vector2Int cell) => PlaceTileAt(cell, tilePrefab);
+
+    // Overload: instantiate a specific prefab asset at the axial cell
+    void PlaceTileAt(Vector2Int cell, GameObject prefabAsset)
     {
         var center = HexMath.AxialToWorldCenter_PointTop(cell, hexSize);
         GameObject inst;
-        // Maintain prefab link when possible
 #if UNITY_2018_3_OR_NEWER
-        inst = (GameObject)PrefabUtility.InstantiatePrefab(tilePrefab);
-        if (inst == null) inst = (GameObject)Object.Instantiate(tilePrefab);
+        if (prefabAsset != null)
+        {
+            inst = (GameObject)PrefabUtility.InstantiatePrefab(prefabAsset);
+            if (inst == null) inst = (GameObject)Object.Instantiate(prefabAsset);
+        }
+        else
+        {
+            inst = null;
+        }
 #else
-        inst = (GameObject)Object.Instantiate(tilePrefab);
+        inst = (prefabAsset != null) ? (GameObject)Object.Instantiate(prefabAsset) : null;
 #endif
+        if (inst == null)
+        {
+            Debug.LogError("Failed to instantiate prefab for tile.");
+            return;
+        }
+
         Undo.RegisterCreatedObjectUndo(inst, "Place Hex Tile");
         inst.transform.position = new Vector3(center.x, center.y, 0f);
         inst.transform.SetParent(parentContainer.transform, true);
 
         // Fill tileIndexRow / tileIndexCol on HexGrid_TilePrefab if present.
-        // Mapping: tileIndexRow := axial r (y), tileIndexCol := axial q (x).
         var tileScript = inst.GetComponent<HexGrid_TilePrefab>();
         if (tileScript != null)
         {
@@ -197,7 +211,7 @@ public class HexLayoutEditor : EditorWindow
         }
 
         // Optional: name the instance for easier scene browsing
-        inst.name = $"{tilePrefab.name}_q{cell.x}_r{cell.y}";
+        inst.name = $"{(prefabAsset != null ? prefabAsset.name : "Tile")}_q{cell.x}_r{cell.y}";
 
         placed[cell] = inst;
     }
@@ -210,31 +224,10 @@ public class HexLayoutEditor : EditorWindow
         foreach (var cell in HexMath.AxialInsideHex(worldRadius))
         {
             if (placed.ContainsKey(cell)) continue;
-            var center = HexMath.AxialToWorldCenter_PointTop(cell, hexSize);
-
-#if UNITY_2018_3_OR_NEWER
-            GameObject inst = (GameObject)PrefabUtility.InstantiatePrefab(tilePrefab);
-            if (inst == null) inst = (GameObject)Object.Instantiate(tilePrefab);
-#else
-            GameObject inst = (GameObject)Object.Instantiate(tilePrefab);
-#endif
-            Undo.RegisterCreatedObjectUndo(inst, "Fill Tile");
-            inst.transform.position = new Vector3(center.x, center.y, 0f);
-            inst.transform.SetParent(parentContainer.transform, true);
-
-            var tileScript = inst.GetComponent<HexGrid_TilePrefab>();
-            if (tileScript != null)
-            {
-                tileScript.tileIndexRow = cell.y;
-                tileScript.tileIndexCol = cell.x;
-            }
-
-            inst.name = $"{tilePrefab.name}_q{cell.x}_r{cell.y}";
-            placed[cell] = inst;
+            PlaceTileAt(cell);
             created++;
         }
 
-        // Mark scene dirty and refresh
 #if UNITY_EDITOR
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         UnityEditor.SceneView.RepaintAll();
@@ -258,9 +251,28 @@ public class HexLayoutEditor : EditorWindow
     {
         EnsureParent();
         var template = new HexTemplate { worldRadius = worldRadius, hexSize = hexSize };
-        foreach (var kv in placed.Keys)
+
+        foreach (var kv in placed)
         {
-            template.cells.Add(new HexTemplateCell { x = kv.x, y = kv.y });
+            var axial = kv.Key;
+            var go = kv.Value;
+            string prefabPath = "";
+
+#if UNITY_EDITOR
+            // Try to get the source prefab asset for this instance
+            Object sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(go);
+            if (sourcePrefab != null)
+            {
+                prefabPath = AssetDatabase.GetAssetPath(sourcePrefab);
+            }
+            else
+            {
+                // fallback: if user selected a default tilePrefab in the editor use that path
+                if (tilePrefab != null)
+                    prefabPath = AssetDatabase.GetAssetPath(tilePrefab);
+            }
+#endif
+            template.cells.Add(new HexTemplateCell { x = axial.x, y = axial.y, prefabPath = prefabPath });
         }
 
         string json = JsonUtility.ToJson(template, true);
@@ -307,8 +319,9 @@ public class HexLayoutEditor : EditorWindow
 
         if (tilePrefab == null)
         {
-            EditorUtility.DisplayDialog("No Tile Prefab", "Assign a Tile Prefab in the editor before importing.", "OK");
-            return;
+            // Allow import even if tilePrefab not assigned — per-cell prefab paths will be used where available
+            if (!EditorUtility.DisplayDialog("No default Tile Prefab", "No default Tile Prefab assigned. Import will attempt to use per-cell prefab paths. Continue?", "Yes", "Cancel"))
+                return;
         }
 
         int created = 0;
@@ -316,7 +329,28 @@ public class HexLayoutEditor : EditorWindow
         {
             var axial = new Vector2Int(cell.x, cell.y);
             if (placed.ContainsKey(axial)) continue;
-            PlaceTileAt(axial);
+
+            GameObject prefabToUse = null;
+#if UNITY_EDITOR
+            if (!string.IsNullOrEmpty(cell.prefabPath))
+            {
+                var loaded = AssetDatabase.LoadAssetAtPath<GameObject>(cell.prefabPath);
+                if (loaded == null)
+                {
+                    Debug.LogWarning($"Could not load prefab at path '{cell.prefabPath}' for cell {axial}. Falling back to default tile prefab.");
+                }
+                else prefabToUse = loaded;
+            }
+#endif
+            if (prefabToUse == null) prefabToUse = tilePrefab;
+
+            if (prefabToUse == null)
+            {
+                Debug.LogWarning($"Skipping cell {axial} — no prefab available to instantiate.");
+                continue;
+            }
+
+            PlaceTileAt(axial, prefabToUse);
             created++;
         }
 
