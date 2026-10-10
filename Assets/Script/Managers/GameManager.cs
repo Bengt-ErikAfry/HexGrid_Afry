@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -80,10 +81,22 @@ public class GameManager : MonoBehaviour
         StartCoroutine(DelayedStartPlayerTurn());
     }
 
+    // Reveal tiles around player at start of game, then start the first player turn. Delay 1 frame to let Lookup tables and other singletons finish their Start() methods first.
     private IEnumerator DelayedStartPlayerTurn()
     {
         // wait one frame (or yield return null twice if necessary)
         yield return null;
+
+        if (activateFogOfWar && TileManager.Instance != null)
+        {
+            foreach (var p in playerUnits)
+            {
+                if (p == null) continue;
+                int range = Mathf.CeilToInt(p.detectionRange);
+                TileManager.Instance.RegisterUnit(p, range);
+            }
+        }
+
         yield return StartCoroutine(StartPlayerTurn());
     }
 

@@ -74,10 +74,14 @@ public class MovementManager : MonoBehaviour
             centers.Add(new Vector3(c.x, c.y, 0f));
         }
 
+        // >>> ADDED: pass axial coords slice corresponding to centers so MoveAlongCenters can update visibility
+        var coordsSlice = path.GetRange(startIndex, stepsToTake + 1);
+        // <<< END ADDED
+
         int movedBefore = unit.movedThisTurn;
 
         // Animate movement along centers while spending movement points up to stepsToTake
-        yield return MoveAlongCenters(unit, centers, stepsToTake);
+        yield return MoveAlongCenters(unit, centers, coordsSlice, stepsToTake);
 
         int stepsUsed = Mathf.Max(0, unit.movedThisTurn - movedBefore);
 
@@ -123,7 +127,7 @@ public class MovementManager : MonoBehaviour
     }
 
     // CALLD EVERY TIME A UNIT GET TO A NEW TILE/HEX
-    private IEnumerator MoveAlongCenters(Unit unit, List<Vector3> centers, int stepBudget)
+    private IEnumerator MoveAlongCenters(Unit unit, List<Vector3> centers, List<Vector2Int> coords, int stepBudget)
     {
         float totalLen = 0f;
         var segLen = new List<float>(centers.Count - 1);
@@ -171,17 +175,26 @@ public class MovementManager : MonoBehaviour
             // --- Reveal tiles for any newly entered steps (only when unit is in a Minable view) ---
             if (newSteps > lastRevealedStep)
             {
-                // Ensure we only reveal when unit is logically inside a minable UI
-                if (unit.unitLocationType == Unit.UnitLocationType.MinableObject)
+                // loop each newly entered step index
+                for (int s = lastRevealedStep + 1; s <= newSteps && s < centers.Count; s++)
                 {
-                    var minable = MiningUIManager.Instance?.currentMinable;
-                    if (minable != null)
+                    Vector3 centerWorld = centers[s];
+
+                    // >>> ADDED: notify TileManager that unit entered tile at coords[s]
+                    // Use ceiling of detectionRange to cover fractional ranges
+                    if (TileManager.Instance != null && unit != null)
                     {
-                        // reveal each center the unit has just stepped into
-                        for (int s = lastRevealedStep + 1; s <= newSteps && s < centers.Count; s++)
+                        int range = Mathf.CeilToInt(unit.detectionRange);
+                        TileManager.Instance.UpdateUnitVisibilityOnMoveFromStored(unit, coords[s], range);
+                    }
+                    // <<< END ADDED
+
+                    // existing minable reveal logic (preserve)
+                    if (unit.unitLocationType == Unit.UnitLocationType.MinableObject)
+                    {
+                        var minable = unit.minableComponent;
+                        if (minable != null)
                         {
-                            Vector3 centerWorld = centers[s];
-                            // Call the MinableComponent helper (world pos -> axial -> reveal)
                             minable.RevealTileByWorldPos(centerWorld);
                         }
                     }

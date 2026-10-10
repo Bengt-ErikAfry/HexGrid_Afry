@@ -1,8 +1,10 @@
 using System;
-using System.IO;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
+using static HexGrid_TilePrefab;
 
 // TileManager: authoritative runtime tile API (highlighting, pathfinding, markers, doors/walls).
 public class TileManager : MonoBehaviour
@@ -26,9 +28,62 @@ public class TileManager : MonoBehaviour
     private readonly List<GameObject> markerPool = new();
     private readonly List<GameObject> activeMarkers = new();
 
+    // Tracks how many units currently see each coord
+    private readonly Dictionary<Vector2Int, int> visibilityRefCount = new();
+
+    // For each registered unit, the set of coords it currently sees
+    private readonly Dictionary<Unit, HashSet<Vector2Int>> unitSeenTiles = new();
+
+    // Large radius used for HexesInRangeAxial (avoid unintended clamp)
+    private const int largeWorldRadius = 10000;
+
     // Path visuals
     private LineRenderer pathLineRenderer;
     public List<Vector2Int> LastPath { get; private set; } = new();
+
+    //To be abel to initunit in unit script wait unitll tileLookup is built yet.
+    public bool HasBuiltLookup => tileLookup != null && tileLookup.Count > 0;
+    [Serializable]
+    private class FogCell { public int x; public int y; public string state; }
+    [Serializable]
+    private class FogSave { public string layoutName; public List<FogCell> cells = new(); }
+
+    public void SaveFogState(string layoutName)
+    {
+        var save = new FogSave { layoutName = layoutName };
+        foreach (var kv in tileLookup)
+        {
+            var coord = kv.Key;
+            var tile = kv.Value;
+            save.cells.Add(new FogCell { x = coord.x, y = coord.y, state = tile.tileVisibilityState.ToString() });
+        }
+        var path = Path.Combine(Application.persistentDataPath, $"fog_{layoutName}.json");
+        File.WriteAllText(path, JsonUtility.ToJson(save));
+    }
+
+    public void LoadFogState(string layoutName)
+    {
+        var path = Path.Combine(Application.persistentDataPath, $"fog_{layoutName}.json");
+        if (!File.Exists(path)) return;
+        var json = File.ReadAllText(path);
+        var save = JsonUtility.FromJson<FogSave>(json);
+        // Apply saved states to tiles (sets visuals immediately)
+        foreach (var c in save.cells)
+        {
+            var coord = new Vector2Int(c.x, c.y);
+            if (tileLookup.TryGetValue(coord, out var tile))
+            {
+                if (Enum.TryParse<TileVisibilityState>(c.state, out var s))
+                {
+                    tile.tileVisibilityState = s;
+                    tile.ApplyVisibilityVisuals();
+                }
+            }
+        }
+        // Clear runtime refcounts — they will be rebuilt by RegisterUnit calls
+        visibilityRefCount.Clear();
+        unitSeenTiles.Clear();
+    }
 
     private void Awake()
     {
@@ -42,6 +97,72 @@ public class TileManager : MonoBehaviour
         if (autoBuildLookupOnStart) BuildTileLookup();
         EnsureLineRenderer();
         BuildDoorLookup();
+    }
+
+    // ---- FOG OF WAR / VISIBILITY -------------------------------------------------
+
+    // Register unit (compute initial seen set)
+    public void RegisterUnit(Unit u, int range)
+    {
+        if (u == null || unitSeenTiles.ContainsKey(u)) return;
+        var center = WorldToAxial(u.transform.position);
+        var seen = new HashSet<Vector2Int>(HexMath.HexesInRangeAxial(center, range, largeWorldRadius));
+        unitSeenTiles[u] = seen;
+        foreach (var coord in seen) IncrementVisibilityRef(coord);
+    }
+
+    // Unregister unit (remove its contributions)
+    public void UnregisterUnit(Unit u)
+    {
+        if (u == null) return;
+        if (!unitSeenTiles.TryGetValue(u, out var seen)) return;
+        foreach (var coord in seen) DecrementVisibilityRef(coord);
+        unitSeenTiles.Remove(u);
+    }
+
+    // Call when unit has moved; supply new center in axial coords
+    public void UpdateUnitVisibilityOnMoveFromStored(Unit u, Vector2Int newCenter, int range)
+    {
+        if (u == null) return;
+        unitSeenTiles.TryGetValue(u, out var oldSet);
+        oldSet ??= new HashSet<Vector2Int>();
+        var newSet = new HashSet<Vector2Int>(HexMath.HexesInRangeAxial(newCenter, range, largeWorldRadius));
+
+        foreach (var coord in oldSet)
+            if (!newSet.Contains(coord)) DecrementVisibilityRef(coord);
+        foreach (var coord in newSet)
+            if (!oldSet.Contains(coord)) IncrementVisibilityRef(coord);
+
+        unitSeenTiles[u] = newSet;
+    }
+
+    private void IncrementVisibilityRef(Vector2Int coord)
+    {
+        if (!tileLookup.ContainsKey(coord)) return;
+        visibilityRefCount.TryGetValue(coord, out var v);
+        visibilityRefCount[coord] = v + 1;
+        if (tileLookup.TryGetValue(coord, out var tile) && tile.tileVisibilityState != TileVisibilityState.Visible)
+        {
+            tile.tileVisibilityState = TileVisibilityState.Visible;
+            tile.ApplyVisibilityVisuals();
+        }
+    }
+
+    private void DecrementVisibilityRef(Vector2Int coord)
+    {
+        if (!tileLookup.ContainsKey(coord)) return;
+        if (!visibilityRefCount.TryGetValue(coord, out var v) || v <= 0) return;
+        v--;
+        if (v <= 0)
+        {
+            visibilityRefCount.Remove(coord);
+            if (tileLookup.TryGetValue(coord, out var tile) && tile.tileVisibilityState == TileVisibilityState.Visible)
+            {
+                tile.tileVisibilityState = TileVisibilityState.Explored;
+                tile.ApplyVisibilityVisuals();
+            }
+        }
+        else visibilityRefCount[coord] = v;
     }
 
     // --- Lookup builders -------------------------------------------------
@@ -737,9 +858,27 @@ public class TileManager : MonoBehaviour
 
         string json = File.ReadAllText(filePath);
         LoadLayoutFromJsonText(json);
+
+        // Use the filename (without extension) as the layout id for fog state files
+        string layoutId = Path.GetFileNameWithoutExtension(filePath);
+
+        // Apply saved fog state (if any)
+        LoadFogState(layoutId);
+
+        // Re-register player units so visibility reference counts are rebuilt and visible tiles update
+        if (GameManager.Instance != null)
+        {
+            foreach (var p in GameManager.Instance.playerUnits)
+            {
+                if (p == null) continue;
+                RegisterUnit(p, Mathf.CeilToInt(p.detectionRange));
+            }
+        }
     }
 
     // Editor helper: import layout assets packaged in Resources by prefab name
     // Example: put prefab under Resources/Tiles/ and set registry keys accordingly.
     // You can call LoadLayoutFromJsonText at runtime after supplying a registry mapping prefab keys to actual prefabs.
+
+
 }

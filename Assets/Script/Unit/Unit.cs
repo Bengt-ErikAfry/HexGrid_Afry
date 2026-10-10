@@ -61,7 +61,34 @@ public class Unit : MonoBehaviour
     {
         col_DetectionRange.localScale = new Vector3(detectionRange * 2, detectionRange * 2, 1);
         laserBeam_Script = GetComponent<LaserBeam>();
-    }    
+
+        StartCoroutine(InitUnit());
+    }
+    private IEnumerator InitUnit()
+    {
+        // scale detection collider etc.
+        col_DetectionRange.localScale = new Vector3(detectionRange * 2, detectionRange * 2, 1);
+        laserBeam_Script = GetComponent<LaserBeam>();
+
+        // Wait until TileManager exists and has built its lookup
+        yield return new WaitUntil(() => TileManager.Instance != null && TileManager.Instance.HasBuiltLookup);
+
+        //Add to GameManager list.
+        if (isPlayerControlled)
+        {
+            //Add to player unit list
+            GameManager.Instance.playerUnits.Add(this);
+
+            //Register to Tile Fog Of War
+            TileManager.Instance.RegisterUnit(this, (int)detectionRange);
+        }
+        else
+        {
+            //Add to enemy unit list
+            GameManager.Instance.enemyUnits.Add(this);
+        }
+        GameManager.Instance.unitsList.Add(this);
+    }
     public IEnumerator DoEnemyTurn(System.Action onFinished)
     {
         //Selected Unit enemy
@@ -172,6 +199,7 @@ public class Unit : MonoBehaviour
         }
         return haveModule; 
     }
+
     //When unit die or gets removed from game.
     public void RemoveUnitFromPlay()
     {
@@ -189,7 +217,10 @@ public class Unit : MonoBehaviour
         GameManager.Instance.unitsList.Remove(this);
 
         //Unsubscribe from fogOfWar
-        FogOfWarManager.Instance.Unregister(this.GetComponent<FogVisionSource>());
+        //FogOfWarManager.Instance.Unregister(this.GetComponent<FogVisionSource>());
+
+        //Unsubscribe from Tile Fog Of War
+        TileManager.Instance.UnregisterUnit(this);  
 
         //Delite GO
         Destroy(this.gameObject);

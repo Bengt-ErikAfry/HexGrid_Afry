@@ -120,3 +120,77 @@ Always mark new code with "//New" and "//End new" in code examples when adding n
 
 Always mark code with "//Add this" to "//Stop add" and "//Remove this" to "//Stop remove" in the code example when changing out code.
 
+
+
+
+
+\- Editorexport/import notes
+
+\- HexLayoutEditor should write `prefabPath` (for human-editing) and `visibility`.
+
+\- At runtimeprefer `prefabName` or a registry key in JSON if using Resources/Addressables.
+
+
+
+\- Migration / compatibility
+
+\- Keep `HexGridManager` as shim during migration; prefer calling `TileManager` for new runtime code.
+
+\- Add clearcomment blocksin modified files to showwhat was added during migration (see example below).
+
+\## Code changes \& migration notes (ADD HERE)
+
+
+
+\- Runtime vs Editor
+
+&#x20; - Editor tools (HexLayoutEditor) may use Editor-only APIs (`PrefabUtility`, `AssetDatabase`) and write JSON with `prefabPath`.
+
+&#x20; - Runtime loaders MUST resolve prefabs via one of:
+
+&#x20;   - `prefabRegistry` (inspector mapping key -> prefab)
+
+&#x20;   - `Resources.Load` (prefabs in `Resources/` using filename)
+
+&#x20;   - Addressables (preferred for production)
+
+&#x20; - Do NOT call `AssetDatabase` in builds.
+
+
+
+\- Tile conventions (canonical)
+
+&#x20; - Tile coordinate convention: `coord.x = tileIndexCol`, `coord.y = tileIndexRow`.
+
+&#x20; - Use `HexMath` for axial<->world conversions:
+
+&#x20;   - `HexMath.AxialToWorldCenter\_PointTop(a, size)`
+
+&#x20;   - `HexMath.WorldToAxial\_PointTop(world, size)`
+
+&#x20; - Tile prefab must include `HexGrid\_TilePrefab` with:
+
+&#x20;   - `public int tileIndexCol;`
+
+&#x20;   - `public int tileIndexRow;`
+
+&#x20;   - `public Image tileHighlightImage;`
+
+&#x20;   - `public bool visibility;` (optional)
+
+&#x20;   - `public bool\[] walls = new bool\[6];` (optional, point-top order)
+
+
+
+\- TileManager responsibilities
+
+&#x20; - Build tile lookup (`BuildTileLookup()`) from `tilesParent`.
+
+&#x20; - Provide: `GetTileFromWorldPosition`, `WorldToAxial`, `AxialToWorldCenter`, `GetReachableTiles`, `FindPath`, `CanPass`, `HighlightCoords`, `ClearHighlights`, `LoadLayoutFromJsonText`.
+
+&#x20; - `LoadLayoutFromJsonText` must map JSON `prefabPath` -> runtime prefab using the runtime mapping strategy above.
+
+
+
+\- JSON schema (example)
+

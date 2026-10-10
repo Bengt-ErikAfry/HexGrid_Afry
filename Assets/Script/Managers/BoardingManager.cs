@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using UnityEditor.Toolbars;
 
 public class BoardingManager : MonoBehaviour
 {
@@ -59,27 +60,29 @@ public class BoardingManager : MonoBehaviour
 
         //Load the interior ship layout into the hexgrid.
         string path = Path.Combine(Application.streamingAssetsPath, "hex_ShipIntrior_test.json");
+        TileManager.Instance.SaveFogState("hex_20Radius_Full");
         TileManager.Instance.LoadLayoutFromFile(path);
     }
 
+    //Called from SURENDER button on UI.
     public void HideBoardingView()
     {         // Implement logic to hide the boarding view
         Debug.Log("Hiding Boarding View");
 
-        // Hide minable object view
-        boardingObject_view.SetActive(false);
-        Game_View.SetActive(true);
+        //Clear all path and markers from the hexgrid.
+        TileManager.Instance.ClearHighlights();
+        TileManager.Instance.ClearPath();
 
-        //Tell what hex to draw in the game view.
-        HexGridManager.Instance.SetActiveGrid(gameView_hexGridComponent);
+        //Hide buttons
+        UIManager.Instance.ShowTruenButtons();
 
-        // return UI tiles to pool (keeps them for next open)
-        spawnedTileMap.Clear();
-        ReturnAllTilesToPool();
-
-        orbitingUnitView.SetActive(false);
-
+        //To detect where to place the boarding enterence point.
         GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+
+        //Load the interior ship layout into the hexgrid.
+        //TODO: Load the hexgrid layout from a variabel and not a hardcoded file.
+        string path = Path.Combine(Application.streamingAssetsPath, "hex_20Radius_Full.json");
+        TileManager.Instance.LoadLayoutFromFile(path);
     }
 
     //////////////////////////////////////////// Pool helpers

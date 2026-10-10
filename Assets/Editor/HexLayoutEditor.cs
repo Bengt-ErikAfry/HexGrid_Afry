@@ -1,11 +1,21 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
+using static HexGrid_TilePrefab;
 
 [System.Serializable]
-public class HexTemplateCell { public int x; public int y; public string prefabPath; }
+public class HexTemplateCell 
+{ 
+    public int x; 
+    public int y; 
+    public string prefabPath;
+    // Stores TileVisibilityState as string (e.g. "Unexplored","Explored","Visible")
+    public string state;
+}
 [System.Serializable]
 public class HexTemplate { public int worldRadius; public float hexSize; public List<HexTemplateCell> cells = new(); }
 
@@ -71,7 +81,6 @@ public class HexLayoutEditor : EditorWindow
             ImportTemplateFromFile();
         }
 
-        // New: Fill all tiles within worldRadius with the selected prefab
         if (GUILayout.Button("Fill All Tiles"))
         {
             if (tilePrefab == null)
@@ -179,7 +188,6 @@ public class HexLayoutEditor : EditorWindow
     {
         var center = HexMath.AxialToWorldCenter_PointTop(cell, hexSize);
         GameObject inst;
-#if UNITY_2018_3_OR_NEWER
         if (prefabAsset != null)
         {
             inst = (GameObject)PrefabUtility.InstantiatePrefab(prefabAsset);
@@ -189,9 +197,6 @@ public class HexLayoutEditor : EditorWindow
         {
             inst = null;
         }
-#else
-        inst = (prefabAsset != null) ? (GameObject)Object.Instantiate(prefabAsset) : null;
-#endif
         if (inst == null)
         {
             Debug.LogError("Failed to instantiate prefab for tile.");
@@ -208,6 +213,7 @@ public class HexLayoutEditor : EditorWindow
         {
             tileScript.tileIndexRow = cell.y;
             tileScript.tileIndexCol = cell.x;
+            tileScript.ApplyVisibilityVisuals(); // ensure visuals match initial state
         }
 
         // Optional: name the instance for easier scene browsing
@@ -271,6 +277,16 @@ public class HexLayoutEditor : EditorWindow
                 if (tilePrefab != null)
                     prefabPath = AssetDatabase.GetAssetPath(tilePrefab);
             }
+
+            // read visibility state from HexGrid_TilePrefab.visibilityState (enum) and store as string
+            // read visibility/state from tile component if present
+            var tileComp = go.GetComponent<HexGrid_TilePrefab>();
+            string stateString = TileVisibilityState.Unexplored.ToString(); // default
+            if (tileComp != null)
+            {
+                stateString = tileComp.tileVisibilityState.ToString(); // >>> ADDED: record enum value as string
+            }
+
 #endif
             template.cells.Add(new HexTemplateCell { x = axial.x, y = axial.y, prefabPath = prefabPath });
         }
@@ -351,6 +367,26 @@ public class HexLayoutEditor : EditorWindow
             }
 
             PlaceTileAt(axial, prefabToUse);
+
+            // set imported visibility/state on the instantiated tile
+            if (placed.TryGetValue(axial, out var inst))
+            {
+                var tileScript = inst.GetComponent<HexGrid_TilePrefab>();
+                if (tileScript != null)
+                {
+                    // parse string state into enum, fall back to Unexplored on failure
+                    TileVisibilityState parsed;
+                    if (!string.IsNullOrEmpty(cell.state) && Enum.TryParse<TileVisibilityState>(cell.state, out parsed))
+                        tileScript.tileVisibilityState = parsed;
+                    else
+                        tileScript.tileVisibilityState = TileVisibilityState.Unexplored; // default
+
+                    // Ensure visuals reflect the state immediately
+                    tileScript.ApplyVisibilityVisuals();
+                }
+            }
+            // <<< END CHANGED
+
             created++;
         }
 

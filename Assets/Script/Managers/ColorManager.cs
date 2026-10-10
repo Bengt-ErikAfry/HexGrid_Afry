@@ -14,6 +14,9 @@ public class ColorManager : MonoBehaviour
 
     public Color hex_AttackRange;
     public Color hex_MovementRange;
+    public Color tile_UnExplored;
+    public Color tile_Explored;
+
 
     public static ColorManager Instance { get; private set; }
     private void Awake()
