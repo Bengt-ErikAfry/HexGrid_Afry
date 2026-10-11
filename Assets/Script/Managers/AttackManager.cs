@@ -296,14 +296,14 @@ public class AttackManager : MonoBehaviour
     public void BoardingAttack(Unit attacking_Unit_Script, Unit target_Unit_Script, int target_Module_Slot_Index)
     {
         // calculate losses for both sides based on their crew and boarding strength
-        int start_attackingBoardingPartySize = ModuleViewManager.Instance.attackerBoardingPartySize;
-        int start_defenderBoardingPartySize = target_Unit_Script.moduleRuntimeList[target_Module_Slot_Index].currentSolidersGarding;
+        int start_attackingBoardingPartySize = ModuleViewManager.Instance.boardingModuleStorageSpace;
+        int start_defenderBoardingPartySize = target_Unit_Script.moduleRuntimeList[target_Module_Slot_Index].currentBoardingStorageSpace;
 
         var battlecalculation = CalculateBattleLosses(start_attackingBoardingPartySize, start_defenderBoardingPartySize);
 
         //Apply losses to target.
-        target_Unit_Script.moduleRuntimeList[target_Module_Slot_Index].currentSolidersGarding = battlecalculation.survivor_Defender;
-        target_Unit_Script.moduleRuntimeList[target_Module_Slot_Index].nextTurnSolidersGarding = battlecalculation.survivor_Defender;
+        target_Unit_Script.moduleRuntimeList[target_Module_Slot_Index].currentBoardingStorageSpace = battlecalculation.survivor_Defender;
+        target_Unit_Script.moduleRuntimeList[target_Module_Slot_Index].nextTurnBoardingStorageSpace = battlecalculation.survivor_Defender;
 
         //Apply losses to attacker.
         int totalLosses = start_attackingBoardingPartySize - battlecalculation.survivor_Attacker;
@@ -315,21 +315,21 @@ public class AttackManager : MonoBehaviour
             if (module.ItemDefinition != null &&
                 module.ItemDefinition.moduleType == ModuleType.BoardingDock)
             {
-                int soldiers = module.currentSolidersGarding;
+                int soldiers = module.currentBoardingStorageSpace;
 
                 if (soldiers >= totalLosses)
                 {
                     // This module can absorb all remaining damage
-                    module.currentSolidersGarding -= totalLosses;
-                    module.nextTurnSolidersGarding -= totalLosses;
+                    module.currentBoardingStorageSpace -= totalLosses;
+                    module.nextTurnBoardingStorageSpace -= totalLosses;
                     break;
                 }
                 else
                 {
                     // This module is emptied, spill over
                     totalLosses -= soldiers;
-                    module.currentSolidersGarding = 0;
-                    module.nextTurnSolidersGarding = 0;
+                    module.currentBoardingStorageSpace = 0;
+                    module.nextTurnBoardingStorageSpace = 0;
                 }
             }
         }

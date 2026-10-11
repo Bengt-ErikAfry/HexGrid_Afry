@@ -12,6 +12,7 @@ public class Unit : MonoBehaviour
     public string unitName = "Unit";
     public Sprite unitSprite;
     //public int movmentRange = 3;
+    public Vector2Int currentTileCoord;
     public int movedThisTurn = 0;
     public Transform col_DetectionRange;
     public float detectionRange = 5f;

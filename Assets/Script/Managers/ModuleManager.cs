@@ -166,7 +166,7 @@ public class ModuleManager : MonoBehaviour
                 module.currentEnergyMaxStorage = module.nextTurnEnergyMaxStorage;
                 module.currentStorageSpace = module.nextTurnStorageSpace;
                 module.currentMiningSpeed = module.nextTurnMiningSpeed;
-                module.currentSolidersGarding = module.nextTurnSolidersGarding;
+                module.currentBoardingStorageSpace = module.nextTurnBoardingStorageSpace;
             }
 
         }

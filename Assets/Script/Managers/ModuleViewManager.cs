@@ -46,7 +46,7 @@ public class ModuleViewManager : MonoBehaviour
     public TMP_Text nrOfSoldiersText;
     public TMP_Text minmaxText;
     public Slider nrOfSoldiersSlider;
-    public int attackerBoardingPartySize;
+    public int boardingModuleStorageSpace;
     public TMP_Text modulePowerUpBoostText;
     public TMP_Text moduleViewInfoText;
     public Toggle[] toggles; // 5 toggles
@@ -182,13 +182,10 @@ public class ModuleViewManager : MonoBehaviour
                         //Empty slot, no module to modify.
                         moduleView_Slot_script.toggleParentGO.SetActive(false);
                     }
-                    moduleView_Slot_script.soliderGarding.gameObject.SetActive(true);
-                    moduleView_Slot_script.soliderGarding.text = $"Soldiers: {unit.moduleRuntimeList[i].nextTurnSolidersGarding}";
                 }
                 else
                 {
                     moduleView_Slot_script.toggleParentGO.SetActive(false);
-                    moduleView_Slot_script.soliderGarding.gameObject.SetActive(false);
                 }
             }
         }
@@ -242,22 +239,25 @@ public class ModuleViewManager : MonoBehaviour
 
         //Check if boarding capability
         boardingButton.interactable = false;
-        attackerBoardingPartySize = 0;
+        boardingModuleStorageSpace = 0;
+        int soldiersInInventory = SelectionService.Instance.SelectedUnit.unitInventory.GetItemCount(Resources.Load<ItemDefinition>("Units/SoldierCrew"));
+
         foreach (ItemInstance module in SelectionService.Instance.SelectedUnit.moduleRuntimeList)
         {
             if (module.ItemDefinition != null)
             {
-                if (module.isOnline && module.ItemDefinition.moduleType == ModuleType.BoardingDock && module.currentSolidersGarding > 0)
+                if (module.isOnline && module.ItemDefinition.moduleType == ModuleType.BoardingDock)
                 {
-                    boardingButton.interactable = true;
-                    attackerBoardingPartySize += module.nextTurnSolidersGarding;
-                    break;
+                    boardingModuleStorageSpace = boardingModuleStorageSpace + module.currentBoardingStorageSpace;
                 }
             }
         }
-
+        if(boardingModuleStorageSpace > 0 && soldiersInInventory > 0)
+        {
+            boardingButton.interactable = true;
+        }
         //Set Boarding button text
-        boardingButton.GetComponentInChildren<TMP_Text>().text = $"Boarding avalibule Soldiers:{attackerBoardingPartySize}";
+        boardingButton.GetComponentInChildren<TMP_Text>().text = $"Boarding space:{boardingModuleStorageSpace} Soldiers inventory: {soldiersInInventory}";
     }
 
     public void ShowInforForModule(ItemInstance moduleToShow, int selectedModuleSlot_index)
@@ -426,7 +426,7 @@ public class ModuleViewManager : MonoBehaviour
 
         //Show nr of soldiers
         minmaxText.text = $"0                 {SelectionService.Instance.SelectedUnit.unitInventory.GetItemCount(Resources.Load<ItemDefinition>("Units/SoldierCrew"))}";
-        nrOfSoldiersText.text = $"Nr of soldiers: {moduleToShow.nextTurnSolidersGarding}";
+        nrOfSoldiersText.text = $"Nr of soldiers: {moduleToShow.nextTurnBoardingStorageSpace}";
 
         //Toggles
         //cangedByCode = true;    //To prevent toggle.onvaluechanged to fire when toggle are setup at start.
@@ -450,7 +450,7 @@ public class ModuleViewManager : MonoBehaviour
 
         //Show nr of soldiers
         minmaxText.text = $"0                 {SelectionService.Instance.SelectedUnit.unitInventory.GetItemCount(Resources.Load<ItemDefinition>("Units/SoldierCrew"))}";
-        nrOfSoldiersText.text = $"Nr of soldiers: {SelectionService.Instance.SelectedUnit.moduleRuntimeList[selectedModuleSlot_index].nextTurnSolidersGarding}";
+        nrOfSoldiersText.text = $"Nr of soldiers: {SelectionService.Instance.SelectedUnit.moduleRuntimeList[selectedModuleSlot_index].nextTurnBoardingStorageSpace}";
 
         //Toggles
         for (int i = 0; i < toggles.Length; i++)
@@ -467,7 +467,7 @@ public class ModuleViewManager : MonoBehaviour
         int nrOfSoldiersIninventory = SelectionService.Instance.SelectedUnit.unitInventory.GetItemCount(Resources.Load<ItemDefinition>("Units/SoldierCrew"));
         nrOfSoldiersSlider.maxValue = nrOfSoldiersIninventory;
 
-        float newSlideValue = nrOfSoldiersIninventory * (float)SelectionService.Instance.SelectedUnit.moduleRuntimeList[selectedModuleSlot_index].nextTurnSolidersGarding / nrOfSoldiersIninventory;
+        float newSlideValue = nrOfSoldiersIninventory * (float)SelectionService.Instance.SelectedUnit.moduleRuntimeList[selectedModuleSlot_index].nextTurnBoardingStorageSpace / nrOfSoldiersIninventory;
         nrOfSoldiersSlider.SetValueWithoutNotify(newSlideValue);
     }
 
@@ -662,13 +662,13 @@ public class ModuleViewManager : MonoBehaviour
         ItemInstance selectedModule = SelectionService.Instance.SelectedUnit.moduleRuntimeList[slotSelected_index]; // Just to make code cleaner
 
         int newValue = Mathf.RoundToInt(nrOfSoldiersSlider.value);
-        int difference = newValue - selectedModule.nextTurnSolidersGarding;
+        int difference = newValue - selectedModule.nextTurnBoardingStorageSpace;
         int totalAmountSoldierInInventory = SelectionService.Instance.SelectedUnit.unitInventory.GetItemCount(Resources.Load<ItemDefinition>("Units/SoldierCrew"));
 
         int totGardingSoldeiers = 0;
         for (int i = 0; i < SelectionService.Instance.SelectedUnit.moduleRuntimeList.Count; i++)
         {
-            totGardingSoldeiers += SelectionService.Instance.SelectedUnit.moduleRuntimeList[i].nextTurnSolidersGarding;
+            totGardingSoldeiers += SelectionService.Instance.SelectedUnit.moduleRuntimeList[i].nextTurnBoardingStorageSpace;
         }
 
         int availableSoldiers = totalAmountSoldierInInventory - totGardingSoldeiers;
@@ -678,28 +678,28 @@ public class ModuleViewManager : MonoBehaviour
             // Player wants to ADD soldiers
             if (availableSoldiers >= difference)
             {
-                selectedModule.nextTurnSolidersGarding += difference;
+                selectedModule.nextTurnBoardingStorageSpace += difference;
             }
             else
             {
                 // Not enough soldiers → clamp
-                selectedModule.nextTurnSolidersGarding += availableSoldiers;
+                selectedModule.nextTurnBoardingStorageSpace += availableSoldiers;
             }
         }
         else if (difference < 0)
         {
             // Player wants to REMOVE soldiers
-            selectedModule.nextTurnSolidersGarding += difference;        // difference is negative
+            selectedModule.nextTurnBoardingStorageSpace += difference;        // difference is negative
         }
 
         // Update slider to actual value (important!)
-        nrOfSoldiersSlider.value = selectedModule.nextTurnSolidersGarding;
+        nrOfSoldiersSlider.value = selectedModule.nextTurnBoardingStorageSpace;
 
         //Update Sodlier Text with new value
-        nrOfSoldiersText.text = $"Nr of soldiers: {selectedModule.nextTurnSolidersGarding}";
+        nrOfSoldiersText.text = $"Nr of soldiers: {selectedModule.nextTurnBoardingStorageSpace}";
 
         //Update ModuleView slot with new soldier guarding value.
-        slotList[slotSelected_index].soliderGarding.text = $"Soldiers: {selectedModule.nextTurnSolidersGarding}";
+        slotList[slotSelected_index].soliderGarding.text = $"Soldiers: {selectedModule.nextTurnBoardingStorageSpace}";
     }
 
     public void Boarding_ButtonPressed()

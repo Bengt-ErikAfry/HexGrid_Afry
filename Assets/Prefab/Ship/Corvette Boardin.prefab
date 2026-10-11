@@ -574,7 +574,6 @@ GameObject:
   m_Component:
   - component: {fileID: 4728527756985956165}
   - component: {fileID: 1859667532016190750}
-  - component: {fileID: 5716987372606981577}
   - component: {fileID: 6263891100024188914}
   - component: {fileID: 7029835652634719218}
   - component: {fileID: 8106574765749843089}
@@ -621,6 +620,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Unit
   unitName: Corvette Boardin
   unitSprite: {fileID: 21300000, guid: 9b5b7e00627fbf948b303397fb71654c, type: 3}
+  currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
   col_DetectionRange: {fileID: 6556376555356945585}
   detectionRange: 3
@@ -662,11 +662,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   target_Unit_Script: {fileID: 0}
   target_LastKnownPos: {x: 0, y: 0, z: 0}
   followTarget: 0
@@ -717,11 +717,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 11400000, guid: 7565a3a236ec68148ab77f8b820fb5bf, type: 2}
     shipType: 2
     currentHealth: 100
@@ -748,11 +748,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 11400000, guid: 9e2d753d29b54964484cff2b1cdc8260, type: 2}
     shipType: 2
     currentHealth: 100
@@ -779,11 +779,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 11400000, guid: 9e2d753d29b54964484cff2b1cdc8260, type: 2}
     shipType: 2
     currentHealth: 0
@@ -810,11 +810,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 0}
     shipType: 0
     currentHealth: 0
@@ -841,11 +841,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 0}
     shipType: 2
     currentHealth: 100
@@ -872,11 +872,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 11400000, guid: 01fedce0385dcb14c84e19b2ba14453b, type: 2}
     shipType: 2
     currentHealth: 0
@@ -903,11 +903,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 0}
     shipType: 2
     currentHealth: 100
@@ -934,11 +934,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 11400000, guid: daba6cc02d9213945b7196b5282e2fdc, type: 2}
     shipType: 2
     currentHealth: 0
@@ -965,11 +965,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 300
-    nextTurnSolidersGarding: 300
   - ItemDefinition: {fileID: 0}
     shipType: 0
     currentHealth: 0
@@ -996,11 +996,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 0}
     shipType: 0
     currentHealth: 0
@@ -1027,11 +1027,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
   - ItemDefinition: {fileID: 0}
     shipType: 2
     currentHealth: 100
@@ -1058,24 +1058,11 @@ MonoBehaviour:
     nextTurnStorageSpace: 0
     currentMiningSpeed: 0
     nextTurnMiningSpeed: 0
+    currentBoardingStorageSpace: 0
+    nextTurnBoardingStorageSpace: 0
     isOnline: 1
     isBroken: 0
     isDestroyd: 0
-    currentSolidersGarding: 0
-    nextTurnSolidersGarding: 0
---- !u!114 &5716987372606981577
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7694490965983866302}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fda3038bcd85dd149ae2689de95fe070, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FogVisionSource
-  radius: 3
 --- !u!54 &6263891100024188914
 Rigidbody:
   m_ObjectHideFlags: 0

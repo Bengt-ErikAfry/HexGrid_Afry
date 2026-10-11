@@ -35,13 +35,13 @@ public class ItemInstance
     public int nextTurnStorageSpace;
     public int currentMiningSpeed;
     public int nextTurnMiningSpeed;
+    public int currentBoardingStorageSpace;
+    public int nextTurnBoardingStorageSpace;
 
     public bool isOnline = false;
     public bool isBroken = false;
     public bool isDestroyd = false;
 
-    public int currentSolidersGarding = 0;
-    public int nextTurnSolidersGarding = 0;
     public ItemInstance Clone()
     {
         return (ItemInstance)this.MemberwiseClone();

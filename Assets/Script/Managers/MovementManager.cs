@@ -180,14 +180,18 @@ public class MovementManager : MonoBehaviour
                 {
                     Vector3 centerWorld = centers[s];
 
-                    // >>> ADDED: notify TileManager that unit entered tile at coords[s]
-                    // Use ceiling of detectionRange to cover fractional ranges
-                    if (TileManager.Instance != null && unit != null)
+                    //Save the unit's current position to update visibility when unit are saved/load between map change
+                    if (unit != null)
+                    {
+                        unit.currentTileCoord = coords[s];
+                    }
+
+                        // Use ceiling of detectionRange to cover fractional ranges
+                        if (TileManager.Instance != null && unit != null)
                     {
                         int range = Mathf.CeilToInt(unit.detectionRange);
                         TileManager.Instance.UpdateUnitVisibilityOnMoveFromStored(unit, coords[s], range);
                     }
-                    // <<< END ADDED
 
                     // existing minable reveal logic (preserve)
                     if (unit.unitLocationType == Unit.UnitLocationType.MinableObject)
