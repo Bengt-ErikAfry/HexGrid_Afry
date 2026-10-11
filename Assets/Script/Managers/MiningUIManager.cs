@@ -136,7 +136,7 @@ public class MiningUIManager : MonoBehaviour
         selectedOrbitalUnit.transform.position = tileToMoveTO.transform.position;
 
         //Set unit location to tile location
-        selectedOrbitalUnit.unitLocationType = Unit.UnitLocationType.MinableObject;
+        //selectedOrbitalUnit.unitLocationType = Unit.UnitLocationType.MinableObject;
 
         //Remove from orbiting units list
         UpdateOrbitingUnitView();

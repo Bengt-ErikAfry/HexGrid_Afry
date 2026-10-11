@@ -822,16 +822,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
+  unitId: 
   unitName: Cargo Hualer 2
-  unitSprite: {fileID: 21300000, guid: 1dc7e41da34b7744c96b4e51c147d62c, type: 3}
+  unitType: 0
+  shipType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
-  col_DetectionRange: {fileID: 750209012}
   detectionRange: 5
   otherInDetectionRange: []
   detectedByOther: []
   grafics: {fileID: 0}
-  unitType: 0
   isPlayerControlled: 1
   haveAttackedThisTurn: 0
   gunnerHitChance: 50
@@ -15636,16 +15636,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
+  unitId: 
   unitName: Asteroid Field
-  unitSprite: {fileID: 21300000, guid: 90e4be184d0ebb04ebd0d41611dc022e, type: 3}
+  unitType: 2
+  shipType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
-  col_DetectionRange: {fileID: 1978080460}
   detectionRange: 0
   otherInDetectionRange: []
   detectedByOther: []
   grafics: {fileID: 0}
-  unitType: 2
   isPlayerControlled: 0
   haveAttackedThisTurn: 0
   gunnerHitChance: 50
@@ -17873,7 +17873,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91a69c9f37604204490ecfab831e2161, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Col_DetectionRange
-  unit_Script: {fileID: 15586828}
 --- !u!212 &750209015
 SpriteRenderer:
   serializedVersion: 2
@@ -21142,16 +21141,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
+  unitId: 
   unitName: Asteroid
-  unitSprite: {fileID: -1064938584130821537, guid: 5d6e7c2934f8a0c4caf76b0d4b617de3, type: 3}
+  unitType: 1
+  shipType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
-  col_DetectionRange: {fileID: 1735320063}
   detectionRange: 0
   otherInDetectionRange: []
   detectedByOther: []
   grafics: {fileID: 0}
-  unitType: 1
   isPlayerControlled: 0
   haveAttackedThisTurn: 0
   gunnerHitChance: 50
@@ -25850,6 +25849,51 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1140368836}
   m_CullTransparentMesh: 1
+--- !u!1 &1143199924
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1143199925}
+  - component: {fileID: 1143199926}
+  m_Layer: 0
+  m_Name: SaveManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1143199925
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143199924}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1511860453}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1143199926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1143199924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee46b85f72d28b5408b123c5f618b1a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveManager
+  defaultFileName: units_save.json
 --- !u!1001 &1155320138
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -26555,7 +26599,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91a69c9f37604204490ecfab831e2161, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Col_DetectionRange
-  unit_Script: {fileID: 1762917493}
 --- !u!212 &1199331881
 SpriteRenderer:
   serializedVersion: 2
@@ -33378,6 +33421,7 @@ Transform:
   m_Children:
   - {fileID: 773955521}
   - {fileID: 1696404447}
+  - {fileID: 1143199925}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1511860454
@@ -39347,7 +39391,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91a69c9f37604204490ecfab831e2161, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Col_DetectionRange
-  unit_Script: {fileID: 928467287}
 --- !u!212 &1735320066
 SpriteRenderer:
   serializedVersion: 2
@@ -40202,16 +40245,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
+  unitId: 
   unitName: Miner
-  unitSprite: {fileID: 21300000, guid: 9f356ed3267b3f247b44730d2d629e38, type: 3}
+  unitType: 0
+  shipType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
-  col_DetectionRange: {fileID: 1199331878}
   detectionRange: 3
   otherInDetectionRange: []
   detectedByOther: []
   grafics: {fileID: 0}
-  unitType: 0
   isPlayerControlled: 1
   haveAttackedThisTurn: 0
   gunnerHitChance: 50
@@ -43542,7 +43585,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91a69c9f37604204490ecfab831e2161, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Col_DetectionRange
-  unit_Script: {fileID: 660021197}
 --- !u!212 &1978080463
 SpriteRenderer:
   serializedVersion: 2
@@ -48138,7 +48180,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91a69c9f37604204490ecfab831e2161, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Col_DetectionRange
-  unit_Script: {fileID: 8480630934204632552}
 --- !u!1 &3125094530328220428
 GameObject:
   m_ObjectHideFlags: 0
@@ -50263,16 +50304,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
+  unitId: 
   unitName: Pirate 1
-  unitSprite: {fileID: 21300000, guid: 9f356ed3267b3f247b44730d2d629e38, type: 3}
+  unitType: 0
+  shipType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
-  col_DetectionRange: {fileID: 3650990475648710049}
   detectionRange: 5
   otherInDetectionRange: []
   detectedByOther: []
   grafics: {fileID: 930794143547922545}
-  unitType: 0
   isPlayerControlled: 0
   haveAttackedThisTurn: 0
   gunnerHitChance: 50

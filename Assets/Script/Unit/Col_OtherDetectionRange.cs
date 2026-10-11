@@ -1,7 +1,12 @@
 using UnityEngine;
 
+/// <summary>
+/// This is not used. 
+/// New system with tiles and fog of war is used instead.
+/// </summary>
 public class Col_OtherDetectionRange : MonoBehaviour
 {
+    /*
     public Unit unit_Script;
 
     private void Start()
@@ -38,4 +43,5 @@ public class Col_OtherDetectionRange : MonoBehaviour
             unit_Script.DetectionTriggerExitWithOther(other.transform.root.gameObject);
         }
     }
+    */
 }

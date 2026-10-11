@@ -21,7 +21,8 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
         if (unit != null)
         {
             nametext.text = unit.unitName;
-            icon.sprite = unit.unitSprite;
+            ; // Assuming shipType has an icon property
+            icon.sprite = ShipClassesManager.Instance.GetShipIcon(unit.shipType);
         }
     }
 

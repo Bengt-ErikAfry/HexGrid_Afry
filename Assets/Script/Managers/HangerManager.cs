@@ -371,11 +371,11 @@ public class HangerManager : MonoBehaviour
         //Set Item type
         if (currentBuildSlotList[0].CurrentItem.shipType == ShipType.Stelite)
         {
-            newShipUnit_Script.unitType = Unit.UnitType.Satelite;
+            newShipUnit_Script.unitType = UnitType.Satelite;
         }
         else
         {
-            newShipUnit_Script.unitType = Unit.UnitType.Ship;
+            newShipUnit_Script.unitType = UnitType.Ship;
         }
 
         //Sen message about new ship tp player

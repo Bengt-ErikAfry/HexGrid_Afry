@@ -25,7 +25,7 @@ public class GameManager : MonoBehaviour
     public GameObject FogOfWarDisplay;
     public bool activateFogOfWar = true;
 
-    public List<Unit> unitsList = new List<Unit>();     //All units. Sets in the inspector.
+    public List<Unit> unitsList = new List<Unit>();     //All units. DO NOT SET in the inspector. This list is populated at runtime by the Unit script when a unit is created.
     public List<Unit> playerUnits = new List<Unit>();   //Player controled units. DO NOT Set in the inspector
     public List<Unit> enemyUnits = new List<Unit>();    //Enemy list. DO NOT Set in the inspector
 

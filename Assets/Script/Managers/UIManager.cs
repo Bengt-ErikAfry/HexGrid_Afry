@@ -403,7 +403,7 @@ public class UIManager : MonoBehaviour
             StackViewUnit_Entery stackViewUnit_Entery_Script = newStackViewPrefab.GetComponent<StackViewUnit_Entery>();
 
             //Set Image
-            stackViewUnit_Entery_Script.unitSprite.sprite = unitsInClickedHex[i].unitSprite;
+            stackViewUnit_Entery_Script.unitSprite.sprite = ShipClassesManager.Instance.GetShipIcon(unitsInClickedHex[i].shipType);
 
             //Set name
             stackViewUnit_Entery_Script.unitName.text = unitsInClickedHex[i].unitName;
@@ -428,28 +428,9 @@ public class UIManager : MonoBehaviour
             ResetUI();
 
             selectedUnitView.SetActive(true);
-            selectedUnitImage.sprite = unit_script.unitSprite;
+            selectedUnitImage.sprite = ShipClassesManager.Instance.GetShipIcon(unit_script.shipType);
             selectedUnitNameText.text = unit_script.unitName;
             selectedUnitQuickStatsText.text = $"Movment{unit_script.movedThisTurn} / {unit_script.shipRuntimeData.currentMovmentRange}\n Have Attacked: {unit_script.haveAttackedThisTurn}";
-            switch (unit_script.unitType)
-            {
-                case Unit.UnitType.Ship:
-                    break;
-                    /* ----- Remove with new minging system
-                case Unit.UnitType.Asteroid:
-                    break;
-                case Unit.UnitType.AsteroidField:
-                    ShowAsteroidField_SelectedUnitView();
-                    break;*/
-                case Unit.UnitType.CargoHualer:
-                    break;
-                case Unit.UnitType.EnemyShip:
-                    break;
-                case Unit.UnitType.Probe:
-                    break;
-                default:
-                    break;
-            }
         }
         else
         {

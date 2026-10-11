@@ -104,9 +104,10 @@ public class ModuleViewManager : MonoBehaviour
         slotGOList.Clear();
 
         //Set background image
-        if (unit.unitSprite != null)
+        Sprite shipLayoutBackgroundSprite = ShipClassesManager.Instance.GetShipLayoutBackground(unit.shipRuntimeData.shipType);
+        if (shipLayoutBackgroundSprite != null)
         {
-            shipImage.GetComponent<Image>().sprite = unit.unitSprite;
+            shipImage.GetComponent<Image>().sprite = shipLayoutBackgroundSprite;
         }
         else
         {

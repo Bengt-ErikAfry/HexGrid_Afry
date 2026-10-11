@@ -10,6 +10,8 @@ public class ItemDefinition : ScriptableObject
     //All data are specified after a DEFAULT FIGHTER Ship type. Then "Shiptype" handels the diference between shiptypes.
 
     [Header("Item stats(Static)")]
+    [Tooltip("Stable id used for save/load (set in inspector or generated in editor)")]
+    public string itemId;
     public string itemName;
     public Sprite icon;
     public ItemType itemType;

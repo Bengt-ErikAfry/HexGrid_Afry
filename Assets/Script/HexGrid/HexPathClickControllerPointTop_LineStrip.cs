@@ -827,17 +827,17 @@ public void HandleTapUnified(Vector2 screenPos)
     bool miningViewActive = MiningUIManager.Instance != null && MiningUIManager.Instance.MinabelObject_View != null && MiningUIManager.Instance.MinabelObject_View.activeSelf;
 
     // If the selected unit is logically inside a minable, interpret input for minable pathing as well.
-    bool unitInMinable = selected != null && selected.unitLocationType == Unit.UnitLocationType.MinableObject;
+    //bool unitInMinable = selected != null && selected.unitLocationType == Unit.UnitLocationType.MinableObject;
 
     // Prefer minable handling when either the UI is shown (for correct coordinate mapping)
     // or when the unit is logically inside the minable (gameplay authoritative).
-    if (miningViewActive || unitInMinable)
+    /*if (miningViewActive || unitInMinable)
     {
         HandleTapMiningObjectView(screenPos);
     }
     else
     {
         HandleTap(screenPos);
-    }
+    }*/
 }
 }

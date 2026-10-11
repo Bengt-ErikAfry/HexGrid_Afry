@@ -23,6 +23,11 @@ public class ShipClassesManager : MonoBehaviour
         var shipClass = shipClasses.Find(s => s.shipType == shipType);
         return shipClass != null ? shipClass.ShipLayoutBackground : null;
     }
+    public Sprite GetShipIcon(ShipType shipType)
+    {
+        var shipClass = shipClasses.Find(s => s.shipType == shipType);
+        return shipClass != null ? shipClass.hullIcon : null;
+    }
     public TextAsset GetShipLayoutJson(ShipType shipType)
     {
         var shipClass = shipClasses.Find(s => s.shipType == shipType);

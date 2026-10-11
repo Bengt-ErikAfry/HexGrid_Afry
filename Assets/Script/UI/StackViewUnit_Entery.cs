@@ -66,7 +66,7 @@ public class StackViewUnit_Entery : MonoBehaviour
             if (SelectionService.Instance.SelectedUnit != null)
             {
                 UIManager.Instance.selectedUnitView.SetActive(true);
-                UIManager.Instance.selectedUnitImage.sprite = SelectionService.Instance.SelectedUnit.unitSprite;
+                UIManager.Instance.selectedUnitImage.sprite = ShipClassesManager.Instance.GetShipIcon(SelectionService.Instance.SelectedUnit.shipType);
                 UIManager.Instance.selectedUnitNameText.text = SelectionService.Instance.SelectedUnit.unitName;
             }
             else
@@ -74,19 +74,20 @@ public class StackViewUnit_Entery : MonoBehaviour
                 UIManager.Instance.selectedUnitView.SetActive(false);
             }
 
+            /*
             //Show asteroidview if asteroid selected
             if (SelectionService.Instance.SelectedUnit.unitType == Unit.UnitType.Asteroid)
             {
                 /*   --- remove/redo when new mining system
                 UIManager.Instance.ShowAsteroidView();
                 AsteroidManager.Instance.ShowAsteroidView();
-                */
+                *//*
             }
             else
             {
                 //Show selected unit view
                 if (SelectionService.Instance.SelectedUnit != null) UIManager.Instance.ShowSelectedUnitView(SelectionService.Instance.SelectedUnit);
-            }
+            }*/
         }
         else if(GameStateMachine.Instance.CurrentId == GameplayStateId.SetWaypoint)
         {

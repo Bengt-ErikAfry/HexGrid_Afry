@@ -9,33 +9,32 @@ using UnityEngine;
 
 public class Unit : MonoBehaviour
 {
+    public string unitId; // Unique identifier for this unit, used for saving/loading and referencing.
     public string unitName = "Unit";
-    public Sprite unitSprite;
-    //public int movmentRange = 3;
+    public UnitType unitType;
+    public ShipType shipType;
     public Vector2Int currentTileCoord;
     public int movedThisTurn = 0;
-    public Transform col_DetectionRange;
+    private Transform col_DetectionRange;
     public float detectionRange = 5f;
     public List<GameObject> otherInDetectionRange = new List<GameObject>();
     public List<GameObject> detectedByOther = new List<GameObject>();
     //public int initativ = 5;
     public Transform grafics;
-    public UnitType unitType;
+
     public bool isPlayerControlled = true;
     public bool haveAttackedThisTurn = false;
     public int gunnerHitChance = 50;
     public int gunnerCriticalHitChance = 10;
     public Inventory unitInventory; //Not set in the inspector.
     public List<GameObject> pool_hitInfo = new List<GameObject>();
-    public bool isAmingForModule=false;
+    public bool isAmingForModule = false;
     public ItemInstance moduleToHit;
     public Unit target_Unit_Script;
     public Vector3 target_LastKnownPos;
     public bool followTarget;
     public bool hasMinedThisTurn;
     public UnitLocationType unitLocationType = UnitLocationType.GameView;
-
-    //public List<Vector2Int> currentMovePath { get; private set; } = new(); //used in movementManager to move unit.
     public List<Vector2Int> currentMovePath = new(); //used in movementManager to move unit.
 
 
@@ -60,35 +59,43 @@ public class Unit : MonoBehaviour
     }
     private void Start()
     {
+        //Set detection range collider size
+        col_DetectionRange = this.transform.GetChild(1);
         col_DetectionRange.localScale = new Vector3(detectionRange * 2, detectionRange * 2, 1);
-        laserBeam_Script = GetComponent<LaserBeam>();
 
-        StartCoroutine(InitUnit());
-    }
-    private IEnumerator InitUnit()
-    {
-        // scale detection collider etc.
-        col_DetectionRange.localScale = new Vector3(detectionRange * 2, detectionRange * 2, 1);
+        //Get Components.
         laserBeam_Script = GetComponent<LaserBeam>();
-
-        // Wait until TileManager exists and has built its lookup
-        yield return new WaitUntil(() => TileManager.Instance != null && TileManager.Instance.HasBuiltLookup);
 
         //Add to GameManager list.
+        GameManager.Instance.unitsList.Add(this);
         if (isPlayerControlled)
         {
             //Add to player unit list
             GameManager.Instance.playerUnits.Add(this);
-
-            //Register to Tile Fog Of War
-            TileManager.Instance.RegisterUnit(this, (int)detectionRange);
         }
         else
         {
             //Add to enemy unit list
             GameManager.Instance.enemyUnits.Add(this);
         }
-        GameManager.Instance.unitsList.Add(this);
+
+        StartCoroutine(InitUnit()); //To register for FOG OF WAR to work.
+    }
+    private IEnumerator InitUnit()
+    {
+        // Wait until TileManager exists and has built its lookup
+        yield return new WaitUntil(() => TileManager.Instance != null && TileManager.Instance.HasBuiltLookup);
+
+        //Add to GameManager list.
+        if (isPlayerControlled)
+        {
+            //Register to Tile Fog Of War
+            TileManager.Instance.RegisterUnit(this, (int)detectionRange);
+        }
+        else
+        {
+            //Enemy units are not registered for fog of war, but you can add any other initialization logic here if needed.
+        }
     }
     public IEnumerator DoEnemyTurn(System.Action onFinished)
     {
@@ -198,14 +205,14 @@ public class Unit : MonoBehaviour
                 }
             }
         }
-        return haveModule; 
+        return haveModule;
     }
 
     //When unit die or gets removed from game.
     public void RemoveUnitFromPlay()
     {
         //Remove from Gamanager list.
-        if(isPlayerControlled)
+        if (isPlayerControlled)
         {
             //Remove from player unit list
             GameManager.Instance.playerUnits.Remove(this);
@@ -221,7 +228,7 @@ public class Unit : MonoBehaviour
         //FogOfWarManager.Instance.Unregister(this.GetComponent<FogVisionSource>());
 
         //Unsubscribe from Tile Fog Of War
-        TileManager.Instance.UnregisterUnit(this);  
+        TileManager.Instance.UnregisterUnit(this);
 
         //Delite GO
         Destroy(this.gameObject);
@@ -245,7 +252,7 @@ public class Unit : MonoBehaviour
             // Player collide with Enemy
             if (other.transform.root.gameObject.tag == "Enemy")
             {
-              //  GameManager.Instance.AddObjectToTurnOrder(other.transform.root.gameObject.GetComponent<Unit>());
+                //  GameManager.Instance.AddObjectToTurnOrder(other.transform.root.gameObject.GetComponent<Unit>());
                 other_Unit_script.grafics.gameObject.SetActive(true);
             }
 
@@ -271,27 +278,27 @@ public class Unit : MonoBehaviour
                 // Player exit collide with Enemy
                 if (other.transform.root.gameObject.tag == "Enemy")
                 {
-       //             GameManager.Instance.RemoveObjectToTurnOrder(other.transform.root.gameObject.GetComponent<Unit>());
+                    //             GameManager.Instance.RemoveObjectToTurnOrder(other.transform.root.gameObject.GetComponent<Unit>());
                     other_Unit_script.grafics.gameObject.SetActive(false);
                 }
             }
         }
     }
-
-    public enum UnitType
-    {
-        Ship,
-        Asteroid,
-        AsteroidField,
-        CargoHualer,
-        EnemyShip,
-        Probe,
-        Satelite
-    }
-    public enum UnitLocationType
-    {
-        GameView,
-        MinableObject,
-        Outpost
-    }
 }
+public enum UnitType
+{
+    Ship,
+    Asteroid,
+    AsteroidField,
+    CargoHualer,
+    EnemyShip,
+    Probe,
+    Satelite
+}
+public enum UnitLocationType
+{
+    GameView,
+    MinableObject,
+    Outpost
+}
+

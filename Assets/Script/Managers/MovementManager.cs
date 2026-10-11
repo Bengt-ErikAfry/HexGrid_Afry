@@ -193,6 +193,7 @@ public class MovementManager : MonoBehaviour
                         TileManager.Instance.UpdateUnitVisibilityOnMoveFromStored(unit, coords[s], range);
                     }
 
+                    /*
                     // existing minable reveal logic (preserve)
                     if (unit.unitLocationType == Unit.UnitLocationType.MinableObject)
                     {
@@ -202,6 +203,7 @@ public class MovementManager : MonoBehaviour
                             minable.RevealTileByWorldPos(centerWorld);
                         }
                     }
+                    */
                 }
 
                 lastRevealedStep = newSteps;
