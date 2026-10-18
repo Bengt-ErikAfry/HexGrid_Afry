@@ -12,7 +12,7 @@ public class Unit : MonoBehaviour
     public string unitId; // Unique identifier for this unit, used for saving/loading and referencing.
     public string unitName = "Unit";
     public UnitType unitType;
-    public ShipType shipType;
+    public ShipType shipType;   // Deside what icon in selection view to use. Also used for ship stats.
     public Vector2Int currentTileCoord;
     public int movedThisTurn = 0;
     private Transform col_DetectionRange;

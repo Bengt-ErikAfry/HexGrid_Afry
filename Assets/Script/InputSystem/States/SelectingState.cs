@@ -79,6 +79,8 @@ public class SelectingState : IGameState
         //Start check for units.
         if(hits.Length > 0)
         {
+            SelectionService.Instance.ClearSelectedUnit();
+            SelectionService.Instance.ClearSelectedAsteroid();
             // Sort closest to farthest — useful for resolving the clicked hex
             System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
@@ -101,6 +103,15 @@ public class SelectingState : IGameState
             // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
             if (unitsInClickedHex.Count == 0)
             {
+                // Hit something without a UNIT.CS, but maybe it's a child of a Unit. Check the parents.
+                AsteroidComponent asteroid = hits[0].collider.transform.GetComponentInParent<AsteroidComponent>();
+                if(asteroid != null)
+                {
+                    //Asteroid selected, get all units in the asteroid's tile
+                    SelectionService.Instance.SetSelectedAsteroid(asteroid);
+                }
+
+                //Hit something without a UNIT.CS
                 var firstUnit = hits.Select(h => h.collider.transform.GetComponent<Unit>())
                                     .FirstOrDefault(u => u != null);
                 if (firstUnit != null)

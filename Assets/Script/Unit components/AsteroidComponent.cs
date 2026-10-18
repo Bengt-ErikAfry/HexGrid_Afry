@@ -11,6 +11,15 @@ using Random = UnityEngine.Random;
 
 public class AsteroidComponent : MonoBehaviour
 {
+    public string asteroidName;
+    public Sprite asteroidIcon;
+    public int nrOfSatelitesSurvaying;
+    public int turneItTakesToSurvay;
+    public int nrOfTurnesSuveyed;
+
+
+
+    /*
     public int amountOfProducingMiningOutpost;
     public int amountOfStoredRocks;
     public float amountOfAvalibuleOre;
@@ -104,7 +113,7 @@ public class AsteroidComponent : MonoBehaviour
             else
             {
                 surfaceSlotDataList[index].hasAbandonMiningOutpost = false;
-            }*/
+            }
         }
 
         //Set ore amount for each slot
@@ -140,9 +149,9 @@ public class AsteroidComponent : MonoBehaviour
             }
 
             index = (index + 1) % surfaceSlotDataList.Count;
-        }*/
+        }
     }
-
+/*
     public void StartSurvay()
     {
         if (nrOfSatelitesOnPlanet > 0)
@@ -224,7 +233,7 @@ public class AsteroidComponent : MonoBehaviour
                     }
                 }
             }
-        }*/
+        }
     }
     public void PlayerNewTurn()
     {
@@ -278,6 +287,6 @@ public class AsteroidComponent : MonoBehaviour
                     amountOfStoredRocks++;            
                 }
             }
-        }*/
-    }
+        }
+    }*/
 }

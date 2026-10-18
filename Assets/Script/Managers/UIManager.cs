@@ -47,6 +47,7 @@ public class UIManager : MonoBehaviour
 
     public Sprite emptyHexIcon;
 
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -64,6 +65,7 @@ public class UIManager : MonoBehaviour
         if (SelectionService.Instance != null)
         {
             SelectionService.Instance.OnSelectionChanged += OnSelectionChanged;
+            SelectionService.Instance.OnAsteroidSelectedChanged += OnAsteroidSelectionChanged;
             unit_script = SelectionService.Instance.SelectedUnit;
             //UpdateRouteButton(unit_script);
             ShowSelectedUnitView(unit_script);
@@ -81,6 +83,7 @@ public class UIManager : MonoBehaviour
             yield return null;
 
         SelectionService.Instance.OnSelectionChanged += OnSelectionChanged;
+        SelectionService.Instance.OnAsteroidSelectedChanged += OnAsteroidSelectionChanged;
         SelectionService.Instance.OnHexClicked += OnHexClicked;
         unit_script = SelectionService.Instance.SelectedUnit;
         //UpdateRouteButton(unit_script);
@@ -92,6 +95,7 @@ public class UIManager : MonoBehaviour
     {
         if (SelectionService.Instance != null)
             SelectionService.Instance.OnSelectionChanged -= OnSelectionChanged;
+        SelectionService.Instance.OnAsteroidSelectedChanged -= OnAsteroidSelectionChanged;
         SelectionService.Instance.OnHexClicked -= OnHexClicked;
 
         if (_waitForSelectionServiceCoroutine != null)
@@ -125,6 +129,16 @@ public class UIManager : MonoBehaviour
             HexGridManager.Instance.CalculateRoutePath(unit);
         }
     }
+
+    private void OnAsteroidSelectionChanged(AsteroidComponent asteroid)
+    {
+        //Show UI for selected unit (or hide if null)
+        ShowSelectedAsteroidView(asteroid);
+
+        //Hide UI
+        HideAllUI();
+    }
+
     private void OnHexClicked(Vector3 worldPos)
     {
         //Show UI for selected unit (or hide if null)
@@ -420,6 +434,39 @@ public class UIManager : MonoBehaviour
 
     // UPDATED: explicit parameter — show view for provided unit (no InputManager dependency)
     public void ShowSelectedUnitView(Unit unit)
+    {
+        if (unit != null)
+        {
+            unit_script = unit;
+
+            ResetUI();
+
+            selectedUnitView.SetActive(true);
+            selectedUnitImage.sprite = ShipClassesManager.Instance.GetShipIcon(unit_script.shipType);
+            selectedUnitNameText.text = unit_script.unitName;
+            selectedUnitQuickStatsText.text = $"Movment{unit_script.movedThisTurn} / {unit_script.shipRuntimeData.currentMovmentRange}\n Have Attacked: {unit_script.haveAttackedThisTurn}";
+        }
+        else
+        {
+            selectedUnitView.SetActive(false);
+        }
+    }
+
+    public void ShowSelectedAsteroidView(AsteroidComponent asteroid)
+    {
+        if (asteroid != null)
+        {
+            // Show UI for selected asteroid
+            ResetUI();
+
+            selectedUnitView.SetActive(true);
+            selectedUnitImage.sprite = asteroid.asteroidIcon;
+            selectedUnitNameText.text = asteroid.asteroidName;
+            selectedUnitQuickStatsText.text = "Click to enter";
+        }
+    }
+
+    public void OnUnitSelectionChanged(Unit unit)
     {
         if (unit != null)
         {

@@ -195,21 +195,42 @@ public class InfoScreenManager : MonoBehaviour
     //Called from UI button INFO
     public void ShowInfoScreen()
     {
-        if (SelectionService.Instance.SelectedUnit == null) return;
+        //Check if a unit is selected
+        if (SelectionService.Instance.SelectedUnit == null)
+        {
+            //Something else selected
+            if(SelectionService.Instance.SelectedAsteroid == null)
+            {
+                Debug.LogError("ShowInfoScreen called but nothing selected.");
+                return;
+            }
+            else
+            {
+                //Show asteroid view
+                AsteroidManager.Instance.ShowAsteroidView(SelectionService.Instance.SelectedAsteroid);
 
-        if (SelectionService.Instance.SelectedUnit.minableComponent == null)
-        { 
-            infoScreenRectTransform.localPosition = Vector2.zero;
-            unit_script = SelectionService.Instance.SelectedUnit;
-            UpdateInfoScreen_Start();
 
-            //Hide Selected unit view
-            UIManager.Instance.HideSelectedUnitView();
+                //Hide Selected unit view
+                UIManager.Instance.HideSelectedUnitView();
+            }
         }
         else
         {
-            //Minable Object
-            MiningUIManager.Instance.ShowMinable(SelectionService.Instance.SelectedUnit.minableComponent);
+            //Unit selected.
+            if (SelectionService.Instance.SelectedUnit.minableComponent == null)
+            {
+                infoScreenRectTransform.localPosition = Vector2.zero;
+                unit_script = SelectionService.Instance.SelectedUnit;
+                UpdateInfoScreen_Start();
+
+                //Hide Selected unit view
+                UIManager.Instance.HideSelectedUnitView();
+            }
+            else
+            {
+                //Minable Object
+                MiningUIManager.Instance.ShowMinable(SelectionService.Instance.SelectedUnit.minableComponent);
+            }
         }
     }
 
