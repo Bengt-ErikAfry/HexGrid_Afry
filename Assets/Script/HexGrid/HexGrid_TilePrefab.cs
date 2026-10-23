@@ -42,8 +42,11 @@ public class HexGrid_TilePrefab : MonoBehaviour
         if (tileHighlightGameObject != null)
         {
             tileHighlightGameObject.SetActive(highlight);
-            // Additional logic for setting highlight color can be added here if needed
-            tileHighlightGameObject.GetComponent<SpriteRenderer>().color = highlightColor;
+            var sr = tileHighlightGameObject.GetComponent<SpriteRenderer>();
+            if (sr != null)
+                sr.color = highlightColor;
+            else
+                Debug.LogWarning($"Tile at row {tileIndexRow}, col {tileIndexCol} has no SpriteRenderer on its highlight GameObject.");
         }
         else
         {
@@ -56,16 +59,39 @@ public class HexGrid_TilePrefab : MonoBehaviour
         // - Unexplored: hide tile content and use black/dark overlay
         // - Explored: show tile floor but not enemies; dim highlight
         // - Visible: show everything normally
+        if (tileVisibleStateGameObject == null)
+        {
+            Debug.LogWarning($"Tile at row {tileIndexRow}, col {tileIndexCol} does not have a tileVisibleStateGameObject assigned.");
+            return;
+        }
+
+        var sr = tileVisibleStateGameObject.GetComponent<SpriteRenderer>();
+        if (sr == null)
+        {
+            Debug.LogWarning($"Tile at row {tileIndexRow}, col {tileIndexCol} has no SpriteRenderer on its visible-state GameObject.");
+            return;
+        }
+
+        if (ColorManager.Instance == null)
+        {
+            Debug.LogWarning("ColorManager.Instance is null. Cannot apply visibility colors in editor/without ColorManager present.");
+            return;
+        }
+
+        // Example policy:
+        // - Unexplored: hide tile content and use black/dark overlay
+        // - Explored: show tile floor but not enemies; dim highlight
+        // - Visible: show everything normally
         switch (tileVisibilityState)
         {
             case TileVisibilityState.Unexplored:
-                if (tileHighlightGameObject != null) tileVisibleStateGameObject.GetComponent<SpriteRenderer>().color = ColorManager.Instance.tile_UnExplored;
+                sr.color = ColorManager.Instance.tile_UnExplored;
                 break;
             case TileVisibilityState.Explored:
-                if (tileHighlightGameObject != null) tileVisibleStateGameObject.GetComponent<SpriteRenderer>().color = ColorManager.Instance.tile_Explored;
+                sr.color = ColorManager.Instance.tile_Explored;
                 break;
             case TileVisibilityState.Visible:
-                if (tileHighlightGameObject != null) tileVisibleStateGameObject.GetComponent<SpriteRenderer>().color = Color.clear;
+                sr.color = Color.clear;
                 break;
         }
     }

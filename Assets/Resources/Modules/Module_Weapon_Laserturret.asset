@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
   m_Name: Module_Weapon_Laserturret
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: 02808425b9c54e5d9909ada456e22351
   itemName: Module Weapon Laser turret
   icon: {fileID: 0}
   itemType: 7

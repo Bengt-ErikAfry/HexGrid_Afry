@@ -54,6 +54,143 @@ public class AttackingState : IGameState
 
     public void OnTap(Vector2 screenPos)
     {
+
+        Debug.Log("AttackingState OnTap at " + screenPos);
+        if (CameraManager.Instance.isMovingCamera) return;
+
+        // Remove Range Highlight
+        TileManager.Instance?.ClearHighlights();
+
+        var cam = Camera.main;
+        Ray ray = cam.ScreenPointToRay(screenPos);
+
+        // Send ray to a plane at z=0 to get the world position of the tap.
+        Plane plane = new Plane(Vector3.forward, Vector3.zero);
+        if (!plane.Raycast(ray, out float enter))
+        {
+            Debug.LogWarning("Tap ray missed the gameplay plane.");
+            return;
+        }
+        Vector3 worldPos = ray.GetPoint(enter);
+
+        // Physics hits (used for units/asteroids)
+        RaycastHit[] hits = Physics.RaycastAll(ray, 500f, ~0, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+        // Get the hex tile that was clicked on.
+        HexGrid_TilePrefab hexClicked = TileManager.Instance.GetTileFromWorldPosition(worldPos);
+        if (hexClicked == null)
+        {
+            // Clicked outside tile grid -> cancel attack and return to selecting
+            if (SelectionService.Instance.SelectedUnit != null)
+                SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+
+            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+            TileManager.Instance.ClearHighlightedTiles();
+            Debug.Log("AttackingState OnTap: clicked outside tile grid -> cancelling attack and returning to Selecting.");
+            return;
+        }
+
+        // Authoritative clicked coord
+        Vector2Int clickedCoord = TileManager.Instance.WorldToAxial(worldPos);
+
+        // Find units on that hex using GameManager authoritative list
+        var unitsInClickedHex = new List<Unit>();
+        if (GameManager.Instance != null && GameManager.Instance.unitsList != null)
+        {
+            unitsInClickedHex = GameManager.Instance.unitsList
+                .Where(u => u != null && TileManager.Instance.WorldToAxial(u.transform.position) == clickedCoord)
+                .Distinct()
+                .ToList();
+        }
+
+        // Find asteroids on that hex
+        var asteroidsInClickedHex = UnityEngine.Object.FindObjectsOfType<AsteroidComponent>()
+            .Where(a => a != null && TileManager.Instance.WorldToAxial(a.transform.position) == clickedCoord)
+            .ToList();
+
+        // Case: empty tile (no asteroid and no unit) -> cancel attack and switch to selecting (and highlight tile)
+        if (unitsInClickedHex.Count == 0 && asteroidsInClickedHex.Count == 0)
+        {
+            if (SelectionService.Instance.SelectedUnit != null)
+                SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+
+            SelectionService.Instance.SetSelectedHex(worldPos);
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+            Debug.Log("AttackingState OnTap: empty tile -> cancelling attack, selecting hex and returning to Selecting.");
+            return;
+        }
+
+        // Case: multiple units OR asteroid + units -> show stack view
+        if (unitsInClickedHex.Count > 1 || (unitsInClickedHex.Count >= 1 && asteroidsInClickedHex.Count >= 1))
+        {
+            UIManager.Instance.ShowStackView(unitsInClickedHex, asteroidsInClickedHex, screenPos);
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log("AttackingState OnTap: multiple units or units+asteroid -> showing stack view.");
+            return;
+        }
+
+        // Case: single unit (no asteroid)
+        if (unitsInClickedHex.Count == 1 && asteroidsInClickedHex.Count == 0)
+        {
+            var unit = unitsInClickedHex[0];
+
+            // Don't target yourself
+            if (unit == SelectionService.Instance.SelectedUnit)
+            {
+                if (SelectionService.Instance.SelectedUnit != null)
+                    SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+                GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+                Debug.Log("AttackingState OnTap: clicked on self -> cancelling attack and returning to Selecting.");
+                return;
+            }
+
+            int rangeToTarget = AttackManager.Instance.GetRangeToTarget(SelectionService.Instance.SelectedUnit.gameObject, unit.gameObject);
+            Debug.Log($"AttackingState: rangeToTarget={rangeToTarget}, largestRange={largestRange}");
+
+            if (rangeToTarget <= largestRange)
+            {
+                // Target in range -> set target and proceed (attack flow handled elsewhere)
+                SelectionService.Instance.SelectedUnit.target_Unit_Script = unit;
+                TileManager.Instance.HighlightTileWorldPosition(worldPos);
+                Debug.Log($"AttackingState OnTap: target '{unit.unitName}' selected and is in range.");
+
+                // Show modules/info
+                InfoScreenManager.Instance.ShowModules();
+            }
+            else
+            {
+                // Target out of range -> give feedback and cancel attack
+                Debug.Log("AttackingState: Target is out of range, cancelling attack.");
+                SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+                GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+            }
+            return;
+        }
+
+        // Case: asteroid (no units)
+        if (unitsInClickedHex.Count == 0 && asteroidsInClickedHex.Count >= 1)
+        {
+            var asteroid = asteroidsInClickedHex[0];
+            SelectionService.Instance.SetSelectedAsteroid(asteroid);
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+            Debug.Log($"AttackingState OnTap: asteroid '{asteroid.asteroidJsonFileName}' selected -> switching to Selecting.");
+            return;
+        }
+
+        // Fallback: highlight tile and cancel attack
+        if (SelectionService.Instance.SelectedUnit != null)
+            SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
+        TileManager.Instance.HighlightTileWorldPosition(worldPos);
+        GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
+        Debug.Log("AttackingState OnTap: fallback -> cancelling attack and returning to Selecting.");
+
+
+
+
+        /*
         Debug.Log("AttackingState OnTap at " + screenPos);
         if (CameraManager.Instance.isMovingCamera) return;
 
@@ -192,124 +329,7 @@ public class AttackingState : IGameState
             // Set a default target so the player can see info about it in the UI
             SelectionService.Instance.SelectedUnit.target_Unit_Script = defaultUnit;
         }
-        
-
-
-
-
-        /*
-        Debug.Log("AttackingState OnTap at " + screenPos);
-        if (CameraManager.Instance.isMovingCamera) return;
-
-        //Remove Range Highlight
-        HexHighlighter.Instance.ClearRangeHighlights();
-
-        var cam = Camera.main;
-        Ray ray = cam.ScreenPointToRay(screenPos);
-
-        // (1) Hit everything along the ray. You can restrict with a layerMask if you have an "Enemy" layer.
-        // Example: LayerMask enemyMask = LayerMask.GetMask("Enemy");
-        // RaycastHit[] hits = Physics.RaycastAll(ray, 500f, enemyMask, QueryTriggerInteraction.Ignore);
-        RaycastHit[] hits = Physics.RaycastAll(ray, 500f, ~0, QueryTriggerInteraction.Ignore);
-
-        if (hits.Length == 0)
-        {
-            Debug.Log("AttackingState: No hits, deselecting target.");
-
-            SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
-            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
-
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-            Debug.Log("after AttackingState invoke" + GameStateMachine.Instance.Current);
-            return;
-        }
-
-        // Sort closest to farthest — useful for resolving the clicked hex
-        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
-
-        // (2) Determine the clicked hex using the closest hit point (or use your own method if you have one)
-        // If your HexHighlighter exposes a WorldToHex, prefer that for consistency.
-        // Here I assume you have a method like HexGrid.Instance.WorldToHex(Vector3 worldPos)
-        Vector3 clickPoint = hits[0].point;
-        var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
-
-        // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
-        List<Unit> unitsInClickedHex = hits
-            .Select(h => h.collider.transform.GetComponent<Unit>())
-            .Where(u => u != null)
-            .Distinct() // prevent duplicates if a unit has multiple colliders
-            .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
-            .ToList();
-
-        // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
-        // Optionally, if you also want to include the one you directly hit even if hex-mapping fails:
-        
-        /*if (unitsInClickedHex.Count == 0)
-        {
-            var firstUnit = hits.Select(h => h.collider.transform.root.GetComponent<Unit>())
-                                .FirstOrDefault(u => u != null);
-            if (firstUnit != null)
-                unitsInClickedHex.Add(firstUnit);
-        }*/
-        /*
-        // (5) Use result
-        if (unitsInClickedHex.Count == 0)
-        {
-            Debug.Log("AttackingState: No units in clicked hex, deselecting target.");
-
-            //No units in hex → deselect target
-            SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
-            GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
-            return;
-        }
-        else if (unitsInClickedHex.Count == 1)
-        {
-            Debug.Log("AttackingState: One unit in clicked hex " + unitsInClickedHex[0].unitName + " in hex.");
-
-            //Dont hit your self
-            if (unitsInClickedHex[0] == SelectionService.Instance.SelectedUnit)
-            {
-                Debug.Log("AttackingState: Clicked on self, deselecting target.");
-                SelectionService.Instance.SelectedUnit.target_Unit_Script = null;
-                GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
-                return;
-            }
-            else
-            { 
-                Debug.Log("AttackingState: Trying to attack " + unitsInClickedHex[0].unitName);
-
-                // Single unit in hex → select it and immediately try to attack
-                var unit = unitsInClickedHex[0];
-
-                //Set player target
-                SelectionService.Instance.SelectedUnit.target_Unit_Script = unit;
-
-                // You can immediately attack here if that's the desired flow:
-                InfoScreenManager.Instance.ShowModules();
-            }
-        }
-        else
-        {
-            Debug.Log("AttackingState: Multiple units in clicked hex, showing selection UI.");
-
-            //Set Enemy input state
-            //GameStateMachine.Instance.SetState(GameplayStateId.UIOnly);
-
-            //Show StackView
-            UIManager.Instance.ShowStackView(unitsInClickedHex, screenPos);
-
-            // Optionally set a default (e.g., the closest one)
-            var defaultUnit = unitsInClickedHex
-                .OrderBy(u => Vector3.SqrMagnitude(u.transform.position - clickPoint))
-                .First();
-
-            //Set a defult target so the player can see info about it in the UI, but they can still change their mind by clicking the stack view
-            SelectionService.Instance.SelectedUnit.target_Unit_Script = defaultUnit;
-        }
-
-        Debug.Log("after AttackingState invoke" + GameStateMachine.Instance.Current);
-
-    }*/
+        */
     }
 
     public void OnDrag(Vector2 delta)

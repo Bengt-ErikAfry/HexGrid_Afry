@@ -6,19 +6,19 @@ using UnityEngine.UIElements;
 using Button = UnityEngine.UI.Button;
 using Image = UnityEngine.UI.Image;
 using System;
+using System.IO;
 
 
 public class AsteroidManager : MonoBehaviour
 {
-    public RectTransform asteroidViewRectTransform;
-    public TMP_Text satelitesInOrbit;
-    public TMP_Text satelitesSurvayingAsteroid;
-    public TMP_Text progresText;
-    public Button addSatelitesToSurvayBtn;
-
-    private int scanProgress;
+    public AsteroidComponent currentAsteroid;
+    public Transform uintInOrbitView;
+    public Transform unitInOrbitListContent;
+    public GameObject unitInOrbitPrefab;
 
     public static AsteroidManager Instance { get; private set; }
+
+    public List<Unit> unitsInOrbit = new List<Unit>();
 
     private void Awake()
     {
@@ -33,58 +33,155 @@ public class AsteroidManager : MonoBehaviour
 
     public void ShowAsteroidView(AsteroidComponent asteroid)
     {
-        //Move panel
-        asteroidViewRectTransform.localPosition = Vector2.zero;
-
-        //UpdateText
-        satelitesInOrbit.text = $"Nr of Satelites in orbit {GetAmountOfSatelitesInOrbit(asteroid)}";
-        satelitesSurvayingAsteroid.text = $"Nr Satelites Survaying Asteroid: {asteroid.nrOfSatelitesSurvaying}";
-
-        int progressProcent = Math.Round((asteroid.turneItTakesToSurvay / asteroid.nrOfTurnesSuveyed) * 100, 2);
-
-    progresText.text = $"Scan progress: {(Math.Round((double)asteroid.turneItTakesToSurvay / asteroid.nrOfTurnesSuveyed, 2)) * 100}% ({asteroid.turneItTakesToSurvay-asteroid.nrOfTurnesSuveyed} turnes left)";
-
-        //Button not active if no satelites in orbit.
-        addSatelitesToSurvayBtn.interactable = GetAmountOfSatelitesInOrbit(asteroid) > 0;
-    }
-
-    public int GetAmountOfSatelitesInOrbit(AsteroidComponent asteroid)
-    {
-        //Get Asteroid tile Axial.
-        Vector2Int asteroidTileAxial = TileManager.Instance.WorldToAxial(asteroid.transform.position);
-
-        //Create a list to collect satelites in orbit.
-        List<Unit> AllSatelitesInOrbit = new List<Unit> { };
-
-        //Compare with all units.
-        foreach (var unitInUnitList in GameManager.Instance.unitsList)
+        if (asteroid == null)
         {
-            if(TileManager.Instance.WorldToAxial(unitInUnitList.transform.position) == asteroidTileAxial &&
-               unitInUnitList.shipType == ShipType.Stelite)
+            Debug.LogWarning("ShowAsteroidView: asteroid is null.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(asteroid.asteroidJsonFileName))
+        {
+            Debug.LogError("ShowAsteroidView: asteroidJsonFileName is null or empty.");
+            return;
+        }
+
+        // 1) Clear the current view / path / UI
+        TileManager.Instance?.ClearHighlights();
+        TileManager.Instance?.ClearPath();
+        UIManager.Instance?.HideAllUI();
+        SelectionService.Instance?.ClearSelection();
+        SelectionService.Instance?.ClearSelectedAsteroid();
+
+        // 2) Save current fog state before replacing the layout
+        if (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.gameViewLayout))
+        {
+            TileManager.Instance?.SaveFogState(GameManager.Instance.gameViewLayout);
+        }
+
+        // 3) Save which units are in the orbit/current view, if you need to restore them later
+        //    This is only for later restoration, not for fog registration.
+        unitsInOrbit = TileManager.Instance != null
+            ? TileManager.Instance.GetUnitsOnTile(asteroid.currentTileCoord)
+            : new List<Unit>();
+
+        // 3.5) SaveAllUnits and SaveAllInventories to ensure the current state is preserved before switching views
+        SaveManager.Instance?.SaveAllUnits(GameManager.Instance.gameViewUnitsSaveFile);
+        SaveManager.Instance?.SaveAllInventories();
+
+        // 4) Hide all active game-view units and asteroids
+        SaveManager.Instance?.HideGameViewObjects();
+
+        // 5) Load the asteroid interior layout
+        string path = Path.Combine(Application.streamingAssetsPath, asteroid.asteroidJsonFileName);
+        TileManager.Instance?.LoadLayoutFromFile(path);
+
+        // 6) Load asteroid-surface units
+        SaveManager.Instance?.LoadAsteroidViewObject(asteroid);
+
+        // 7) Register only the units that are actually active in this view
+        //    This prevents hidden game-view units from still contributing to fog/visibility.
+        if (GameManager.Instance != null)
+        {
+            foreach (var unit in GameManager.Instance.playerUnits)
             {
-                //Same tile and a satelite
-                foreach (var module in unitInUnitList.moduleRuntimeList)
-                {
-                    if(module.ItemDefinition.moduleType == ModuleType.SurvayArray &&
-                        module.isOnline &&
-                        !module.isBroken &&
-                        !module.isDestroyd)
-                    {
-                        //Have a survay module that is online and not broken.
-                        AllSatelitesInOrbit.Add(unitInUnitList);
-                    }    
-                    else
-                    {
-                        Debug.Log($"{unitInUnitList.unitName} missing a survayArray module or isOnline={module.isOnline} or isBroken={module.isBroken} or isDestroyd{module.isDestroyd}.");
-                    }
-                }
-            }
-            else
-            {
-                Debug.Log($"{unitInUnitList.unitName} are not in same tile or not a satelite");
+                if (unit == null) continue;
+                if (!unit.gameObject.activeSelf) continue;
+
+                int range = Mathf.CeilToInt(unit.detectionRange);
+                TileManager.Instance?.RegisterUnit(unit, range);
             }
         }
 
-        return AllSatelitesInOrbit.Count;
+        // 8) Remember the asteroid for restoring later
+        currentAsteroid = asteroid;
+
+        // 9) Set state
+        GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
+
+        // 10) populate the orbital units UI
+        uintInOrbitView.transform.gameObject.SetActive(true);
+        AddUnitToOrbit();
+
+        Debug.Log($"Entered asteroid view: {asteroid.asteroidName}");
+    }
+    public void HideAsteroidView()
+    {
+        // 1) Clear path and selection visuals
+        TileManager.Instance?.ClearHighlights();
+        TileManager.Instance?.ClearPath();
+        SelectionService.Instance?.ClearSelection();
+        SelectionService.Instance?.ClearSelectedAsteroid();
+
+        // Cleare and hide the orbital units UI
+        uintInOrbitView.transform.gameObject.SetActive(false);
+        unitsInOrbit.Clear();
+
+        // 2) Hide UI
+        UIManager.Instance?.HideAllUI();
+
+        // 3) Save asteroid fog state before leaving
+        if (currentAsteroid != null)
+        {
+            TileManager.Instance?.SaveFogState(currentAsteroid.asteroidJsonFileName);
+        }
+
+        // 4) Restore the original game-view layout
+        if (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.gameViewLayout))
+        {
+            string path = Path.Combine(Application.streamingAssetsPath, GameManager.Instance.gameViewLayout);
+            TileManager.Instance?.LoadLayoutFromFile(path);
+        }
+
+        // 5) Restore fog state for the game view
+        if (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.gameViewLayout))
+        {
+            TileManager.Instance?.LoadFogState(GameManager.Instance.gameViewLayout);
+        }
+
+        // 6) Re-show the original game-view objects
+        SaveManager.Instance?.LoadAllUnits(GameManager.Instance.gameViewUnitsSaveFile);
+
+        // 7) Re-register only active player units that are back in the game view
+        if (GameManager.Instance != null)
+        {
+            foreach (var unit in GameManager.Instance.playerUnits)
+            {
+                if (unit == null) continue;
+                if (!unit.gameObject.activeSelf) continue;
+
+                int range = Mathf.CeilToInt(unit.detectionRange);
+                TileManager.Instance?.RegisterUnit(unit, range);
+            }
+        }
+
+        // 8) Set normal state
+        GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
+
+        Debug.Log("Returned from asteroid view.");
+    }
+
+    public void AddUnitToOrbit()
+    {
+        //Clear Lsit
+        foreach (Transform child in unitInOrbitListContent)
+        {
+            Destroy(child.gameObject);
+        }
+
+        //Populate the list with units that are currently in orbit
+        foreach (var unit in unitsInOrbit)
+        {
+            if (unit == null) continue;
+            var unitInOrbitListEnery = Instantiate(unitInOrbitPrefab, unitInOrbitListContent);
+            OrbitingUnitPrefab_Entery entry = unitInOrbitListEnery.GetComponent<OrbitingUnitPrefab_Entery>();
+            if (entry != null)
+            {
+                entry.SetUnit(unit);
+            }
+            else
+            {
+                Debug.LogError("OrbitingUnitPrefab_Entery component not found on the prefab.");
+            }
+        }
     }
 }

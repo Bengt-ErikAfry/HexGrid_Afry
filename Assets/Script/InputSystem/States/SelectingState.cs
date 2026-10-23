@@ -28,23 +28,22 @@ public class SelectingState : IGameState
 
     public void OnTap(Vector2 screenPos)
     {
+        //Reset collections and highlights when player taps on the screen, so that player can select new unit or asteroid.
+        SelectionService.Instance.ClearSelection();
+        TileManager.Instance.ClearHighlightedTiles();
+        UIManager.Instance.HideStackView();
+
         Debug.Log("OnTap called.");
         if (CameraManager.Instance.isMovingCamera) return;
-
-        //Clear selection
-        SelectionService.Instance.ClearSelection();
-
-        //Clear highlighted tiles
-        TileManager.Instance.ClearHighlightedTiles(); 
 
         var cam = Camera.main;
         Ray ray = cam.ScreenPointToRay(screenPos);
 
-        // 1) Get physics hits along ray (3D colliders)
+        // 1) Get physics hits along ray (3D colliders) — keep for debug/fallback
         RaycastHit[] hits = Physics.RaycastAll(ray, 500f, ~0, QueryTriggerInteraction.Ignore);
         System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-        // Send ray to a plane at z=0 to get the world position of the tap. This is useful for 2D overlap checks or other logic.
+        // Send ray to a plane at z=0 to get the world position of the tap.
         Plane plane = new Plane(Vector3.forward, Vector3.zero);
         if (!plane.Raycast(ray, out float enter))
         {
@@ -55,97 +54,83 @@ public class SelectingState : IGameState
 
         Debug.Log($"Tap at screenPos {screenPos}, worldPos {worldPos}, hits={hits.Length}");
 
-        //Get the hex tile that was clicked on. IF no hex tile was clicked, hexClicked will be null and hexcoord will be (0,0)
+        // Get the hex tile that was clicked on.
         HexGrid_TilePrefab hexClicked = TileManager.Instance.GetTileFromWorldPosition(worldPos);
-        Vector2Int hexcoord = Vector2Int.zero;
-        if (hexClicked != null)
+        if (hexClicked == null)
         {
-            //Tile was clicked, get the hex coordinates
-            hexcoord = new Vector2Int(hexClicked.tileIndexCol, hexClicked.tileIndexRow);
-            Debug.Log("SelectState OnTap at TILE in screenPos " + screenPos + " and Grid " + hexcoord + " and WorldPos " + worldPos);
+            // 1) player clicked outside tilegrid
 
-            // select unit via selection service
+            Debug.Log("SelectState OnTap: clicked outside tile grid -> cleared selection/highlights.");
+            return;
+        }
+
+        // Compute authoritative axial coordinate for the clicked world position.
+        Vector2Int clickedCoord = TileManager.Instance.WorldToAxial(worldPos);
+        Debug.Log($"SelectState OnTap at TILE coord {clickedCoord} and WorldPos {worldPos}");
+
+        // Find units located on the same hex (use GameManager authoritative list).
+        var unitsInClickedHex = new List<Unit>();
+        if (GameManager.Instance != null && GameManager.Instance.unitsList != null)
+        {
+            unitsInClickedHex = GameManager.Instance.unitsList
+                .Where(u => u != null && TileManager.Instance.WorldToAxial(u.transform.position) == clickedCoord)
+                .Distinct()
+                .ToList();
+        }
+
+        // Find asteroids located on the same hex.
+        var asteroidsInClickedHex = UnityEngine.Object.FindObjectsOfType<AsteroidComponent>()
+            .Where(a => a != null && TileManager.Instance.WorldToAxial(a.transform.position) == clickedCoord)
+            .ToList();
+
+        // Case 2: empty tile (no asteroid and no unit)
+        if (unitsInClickedHex.Count == 0 && asteroidsInClickedHex.Count == 0)
+        {
             SelectionService.Instance.SetSelectedHex(worldPos);
-
-            //Highlight tile under mouse position
             TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log("SelectState OnTap: empty tile -> selected hex and highlighted.");
+            return;
         }
-        else
+
+        // Case 5 or multiple units: tile with multiple units OR asteroid + one or more units -> show stack
+        if (unitsInClickedHex.Count > 1 || (unitsInClickedHex.Count >= 1 && asteroidsInClickedHex.Count >= 1))
         {
-            //No tile was clicked, hexcoord will be (0,0)
-            Debug.Log("SelectState OnTap at NO TILE in screenPos " + screenPos + " and Grid " + hexcoord + " and WorldPos " + worldPos);
+            UIManager.Instance.ShowStackView(unitsInClickedHex, asteroidsInClickedHex, screenPos);
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log("SelectState OnTap: multiple units or units+asteroid -> showing stack view.");
+            return;
         }
 
-        //Start check for units.
-        if(hits.Length > 0)
+        // Case 3: single unit (no asteroid)
+        if (unitsInClickedHex.Count == 1 && asteroidsInClickedHex.Count == 0)
         {
-            SelectionService.Instance.ClearSelectedUnit();
-            SelectionService.Instance.ClearSelectedAsteroid();
-            // Sort closest to farthest — useful for resolving the clicked hex
-            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            var unit = unitsInClickedHex[0];
+            SelectionService.Instance.SetSelectedUnit(unit);
 
-            // (2) Determine the clicked hex using the closest hit point (or use your own method if you have one)
-            Vector3 clickPoint = hits[0].point;
-
-            Debug.Log($"{hits[0].collider.gameObject.name} parent={hits[0].collider.transform.parent?.name} root={hits[0].collider.transform.root.name}");
-
-            // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
-            var unitsInClickedHex = new List<Unit>();
-            foreach (var h in hits)
+            // Show Route if existing
+            if (unit.routeComponent != null && unit.routeComponent.routeActions.Count > 0)
             {
-                
-                var u = h.collider.transform.GetComponent<Unit>();
-                if (u == null) continue;
-                unitsInClickedHex.Add(u);
+                HexGridManager.Instance.CalculateRoutePath(unit);
             }
-            unitsInClickedHex = unitsInClickedHex.Distinct().ToList();
 
-            // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
-            if (unitsInClickedHex.Count == 0)
-            {
-                // Hit something without a UNIT.CS, but maybe it's a child of a Unit. Check the parents.
-                AsteroidComponent asteroid = hits[0].collider.transform.GetComponentInParent<AsteroidComponent>();
-                if(asteroid != null)
-                {
-                    //Asteroid selected, get all units in the asteroid's tile
-                    SelectionService.Instance.SetSelectedAsteroid(asteroid);
-                }
-
-                //Hit something without a UNIT.CS
-                var firstUnit = hits.Select(h => h.collider.transform.GetComponent<Unit>())
-                                    .FirstOrDefault(u => u != null);
-                if (firstUnit != null)
-                    unitsInClickedHex.Add(firstUnit);
-            }
-            else if (unitsInClickedHex.Count == 1)
-            {
-                var unit = unitsInClickedHex[0];
-
-                // select unit via selection service
-                SelectionService.Instance.SetSelectedUnit(unit);
-
-                //Show Route if exsiting
-                if (unit.routeComponent != null)
-                {
-                    if (unit.routeComponent.routeActions.Count > 0)
-                    {
-                        HexGridManager.Instance.CalculateRoutePath(unit);
-                    }
-                }
-
-                Debug.Log($"SelectAsteroid mode selected and {unit.unitName} is clicked.");
-            }
-            else
-            {
-                UIManager.Instance.ShowStackView(unitsInClickedHex, screenPos);
-
-                var defaultUnit = unitsInClickedHex
-                    .OrderBy(u => Vector3.SqrMagnitude(u.transform.position - clickPoint))
-                    .First();
-
-                // do not auto-set selection here; stack view will let player pick
-            }
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log($"SelectState OnTap: single unit '{unit.unitName}' selected.");
+            return;
         }
+
+        // Case 4: tile with asteroid (and no units)
+        if (unitsInClickedHex.Count == 0 && asteroidsInClickedHex.Count >= 1)
+        {
+            // If there are multiple asteroids (unlikely) pick the first
+            var asteroid = asteroidsInClickedHex[0];
+            SelectionService.Instance.SetSelectedAsteroid(asteroid);
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log($"SelectState OnTap: asteroid '{asteroid.asteroidID}' selected.");
+            return;
+        }
+
+        // Fallback: highlight tile
+        TileManager.Instance.HighlightTileWorldPosition(worldPos);
     }
 
     public void OnDrag(Vector2 delta)

@@ -8,16 +8,196 @@ using UnityEngine;
 
 public class SaveManager : MonoBehaviour
 {
+    public GameObject unitPrefab; // Assign the Unit prefab in the Inspector
+    public Transform unitFolderForAllUnits; // Assign a parent transform in the Inspector to hold all units
+
     public static SaveManager Instance { get; private set; }
 
     [Tooltip("Relative filename under Application.persistentDataPath")]
     public string defaultFileName = "units_save.json";
+
+    private readonly List<Unit> hiddenGameViewUnits = new List<Unit>();
+    private readonly List<AsteroidComponent> hiddenGameViewAsteroids = new List<AsteroidComponent>();
 
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+    }
+    public void HideGameViewObjects()
+    {
+        //Destroy all units.
+        foreach (var unit in GameManager.Instance.unitsList)
+        {
+            if (unit == null) continue;
+            // ADDED: Prevent hidden units from contributing to fog of war.
+                TileManager.Instance.UnregisterUnit(unit);
+            Destroy(unit.gameObject);
+        }
+
+        //Destroy all asteroids.
+        foreach (var asteroid in GameManager.Instance.asteroidsList)
+        {
+            if (asteroid == null) continue;
+            Destroy(asteroid.gameObject);
+        }
+
+        // Only have active units in list.
+        GameManager.Instance.unitsList.Clear();
+        GameManager.Instance.playerUnits.Clear();
+        GameManager.Instance.enemyUnits.Clear();
+
+        Debug.Log("Game-view units and asteroids hidden.");
+    }
+
+    public void LoadAsteroidViewObject(AsteroidComponent asteroid)
+    {
+        if (asteroid == null)
+        {
+            Debug.LogWarning(
+                "LoadAsteroidViewObject: AsteroidComponent is null.");
+            return;
+        }
+
+        // An empty filename means this asteroid has not been entered before.
+        if (string.IsNullOrWhiteSpace(asteroid.unitsOnSurfaceJsonFileName))
+        {
+            Debug.Log(
+                $"LoadAsteroidViewObject: No saved units for asteroid " +
+                $"{asteroid.asteroidName}. First visit.");
+            return;
+        }
+
+        // SaveAllUnits writes to persistentDataPath, so load from there too.
+        string path = Path.Combine(
+            Application.persistentDataPath,
+            asteroid.unitsOnSurfaceJsonFileName);
+
+        if (!File.Exists(path))
+        {
+            Debug.LogWarning(
+                $"LoadAsteroidViewObject: File not found: {path}");
+            return;
+        }
+
+        UnitsSaveWrapper wrapper;
+
+        try
+        {
+            string json = File.ReadAllText(path);
+            wrapper = JsonUtility.FromJson<UnitsSaveWrapper>(json);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError(
+                $"LoadAsteroidViewObject: Could not read {path}. " +
+                exception.Message);
+            return;
+        }
+
+        if (wrapper == null || wrapper.units == null)
+        {
+            Debug.LogWarning(
+                $"LoadAsteroidViewObject: No unit data found in {path}");
+            return;
+        }
+
+        // Used later to reconnect target_Unit_Script references.
+        var loadedUnitsById = new Dictionary<string, Unit>();
+
+        foreach (var savedUnit in wrapper.units)
+        {
+            if (savedUnit == null || string.IsNullOrWhiteSpace(savedUnit.unitId))
+                continue;
+
+            // Find the already existing Unit object by its unitId.
+            Unit runtimeUnit = GameManager.Instance.unitsList
+                .FirstOrDefault(unit =>
+                    unit != null &&
+                    unit.unitId == savedUnit.unitId);
+
+            if (runtimeUnit == null)
+            {
+                if (unitPrefab == null)
+                {
+                    Debug.LogWarning(
+                        $"LoadAsteroidViewObject: No runtime Unit found for " +
+                        $"unitId {savedUnit.unitId} and no unitPrefab assigned.");
+                    continue;
+                }
+
+                GameObject spawned = Instantiate(unitPrefab, unitFolderForAllUnits);
+                runtimeUnit = spawned.GetComponent<Unit>();
+
+                if (runtimeUnit == null)
+                {
+                    Debug.LogWarning(
+                        $"LoadAsteroidViewObject: Spawned prefab for " +
+                        $"unitId {savedUnit.unitId} does not contain a Unit component.");
+                    Destroy(spawned);
+                    continue;
+                }
+
+                runtimeUnit.unitId = savedUnit.unitId;
+                runtimeUnit.unitName = savedUnit.unitName;
+                runtimeUnit.unitType = savedUnit.unitType;
+                runtimeUnit.shipType = savedUnit.shipType;
+                runtimeUnit.isPlayerControlled = savedUnit.isPlayerControlled;
+
+                if (!GameManager.Instance.unitsList.Contains(runtimeUnit))
+                    GameManager.Instance.unitsList.Add(runtimeUnit);
+
+                if (runtimeUnit.isPlayerControlled && !GameManager.Instance.playerUnits.Contains(runtimeUnit))
+                {
+                    GameManager.Instance.playerUnits.Add(runtimeUnit);
+                }
+                else if (!runtimeUnit.isPlayerControlled && !GameManager.Instance.enemyUnits.Contains(runtimeUnit))
+                {
+                    GameManager.Instance.enemyUnits.Add(runtimeUnit);
+                }
+            }
+
+            // Restore the same unit data used by the normal unit loader.
+            ApplySavedUnitData(runtimeUnit, savedUnit);
+
+            // Place the unit on the asteroid grid.
+            Vector3 worldPosition =
+                TileManager.Instance.AxialToWorldCenter(
+                    savedUnit.currentTileCoord);
+
+            runtimeUnit.transform.position = worldPosition;
+            runtimeUnit.currentTileCoord = savedUnit.currentTileCoord;
+
+            // Make this unit visible inside the asteroid.
+            runtimeUnit.gameObject.SetActive(true);
+
+            loadedUnitsById[savedUnit.unitId] = runtimeUnit;
+        }
+
+        // Restore references between units, for example target_Unit_Script.
+        foreach (var savedUnit in wrapper.units)
+        {
+            if (savedUnit == null ||
+                string.IsNullOrWhiteSpace(savedUnit.targetUnitId))
+                continue;
+
+            if (!loadedUnitsById.TryGetValue(
+                    savedUnit.unitId,
+                    out Unit sourceUnit))
+                continue;
+
+            if (!loadedUnitsById.TryGetValue(
+                    savedUnit.targetUnitId,
+                    out Unit targetUnit))
+                continue;
+
+            sourceUnit.target_Unit_Script = targetUnit;
+        }
+
+        Debug.Log(
+            $"LoadAsteroidViewObject: Loaded " +
+            $"{loadedUnitsById.Count} units for {asteroid.asteroidName}.");
     }
 
     [System.Serializable]
@@ -196,6 +376,7 @@ public class SaveManager : MonoBehaviour
             yield break;
         }
 
+
         // Build map of saved GUID -> saved data
         var savedGuidToData = wrapper.units.ToDictionary(s => s.unitId, s => s);
 
@@ -203,25 +384,63 @@ public class SaveManager : MonoBehaviour
         var guidToRuntimeUnit = new Dictionary<string, Unit>();
         foreach (var saved in wrapper.units)
         {
+            // Prefer GUID identity. Unit names are not stable enough because multiple units can share the same name.
             Unit runtime = null;
+            string savedUnitKey = string.IsNullOrEmpty(saved.unitId) ? saved.unitName : saved.unitId;
 
-            // First try to match by unitId
-            runtime = GameManager.Instance.unitsList.FirstOrDefault(u => u != null && !string.IsNullOrEmpty(u.unitId) && u.unitId == saved.unitId);
-
-            // Fallback: try matching by unitName (legacy)
-            if (runtime == null)
+            if (!string.IsNullOrEmpty(saved.unitId))
             {
-                runtime = GameManager.Instance.unitsList.FirstOrDefault(u => u != null && u.unitName == saved.unitName);
+                runtime = GameManager.Instance.unitsList.FirstOrDefault(u =>
+                    u != null && u.unitId == saved.unitId);
+            }
+            else
+            {
+                // Legacy fallback only when no unitId exists in the save file.
+                runtime = GameManager.Instance.unitsList.FirstOrDefault(u =>
+                    u != null && u.unitName == saved.unitName);
             }
 
-            if (runtime == null) continue;
+            if (runtime == null)
+            {
+                if (unitPrefab == null)
+                {
+                    Debug.LogWarning($"SaveManager: Cannot instantiate saved unit {saved.unitName} ({saved.unitId}) because unitPrefab is not assigned.");
+                    continue;
+                }
 
-            // Record mapping for later reference resolving
-            guidToRuntimeUnit[saved.unitId] = runtime;
+                GameObject go = Instantiate(unitPrefab);
+                runtime = go.GetComponent<Unit>();
+                if (runtime == null)
+                {
+                    Debug.LogWarning($"SaveManager: Spawned prefab for saved unit {saved.unitName} ({saved.unitId}) does not contain a Unit component.");
+                    Destroy(go);
+                    continue;
+                }
+
+                runtime.unitId = saved.unitId;
+                runtime.unitName = saved.unitName;
+                runtime.unitType = saved.unitType;
+                runtime.shipType = saved.shipType;
+                runtime.isPlayerControlled = saved.isPlayerControlled;
+
+                if (!GameManager.Instance.unitsList.Contains(runtime))
+                    GameManager.Instance.unitsList.Add(runtime);
+
+                if (runtime.isPlayerControlled && !GameManager.Instance.playerUnits.Contains(runtime))
+                    GameManager.Instance.playerUnits.Add(runtime);
+                else if (!runtime.isPlayerControlled && !GameManager.Instance.enemyUnits.Contains(runtime))
+                    GameManager.Instance.enemyUnits.Add(runtime);
+            }
+
+            // Record mapping for later reference resolving.
+            guidToRuntimeUnit[savedUnitKey] = runtime;
 
             // Apply basic and runtime state
+            runtime.unitId = string.IsNullOrEmpty(saved.unitId) ? runtime.unitId : saved.unitId;
+            runtime.unitName = saved.unitName;
             runtime.unitType = saved.unitType;
             runtime.shipType = saved.shipType;
+            runtime.isPlayerControlled = saved.isPlayerControlled;
             runtime.currentTileCoord = saved.currentTileCoord;
             runtime.movedThisTurn = saved.movedThisTurn;
             runtime.haveAttackedThisTurn = saved.haveAttackedThisTurn;
@@ -285,11 +504,8 @@ public class SaveManager : MonoBehaviour
                 }
             }
 
-            // Re-register player units to restore fog visibility/refcounts
-            if (runtime.isPlayerControlled && TileManager.Instance != null)
-            {
-                TileManager.Instance.RegisterUnit(runtime, Mathf.CeilToInt(runtime.detectionRange));
-            }
+            // Init the new unit (e.g., update visuals, health bars, etc.)
+            StartCoroutine(runtime.InitUnit()); //To register for FOG OF WAR to work.
         }
 
         // Resolve cross-unit references (target_Unit_Script)
@@ -297,154 +513,112 @@ public class SaveManager : MonoBehaviour
         foreach (var saved in wrapper.units)
         {
             if (string.IsNullOrEmpty(saved.targetUnitId)) continue;
-            if (!guidToRuntimeUnit.TryGetValue(saved.unitId, out var sourceUnit)) continue;
+
+            string sourceKey = string.IsNullOrEmpty(saved.unitId) ? saved.unitName : saved.unitId;
+            if (!guidToRuntimeUnit.TryGetValue(sourceKey, out var sourceUnit)) continue;
             if (!guidToRuntimeUnit.TryGetValue(saved.targetUnitId, out var targetUnit)) continue;
 
             sourceUnit.target_Unit_Script = targetUnit;
             resolved++;
         }
 
+
+
+        //A check to see that the saved GUID is the same as the runtime GUID. If not, it will log a warning.
+        Debug.Log("Saved units:");
+        foreach (var s in wrapper.units)
+        {
+            Debug.Log($"saved unitId={s.unitId}, name={s.unitName}");
+        }
+
+        Debug.Log("Runtime units:");
+        foreach (var u in GameManager.Instance.unitsList)
+        {
+            if (u != null)
+                Debug.Log($"runtime unitId={u.unitId}, name={u.unitName}");
+        }
+
+
+
         Debug.Log($"SaveManager: Loaded {guidToRuntimeUnit.Count} unit(s) and resolved {resolved} unit reference(s) from {path}");
     }
-/*}
 
-[Serializable]
-private class UnitsSaveWrapper
-{
-    public List<UnitSaveData> units = new List<UnitSaveData>();
-}
-
-// Save all units. Each runtime unit gets a generated GUID stored in the save file.
-// References between units are saved as GUIDs (targetUnitId).
-public void SaveAllUnits(string fileName = null)
-{
-    if (GameManager.Instance == null)
+    private void ApplySavedUnitData(
+        Unit runtimeUnit,
+        UnitSaveData savedUnit)
     {
-        Debug.LogWarning("SaveAllUnits: GameManager.Instance is null. Aborting save.");
-        return;
-    }
+        runtimeUnit.unitName = savedUnit.unitName;
+        runtimeUnit.unitType = savedUnit.unitType;
+        runtimeUnit.shipType = savedUnit.shipType;
+        runtimeUnit.currentTileCoord = savedUnit.currentTileCoord;
+        runtimeUnit.movedThisTurn = savedUnit.movedThisTurn;
+        runtimeUnit.isPlayerControlled = savedUnit.isPlayerControlled;
+        runtimeUnit.haveAttackedThisTurn = savedUnit.haveAttackedThisTurn;
+        runtimeUnit.followTarget = savedUnit.followtarget;
+        runtimeUnit.hasMinedThisTurn = savedUnit.hasMinedThisTurn;
 
-    var wrapper = new UnitsSaveWrapper();
+        runtimeUnit.currentMovePath =
+            savedUnit.currentMovePath != null
+                ? new List<Vector2Int>(savedUnit.currentMovePath)
+                : new List<Vector2Int>();
 
-    foreach (var u in GameManager.Instance.unitsList)
-    {
-        if (u == null) continue;
-
-        // Ensure unit has a stable id (generate once if missing)
-        if (string.IsNullOrEmpty(u.unitId))
+        if (savedUnit.target_lastKnownTileCoord != Vector2Int.zero)
         {
-            u.unitId = Guid.NewGuid().ToString();
+            runtimeUnit.target_LastKnownPos =
+                TileManager.Instance.AxialToWorldCenter(
+                    savedUnit.target_lastKnownTileCoord);
         }
 
-        var save = new UnitSaveData
+        // Restore modules.
+        runtimeUnit.moduleRuntimeList = new List<ItemInstance>();
+
+        if (savedUnit.moduleRuntimeList == null)
+            return;
+
+        foreach (var savedModule in savedUnit.moduleRuntimeList)
         {
-            unitId = u.unitId,
-            unitName = u.unitName,
-            currentTileCoord = u.currentTileCoord,
-            isPlayerControlled = u.isPlayerControlled,
-            targetUnitId = u.target_Unit_Script != null ? u.target_Unit_Script.unitId : null
-        };
+            var module = new ItemInstance();
 
-        wrapper.units.Add(save);
-    }
+            if (savedModule != null &&
+                !string.IsNullOrWhiteSpace(savedModule.itemId))
+            {
+                ItemDefinition definition = null;
 
-    string fname = string.IsNullOrEmpty(fileName) ? defaultFileName : fileName;
-    string path = Path.Combine(Application.persistentDataPath, fname);
-    try
-    {
-        string json = JsonUtility.ToJson(wrapper, true);
-        File.WriteAllText(path, json);
-        Debug.Log($"SaveManager: Saved {wrapper.units.Count} units to {path}");
-    }
-    catch (Exception ex)
-    {
-        Debug.LogError($"SaveManager: Failed to save units to {path}: {ex.Message}");
-    }
-}
+                if (ItemDatabase.Instance != null)
+                {
+                    definition =
+                        ItemDatabase.Instance.GetById(savedModule.itemId);
+                }
 
-// Load all units from file. This resolves references by GUID after matching saved entries to existing runtime Unit instances.
-// Matching strategy: locate runtime Unit by unitName. If you have duplicate names, change matching to a stable id on Unit.
-public void LoadAllUnits(string fileName = null)
-{
-    string fname = string.IsNullOrEmpty(fileName) ? defaultFileName : fileName;
-    string path = Path.Combine(Application.persistentDataPath, fname);
-    if (!File.Exists(path))
-    {
-        Debug.LogWarning($"SaveManager.LoadAllUnits: file not found: {path}");
-        return;
-    }
+                if (definition == null)
+                {
+                    definition = Resources
+                        .LoadAll<ItemDefinition>("ItemDefinitions")
+                        .FirstOrDefault(item =>
+                            item != null &&
+                            item.itemId == savedModule.itemId);
+                }
 
-    StartCoroutine(LoadRoutine(path));
-}
+                module.ItemDefinition = definition;
+            }
 
-private IEnumerator LoadRoutine(string path)
-{
-    // Wait until managers and tile lookup are ready
-    yield return new WaitUntil(() => GameManager.Instance != null && TileManager.Instance != null && TileManager.Instance.HasBuiltLookup);
+            if (savedModule != null)
+            {
+                module.currentHealth = savedModule.currentHealth;
+                module.currentPowerUpBoost =
+                    savedModule.currentPowerUpBoost;
+                module.isOnline = savedModule.isOnline;
+                module.isBroken = savedModule.isBroken;
+                module.isDestroyd = savedModule.isDestroyed;
+            }
 
-    UnitsSaveWrapper wrapper = null;
-    try
-    {
-        string json = File.ReadAllText(path);
-        wrapper = JsonUtility.FromJson<UnitsSaveWrapper>(json);
-    }
-    catch (Exception ex)
-    {
-        Debug.LogError($"SaveManager: Failed to read/parse save file: {ex.Message}");
-        yield break;
-    }
-
-    if (wrapper == null || wrapper.units == null)
-    {
-        Debug.LogWarning("SaveManager: Save file contained no unit data.");
-        yield break;
-    }
-
-    // Build map of saved GUID -> saved data
-    var savedGuidToData = wrapper.units.ToDictionary(s => s.unitId, s => s);
-
-    // Build runtime map GUID -> Unit by matching saved entries to existing runtime units (by unitName).
-    // NOTE: This relies on unitName being unique. If not unique, add a stable id to Unit and match on that.
-    var guidToRuntimeUnit = new Dictionary<string, Unit>();
-    foreach (var saved in wrapper.units)
-    {
-        var runtime = GameManager.Instance.unitsList.FirstOrDefault(u => u != null && u.unitName == saved.unitName);
-        if (runtime == null) continue;
-
-        guidToRuntimeUnit[saved.unitId] = runtime;
-
-        // Apply position data
-        runtime.currentTileCoord = saved.currentTileCoord;
-
-        // Place unit at tile world center if tile exists
-        var world = TileManager.Instance.AxialToWorldCenter(runtime.currentTileCoord);
-        runtime.transform.position = world;
-
-        // Re-register player units to restore fog visibility/refcounts
-        if (runtime.isPlayerControlled && TileManager.Instance != null)
-        {
-            TileManager.Instance.RegisterUnit(runtime, Mathf.CeilToInt(runtime.detectionRange));
+            runtimeUnit.moduleRuntimeList.Add(module);
         }
     }
 
-    // Resolve cross-unit references (target_Unit_Script)
-    int resolved = 0;
-    foreach (var saved in wrapper.units)
-    {
-        if (string.IsNullOrEmpty(saved.targetUnitId)) continue;
-        if (!guidToRuntimeUnit.TryGetValue(saved.unitId, out var sourceUnit)) continue;
-        if (!guidToRuntimeUnit.TryGetValue(saved.targetUnitId, out var targetUnit)) continue;
+    // ////////////////////// Inventory Save/Load //////////////////////
 
-        sourceUnit.target_Unit_Script = targetUnit;
-        resolved++;
-    }
-
-    Debug.Log($"SaveManager: Loaded {guidToRuntimeUnit.Count} unit positions and resolved {resolved} unit references from {path}");
-}*/
-
-// ////////////////////// Inventory Save/Load //////////////////////
-
-[System.Serializable]
+    [System.Serializable]
     public class InventorySaveData
     {
         public string unitId;   // GUID of unit with current Inventorty to save.

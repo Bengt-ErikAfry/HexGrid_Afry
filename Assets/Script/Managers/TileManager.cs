@@ -104,7 +104,7 @@ public class TileManager : MonoBehaviour
     // Register unit (compute initial seen set)
     public void RegisterUnit(Unit u, int range)
     {
-        if (u == null || unitSeenTiles.ContainsKey(u)) return;
+        if (u == null || !u.gameObject.activeSelf || unitSeenTiles.ContainsKey(u)) return;
         var center = WorldToAxial(u.transform.position);
         var seen = new HashSet<Vector2Int>(HexMath.HexesInRangeAxial(center, range, largeWorldRadius));
         unitSeenTiles[u] = seen;
@@ -123,7 +123,7 @@ public class TileManager : MonoBehaviour
     // Call when unit has moved; supply new center in axial coords
     public void UpdateUnitVisibilityOnMoveFromStored(Unit u, Vector2Int newCenter, int range)
     {
-        if (u == null) return;
+        if (u == null || !u.gameObject.activeSelf) return;
         unitSeenTiles.TryGetValue(u, out var oldSet);
         oldSet ??= new HashSet<Vector2Int>();
         var newSet = new HashSet<Vector2Int>(HexMath.HexesInRangeAxial(newCenter, range, largeWorldRadius));
@@ -707,7 +707,7 @@ public class TileManager : MonoBehaviour
     // Spawn one tile GameObject at axial coordinate using the given prefab (runtime instantiate).
     public HexGrid_TilePrefab SpawnTileAt(Vector2Int axial, GameObject prefab)
     {
-        Debug.Log($"SpawnTileAt: axial={axial}, prefab={(prefab != null ? prefab.name : "null")}");
+        //Debug.Log($"SpawnTileAt: axial={axial}, prefab={(prefab != null ? prefab.name : "null")}");
         if (tilesParent == null) Debug.LogWarning("SpawnTileAt: tilesParent is null.");
         if (prefab == null)
         {
@@ -757,7 +757,7 @@ public class TileManager : MonoBehaviour
                     var match = prefabRegistry.Find(m => string.Equals(m.key, fileName, StringComparison.OrdinalIgnoreCase));
                     if (match.prefab != null)
                     {
-                        Debug.Log($"ResolvePrefabForCell: resolved '{fileName}' from prefabRegistry -> {match.prefab.name}");
+                        //Debug.Log($"ResolvePrefabForCell: resolved '{fileName}' from prefabRegistry -> {match.prefab.name}");
                         return match.prefab;
                     }
                 }
@@ -766,7 +766,7 @@ public class TileManager : MonoBehaviour
                 var res = Resources.Load<GameObject>("Tiles/" + fileName) ?? Resources.Load<GameObject>(fileName);
                 if (res != null)
                 {
-                    Debug.Log($"ResolvePrefabForCell: loaded '{fileName}' from Resources.");
+                    //Debug.Log($"ResolvePrefabForCell: loaded '{fileName}' from Resources.");
                     return res;
                 }
 
@@ -775,7 +775,7 @@ public class TileManager : MonoBehaviour
                 var ed = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(cell.prefabPath);
                 if (ed != null)
                 {
-                    Debug.Log($"ResolvePrefabForCell: loaded '{cell.prefabPath}' via AssetDatabase (Editor only) -> {ed.name}");
+                    //Debug.Log($"ResolvePrefabForCell: loaded '{cell.prefabPath}' via AssetDatabase (Editor only) -> {ed.name}");
                     return ed;
                 }
 #endif
@@ -830,7 +830,7 @@ public class TileManager : MonoBehaviour
         int created = 0;
         foreach (var c in templ.cells)
         {
-            Debug.Log($"LoadLayoutFromJsonText: processing cell x={c.x}, y={c.y}, prefabName={c.prefabName}, prefabPath={c.prefabPath}");
+            //Debug.Log($"LoadLayoutFromJsonText: processing cell x={c.x}, y={c.y}, prefabName={c.prefabName}, prefabPath={c.prefabPath}");
             var axial = new Vector2Int(c.x, c.y);
             var prefab = ResolvePrefabForCell(c);
             var tile = SpawnTileAt(axial, prefab);
@@ -865,12 +865,12 @@ public class TileManager : MonoBehaviour
         // Apply saved fog state (if any)
         LoadFogState(layoutId);
 
-        // Re-register player units so visibility reference counts are rebuilt and visible tiles update
+        // Re-register only currently visible player units so hidden asteroid/game-view units do not reveal the new layout.
         if (GameManager.Instance != null)
         {
             foreach (var p in GameManager.Instance.playerUnits)
             {
-                if (p == null) continue;
+                if (p == null || !p.gameObject.activeSelf) continue;
                 RegisterUnit(p, Mathf.CeilToInt(p.detectionRange));
             }
         }
@@ -880,5 +880,15 @@ public class TileManager : MonoBehaviour
     // Example: put prefab under Resources/Tiles/ and set registry keys accordingly.
     // You can call LoadLayoutFromJsonText at runtime after supplying a registry mapping prefab keys to actual prefabs.
 
-
+    public List<Unit> GetUnitsOnTile(Vector2Int axial)
+    {
+        var units = new List<Unit>();
+        foreach (var u in GameManager.Instance.unitsList)
+        {
+            if (u == null) continue;
+            if (u.currentTileCoord == axial)
+                units.Add(u);
+        }
+        return units;
+    }
 }

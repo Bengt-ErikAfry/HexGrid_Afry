@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
   m_Name: Module_SurvayArray
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: eb2aadc0f53c4948a084c9cfc0172b71
   itemName: Module SurvayArray
   icon: {fileID: 0}
   itemType: 7

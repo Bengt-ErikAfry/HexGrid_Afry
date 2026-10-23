@@ -705,6 +705,6 @@ public class ModuleViewManager : MonoBehaviour
 
     public void Boarding_ButtonPressed()
     {
-        GameStateMachine.Instance.SetState(GameplayStateId.Boarding);
+       // GameStateMachine.Instance.SetState(GameplayStateId.Boarding);
     }
 }

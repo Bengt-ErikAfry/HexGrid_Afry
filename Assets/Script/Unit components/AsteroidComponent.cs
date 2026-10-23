@@ -11,15 +11,42 @@ using Random = UnityEngine.Random;
 
 public class AsteroidComponent : MonoBehaviour
 {
-    public string asteroidName;
-    public Sprite asteroidIcon;
+    public string asteroidID;   //Used when saving insted of using a object reference.
+    public Vector2Int currentTileCoord; //Set when the asteroid is spawned. Used to find the asteroid when loading a save file.
+    public string asteroidJsonFileName; //created when player first show the planet. Then stays the same.
+    public string unitsOnSurfaceJsonFileName; //created when player first show the planet. Then stays the same.
+
+    public string asteroidName; //For desplying in UI. Set in inspector.
+    public Sprite asteroidIcon; //For desplying in UI. Set in inspector.
+
+    private void Awake()
+    {
+        //Wait an let the asteroid spawn before getting the tile coord. Otherwise it will be 0,0.
+        StartCoroutine(waitOneFrame());
+    }
+
+    public void Start()
+    {
+        //Add to GameManager list.
+        GameManager.Instance.asteroidsList.Add(this);
+    }
+
+    private IEnumerator waitOneFrame()
+    {
+        yield return null; // Wait for one frame
+        currentTileCoord = TileManager.Instance.WorldToAxial(this.transform.position);
+        StopCoroutine(waitOneFrame());
+    }
+
+
+    /*
     public int nrOfSatelitesSurvaying;
     public int turneItTakesToSurvay;
     public int nrOfTurnesSuveyed;
 
 
 
-    /*
+    
     public int amountOfProducingMiningOutpost;
     public int amountOfStoredRocks;
     public float amountOfAvalibuleOre;
@@ -133,160 +160,160 @@ public class AsteroidComponent : MonoBehaviour
             surfaceSlotDataList[i].oreAmount = value;
             remainingOre -= value;
         }*/
-        /*
+    /*
 
-        // Second pass: randomly distribute remaining ore
-        int index = 0;
-        while (remainingOre > 0)
+    // Second pass: randomly distribute remaining ore
+    int index = 0;
+    while (remainingOre > 0)
+    {
+        float maxAdd = Mathf.Min(maxOrePerSlot - surfaceSlotDataList[index].oreAmount, remainingOre);
+
+        if (maxAdd > 0)
         {
-            float maxAdd = Mathf.Min(maxOrePerSlot - surfaceSlotDataList[index].oreAmount, remainingOre);
-
-            if (maxAdd > 0)
-            {
-                float randomAdd = Random.Range(0, maxAdd + 1);
-                surfaceSlotDataList[index].oreAmount += randomAdd;
-                remainingOre -= randomAdd;
-            }
-
-            index = (index + 1) % surfaceSlotDataList.Count;
+            float randomAdd = Random.Range(0, maxAdd + 1);
+            surfaceSlotDataList[index].oreAmount += randomAdd;
+            remainingOre -= randomAdd;
         }
+
+        index = (index + 1) % surfaceSlotDataList.Count;
     }
+}
 /*
-    public void StartSurvay()
+public void StartSurvay()
+{
+    if (nrOfSatelitesOnPlanet > 0)
+        SurveyingPlanet = true;
+}
+
+void OnEnable()
+{
+    // If component is re-enabled at runtime after Start, ensure subscription exists.
+    if (GameManager.Instance != null && !isSubscribed)
     {
-        if (nrOfSatelitesOnPlanet > 0)
-            SurveyingPlanet = true;
+        GameManager.Instance.OnNewTurn += PlayerNewTurn;
+        GameManager.Instance.OnEnemyTurn += EnemyNewTurn; // Subscribe to enemy turn as well if needed
+        isSubscribed = true;
     }
+}
 
-    void OnEnable()
+void OnDisable()
+{
+    if (isSubscribed && GameManager.Instance != null)
     {
-        // If component is re-enabled at runtime after Start, ensure subscription exists.
-        if (GameManager.Instance != null && !isSubscribed)
-        {
-            GameManager.Instance.OnNewTurn += PlayerNewTurn;
-            GameManager.Instance.OnEnemyTurn += EnemyNewTurn; // Subscribe to enemy turn as well if needed
-            isSubscribed = true;
-        }
+        GameManager.Instance.OnNewTurn -= PlayerNewTurn;
+        GameManager.Instance.OnEnemyTurn -= EnemyNewTurn;
+        isSubscribed = false;
     }
+}
 
-    void OnDisable()
+void TrySubscribe()
+{
+    // Start() runs after all Awake() calls, so GameManager.Instance should be initialized.
+    if (GameManager.Instance != null && !isSubscribed)
     {
-        if (isSubscribed && GameManager.Instance != null)
-        {
-            GameManager.Instance.OnNewTurn -= PlayerNewTurn;
-            GameManager.Instance.OnEnemyTurn -= EnemyNewTurn;
-            isSubscribed = false;
-        }
+        GameManager.Instance.OnNewTurn += PlayerNewTurn;
+        GameManager.Instance.OnEnemyTurn += EnemyNewTurn;
+        isSubscribed = true;
     }
+}
 
-    void TrySubscribe()
+public void EnemyNewTurn()
+{
+    playerUnitsInOrbit.Clear();
+
+    playerUnitsInOrbit = GameManager.Instance.GetPlayerUnitsInOrbit(this.transform.position);
+    /*
+    // Get all player ship in orbit.
+    foreach (var playerUnit in GameManager.Instance.playerUnits)
     {
-        // Start() runs after all Awake() calls, so GameManager.Instance should be initialized.
-        if (GameManager.Instance != null && !isSubscribed)
+        //Check if player unit is in asteroid orbit
+        Vector2Int playerUnitCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(playerUnit.transform.position);
+        Vector2Int asteroidCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(this.transform.position);
+        if (playerUnitCurrentHexPos == asteroidCurrentHexPos)
         {
-            GameManager.Instance.OnNewTurn += PlayerNewTurn;
-            GameManager.Instance.OnEnemyTurn += EnemyNewTurn;
-            isSubscribed = true;
-        }
-    }
-
-    public void EnemyNewTurn()
-    {
-        playerUnitsInOrbit.Clear();
-
-        playerUnitsInOrbit = GameManager.Instance.GetPlayerUnitsInOrbit(this.transform.position);
-        /*
-        // Get all player ship in orbit.
-        foreach (var playerUnit in GameManager.Instance.playerUnits)
-        {
-            //Check if player unit is in asteroid orbit
-            Vector2Int playerUnitCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(playerUnit.transform.position);
-            Vector2Int asteroidCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(this.transform.position);
-            if (playerUnitCurrentHexPos == asteroidCurrentHexPos)
-            {
-                playerUnitsInOrbit.Add(playerUnit);
-            }
-        }*/
-
-        //get random.
-        /*if (playerUnitsInOrbit.Count > 0)
-        {
-            for (int i = 0; i < surfaceSlotDataList.Count; i++)
-            {
-                if (surfaceSlotDataList[i].hasAbandonMiningOutpost && surfaceSlotDataList[i].isSurveyed && surfaceSlotDataList[i].aliens_Defences > 0 && surfaceSlotDataList[i].health_Defence > 0)
-                {
-                    int randomIndex = Random.Range(0, playerUnitsInOrbit.Count);
-                    Unit selectedUnit = playerUnitsInOrbit[randomIndex];
-
-                    //Attack.
-                    if (selectedUnit != null)
-                    {
-                        //Damage player ship
-                        int damageAmount = Random.Range(1, AbandonMiningOutpostDefenceDamage);
-
-                        if (selectedUnit.moduleRuntimeList.Count > 0)
-                        {
-                            int indexToHit = Random.Range(0, selectedUnit.moduleRuntimeList.Count);
-                            selectedUnit.moduleRuntimeList[indexToHit].TakeDamage(damageAmount);
-                            MessageSystemManager.Instance.CreateMessage($"Ship {selectedUnit.unitName} was damaged {selectedUnit.moduleRuntimeList[indexToHit].ItemDefinition.itemName} by an abandoned mining outpost for {damageAmount} damage!", null, this.transform.position, Color.red);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    public void PlayerNewTurn()
-    {
-        //Reset player Turn Over on Mining Outposts
-        /*for (int u = 0; u < surfaceSlotDataList.Count; u++)
-        {
-            surfaceSlotDataList[u].isPlayerTurnOver = false;
-        }
-
-        //Survay planet
-        if (SurveyingPlanet)
-        {
-            for (int i = 0; i < nrOfSatelitesOnPlanet; i++)
-            {
-                if (nrOfTilesSurvayed < surfaceSlotDataList.Count)
-                {
-                    //Set tile as survayed
-                    surfaceSlotDataList[nrOfTilesSurvayed].isSurveyed = true;
-
-                    nrOfTilesSurvayed++;
-                }
-                else
-                {
-                    Debug.Log("Survay of Planet Completed");
-                    SurveyingPlanet = false;
-                }
-            }
-        }
-
-        //Produce if Have Outpost and room in inventory.
-        if (amountOfProducingMiningOutpost > 0)
-        {
-            for (int i = 0; i < surfaceSlotDataList.Count; i++)
-            {
-                TileData surfaceSlotData = surfaceSlotDataList[i];
-                if (surfaceSlotData.hasMiningOutpost && !surfaceSlotData.hasAbandonMiningOutpost && surfaceSlotData.oreAmount > 1 && inventory.maxItems > inventory.itemInstance.Count)
-                {
-                    //Have room
-                    //Remove ore from slot
-                    surfaceSlotData.oreAmount--;
-                    totalAmountOfOre--;
-
-                    //ADD ore to storage
-                    ItemDefinition rockItem = Resources.Load<ItemDefinition>("Ore/Ore_Rock");
-                    ItemInstance rockItemitemInstance = new ItemInstance();
-                    rockItemitemInstance.ItemDefinition = rockItem;
-                    if (rockItem != null)
-                    {
-                        inventory.AddItem(rockItemitemInstance, 1);
-                    }
-                    amountOfStoredRocks++;            
-                }
-            }
+            playerUnitsInOrbit.Add(playerUnit);
         }
     }*/
+
+    //get random.
+    /*if (playerUnitsInOrbit.Count > 0)
+    {
+        for (int i = 0; i < surfaceSlotDataList.Count; i++)
+        {
+            if (surfaceSlotDataList[i].hasAbandonMiningOutpost && surfaceSlotDataList[i].isSurveyed && surfaceSlotDataList[i].aliens_Defences > 0 && surfaceSlotDataList[i].health_Defence > 0)
+            {
+                int randomIndex = Random.Range(0, playerUnitsInOrbit.Count);
+                Unit selectedUnit = playerUnitsInOrbit[randomIndex];
+
+                //Attack.
+                if (selectedUnit != null)
+                {
+                    //Damage player ship
+                    int damageAmount = Random.Range(1, AbandonMiningOutpostDefenceDamage);
+
+                    if (selectedUnit.moduleRuntimeList.Count > 0)
+                    {
+                        int indexToHit = Random.Range(0, selectedUnit.moduleRuntimeList.Count);
+                        selectedUnit.moduleRuntimeList[indexToHit].TakeDamage(damageAmount);
+                        MessageSystemManager.Instance.CreateMessage($"Ship {selectedUnit.unitName} was damaged {selectedUnit.moduleRuntimeList[indexToHit].ItemDefinition.itemName} by an abandoned mining outpost for {damageAmount} damage!", null, this.transform.position, Color.red);
+                    }
+                }
+            }
+        }
+    }
+}
+public void PlayerNewTurn()
+{
+    //Reset player Turn Over on Mining Outposts
+    /*for (int u = 0; u < surfaceSlotDataList.Count; u++)
+    {
+        surfaceSlotDataList[u].isPlayerTurnOver = false;
+    }
+
+    //Survay planet
+    if (SurveyingPlanet)
+    {
+        for (int i = 0; i < nrOfSatelitesOnPlanet; i++)
+        {
+            if (nrOfTilesSurvayed < surfaceSlotDataList.Count)
+            {
+                //Set tile as survayed
+                surfaceSlotDataList[nrOfTilesSurvayed].isSurveyed = true;
+
+                nrOfTilesSurvayed++;
+            }
+            else
+            {
+                Debug.Log("Survay of Planet Completed");
+                SurveyingPlanet = false;
+            }
+        }
+    }
+
+    //Produce if Have Outpost and room in inventory.
+    if (amountOfProducingMiningOutpost > 0)
+    {
+        for (int i = 0; i < surfaceSlotDataList.Count; i++)
+        {
+            TileData surfaceSlotData = surfaceSlotDataList[i];
+            if (surfaceSlotData.hasMiningOutpost && !surfaceSlotData.hasAbandonMiningOutpost && surfaceSlotData.oreAmount > 1 && inventory.maxItems > inventory.itemInstance.Count)
+            {
+                //Have room
+                //Remove ore from slot
+                surfaceSlotData.oreAmount--;
+                totalAmountOfOre--;
+
+                //ADD ore to storage
+                ItemDefinition rockItem = Resources.Load<ItemDefinition>("Ore/Ore_Rock");
+                ItemInstance rockItemitemInstance = new ItemInstance();
+                rockItemitemInstance.ItemDefinition = rockItem;
+                if (rockItem != null)
+                {
+                    inventory.AddItem(rockItemitemInstance, 1);
+                }
+                amountOfStoredRocks++;            
+            }
+        }
+    }
+}*/
 }

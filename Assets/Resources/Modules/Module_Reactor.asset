@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
   m_Name: Module_Reactor
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: dfa6ca6a5ddb421690ac274d89a47367
   itemName: Module Reactor
   icon: {fileID: 0}
   itemType: 7

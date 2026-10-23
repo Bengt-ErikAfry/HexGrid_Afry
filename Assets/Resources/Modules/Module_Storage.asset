@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
   m_Name: Module_Storage
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: 9bb1416dc54b4ec68325dc1e283855bd
   itemName: Module Storage
   icon: {fileID: 0}
   itemType: 7

@@ -120,7 +120,7 @@ public class ShowMiningObjectUIState : IGameState
         }
         else
         {
-            UIManager.Instance.ShowStackView(unitsInClickedHex, screenPos);
+          //  UIManager.Instance.ShowStackView(unitsInClickedHex, screenPos);
 
             var defaultUnit = unitsInClickedHex
                 .OrderBy(u => Vector3.SqrMagnitude(u.transform.position - clickPoint))

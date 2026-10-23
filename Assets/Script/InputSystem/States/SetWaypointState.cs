@@ -100,7 +100,7 @@ public class SetWaypointState : IGameState
             //GameStateMachine.Instance.SetState(GameplayStateId.UIOnly);
 
             //Show StackView
-            UIManager.Instance.ShowStackView(unitsInClickedHex, screenPos);
+          //  UIManager.Instance.ShowStackView(unitsInClickedHex, screenPos);
 
             // Optionally set a default (e.g., the closest one)
             var defaultUnit = unitsInClickedHex

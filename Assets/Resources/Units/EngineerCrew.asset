@@ -12,12 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
   m_Name: EngineerCrew
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: 158f681a710345f8ae49df87fa53bc12
   itemName: EngineerCrew
   icon: {fileID: 21300000, guid: 9f356ed3267b3f247b44730d2d629e38, type: 3}
   itemType: 0
-  shipType: 0
   moduleType: 7
-  moduleClass: 3
   itemCanStack: 1
   maxHealth: 100
   description: 
@@ -28,11 +27,6 @@ MonoBehaviour:
   wearModifier_Boost: 2
   craftingTime: 0
   requiredItems: []
-  startModules: []
-  ShipLayoutBackground: {fileID: 0}
-  shipLayoutJson: {fileID: 0}
-  assemblyResultItem: {fileID: 0}
-  assemblyResultPrefab: {fileID: 0}
   damage: 10
   range: 3
   ammoType: 0

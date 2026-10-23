@@ -8,6 +8,7 @@ public class StackViewUnit_Entery : MonoBehaviour
     public TMP_Text unitName;
 
     public Unit unit_script;
+    public AsteroidComponent asteroid_script;
 
     public void OnClick()
     {
@@ -28,6 +29,33 @@ public class StackViewUnit_Entery : MonoBehaviour
         }
         else if(GameStateMachine.Instance.CurrentId == GameplayStateId.Selecting)
         {
+            if(unit_script != null)
+            {
+                //Select unit
+                SelectionService.Instance.SetSelectedUnit(unit_script);
+
+                // Show Route if existing
+                if (unit_script.routeComponent != null && unit_script.routeComponent.routeActions.Count > 0)
+                {
+                    HexGridManager.Instance.CalculateRoutePath(unit_script);
+                }
+
+                TileManager.Instance.HighlightTileWorldPosition(unit_script.transform.position);
+                Debug.Log($"SelectState OnTap: single unit '{unit_script.unitName}' selected.");
+            }
+            else if (asteroid_script != null)
+            {
+                //Select asteroid
+                // If there are multiple asteroids (unlikely) pick the first
+                SelectionService.Instance.SetSelectedAsteroid(asteroid_script);
+                TileManager.Instance.HighlightTileWorldPosition(asteroid_script.transform.position);
+                Debug.Log($"SelectState OnTap: asteroid '{asteroid_script.asteroidJsonFileName}' selected.");
+            }
+
+
+
+
+            /*
             //Select unit for other purposes
             Debug.Log("Selected " + unit_script.unitName);
             //Select unit
@@ -72,21 +100,6 @@ public class StackViewUnit_Entery : MonoBehaviour
             else
             {
                 UIManager.Instance.selectedUnitView.SetActive(false);
-            }
-
-            /*
-            //Show asteroidview if asteroid selected
-            if (SelectionService.Instance.SelectedUnit.unitType == Unit.UnitType.Asteroid)
-            {
-                /*   --- remove/redo when new mining system
-                UIManager.Instance.ShowAsteroidView();
-                AsteroidManager.Instance.ShowAsteroidView();
-                *//*
-            }
-            else
-            {
-                //Show selected unit view
-                if (SelectionService.Instance.SelectedUnit != null) UIManager.Instance.ShowSelectedUnitView(SelectionService.Instance.SelectedUnit);
             }*/
         }
         else if(GameStateMachine.Instance.CurrentId == GameplayStateId.SetWaypoint)

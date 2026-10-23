@@ -12,12 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
   m_Name: DeployableOutpostKit
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: 70d109ebeecf48bc8dcabc1ce48656d1
   itemName: DeployableOutpostKit
   icon: {fileID: 21300000, guid: 571d51402f4764e438dedcbbb16fd5d0, type: 3}
   itemType: 4
-  shipType: 4
   moduleType: 7
-  moduleClass: 3
   itemCanStack: 0
   maxHealth: 100
   description: 
@@ -30,11 +29,6 @@ MonoBehaviour:
   requiredItems:
   - item: {fileID: 11400000, guid: 6447b0cc648b72c469fb6d4d4c9a05ee, type: 2}
     amount: 1
-  startModules: []
-  ShipLayoutBackground: {fileID: 0}
-  shipLayoutJson: {fileID: 0}
-  assemblyResultItem: {fileID: 0}
-  assemblyResultPrefab: {fileID: 0}
   damage: 10
   range: 3
   ammoType: 0

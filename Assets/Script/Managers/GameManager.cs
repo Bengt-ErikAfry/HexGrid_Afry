@@ -29,6 +29,8 @@ public class GameManager : MonoBehaviour
     public List<Unit> playerUnits = new List<Unit>();   //Player controled units. DO NOT Set in the inspector
     public List<Unit> enemyUnits = new List<Unit>();    //Enemy list. DO NOT Set in the inspector
 
+    public List<AsteroidComponent> asteroidsList = new List<AsteroidComponent>();
+
     public bool playerTurn;
     private int remainingEnemies;   //used to determine if all enemy have moved/attacked before switching back to player turn.
 
@@ -41,6 +43,10 @@ public class GameManager : MonoBehaviour
 
     public GameObject MotherShip;   //Used for exsampel in a mining component to know where to unload ore.
     public Unit motherShip_Unit_Script;
+
+    public string gameViewLayout = "hex_20Radius_Full.json"; //Default layout to load when starting a new game.
+    public string gameViewUnitsSaveFile = "gameViewUnitSave.json"; //Default layout to load when starting a new game.
+
 
     private void Awake()
     {

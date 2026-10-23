@@ -36,7 +36,8 @@ public class ItemDatabase : MonoBehaviour
         byId = new Dictionary<string, ItemDefinition>(allItems.Count);
         foreach (var def in allItems)
         {
-            if (def == null || string.IsNullOrEmpty(def.itemId)) continue;
+            if (def == null) continue;
+            def.EnsureItemId();
             if (!byId.ContainsKey(def.itemId)) byId.Add(def.itemId, def);
         }
     }

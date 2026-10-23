@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b211a668e164a984f9ffed515a6cf7db, type: 3}
   m_Name: AssemblyShip_CapitalClass
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
+  itemId: 13e441559b1d4cf3860914f9c4d3c51f
   itemName: MotherShip
   icon: {fileID: 0}
   itemType: 4
@@ -47,6 +48,3 @@ MonoBehaviour:
   energyProduction_Boost: 0
   energyStorage_Boost: 0
   storageSpace: 0
-  worldRadius: 10
-  hexSize: 0.5
-  scrollLimit: 0

@@ -80,6 +80,28 @@ public class ItemDefinition : ScriptableObject
     public int storageSpace = 0;
 
     public HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>(); // fill externally if you have obstacles
+
+    [ContextMenu("Generate Item ID")]
+    public void EnsureItemId()
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+        {
+            itemId = System.Guid.NewGuid().ToString("N");
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        }
+    }
+
+    private void Reset()
+    {
+        EnsureItemId();
+    }
+
+    private void OnValidate()
+    {
+        EnsureItemId();
+    }
 }
 public enum ItemType
 {

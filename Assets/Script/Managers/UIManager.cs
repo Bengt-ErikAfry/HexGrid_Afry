@@ -353,7 +353,7 @@ public class UIManager : MonoBehaviour
         //Send message to player
         MessageSystemManager.Instance.CreateMessage("Unit " + unit_script.gameObject.name + " turne started with "
             + (unit_script.shipRuntimeData.currentMovmentRange - unit_script.movedThisTurn) + " moves left!"
-            , null, HexGridLinesBaker.Instance.GetGridPosFromWorldPos(unit_script.transform.position), Color.green);
+            , null, TileManager.Instance.WorldToAxial(unit_script.transform.position), Color.green);
 
         //Reset UI
         ResetUI();
@@ -392,7 +392,7 @@ public class UIManager : MonoBehaviour
     }
 
     //Called from attack and selection state when player click on hex with more than one unit. Show stack view with all units in hex and let player select unit to attack or select.
-    public void ShowStackView(List<Unit> unitsInClickedHex, Vector2 screenPos)
+    public void ShowStackView(List<Unit> unitsInClickedHex, List<AsteroidComponent> asteroidsInClickedHex , Vector2 screenPos)
     {
         //Show stack view
 
@@ -407,7 +407,7 @@ public class UIManager : MonoBehaviour
 
         Debug.Log("ShowStackView: " + unitsInClickedHex.Count + " units in clicked hex.");
 
-        // Populate new stackView
+        // Populate new stackView with units
         for (int i = 0; i < unitsInClickedHex.Count; i++)
         {
             //Instatiate
@@ -424,6 +424,25 @@ public class UIManager : MonoBehaviour
 
             //Set unit script
             stackViewUnit_Entery_Script.unit_script = unitsInClickedHex[i];
+        }
+
+        // Populate new stackView with asteroids
+        for (int i = 0; i < asteroidsInClickedHex.Count; i++)
+        {
+            //Instatiate
+            GameObject newStackViewPrefab = Instantiate(stackViewPrefab, stackViewContent);
+
+            //Get entery script
+            StackViewUnit_Entery stackViewUnit_Entery_Script = newStackViewPrefab.GetComponent<StackViewUnit_Entery>();
+
+            //Set Image
+            stackViewUnit_Entery_Script.unitSprite.sprite = asteroidsInClickedHex[i].asteroidIcon;
+
+            //Set name
+            stackViewUnit_Entery_Script.unitName.text = asteroidsInClickedHex[i].asteroidName;
+
+            //Set unit script
+            stackViewUnit_Entery_Script.asteroid_script = asteroidsInClickedHex[i];
         }
     }
 

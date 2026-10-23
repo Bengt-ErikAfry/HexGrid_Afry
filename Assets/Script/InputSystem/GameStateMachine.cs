@@ -26,7 +26,6 @@ public enum GameplayStateId
     Cinematic,
     BlockPlayerInput, // For cutscenes or other moments where you want to freeze the player but still show the world
     SelectingAsteroid,
-    Boarding,   //When attacking and boarding is possible, player can choose to board instead of attack. Tap selects target for boarding instead of attacking.
     SetWaypoint, // When player is adding waypoints to a unit, tap adds waypoint instead of selecting unit
     SetPickup,
     SetDrop,
@@ -64,7 +63,6 @@ public class GameStateMachine : MonoBehaviour
         _states[GameplayStateId.Attacking] = new AttackingState(this);
         _states[GameplayStateId.UIOnly] = new UIOnlyState(this);
         _states[GameplayStateId.BlockPlayerInput] = new BlockPlayerInputState(this);
-        _states[GameplayStateId.Boarding] = new BoardingState(this);
         _states[GameplayStateId.SetWaypoint] = new SetWaypointState(this);
         _states[GameplayStateId.SetPickup] = new SetPickUpState(this);
         _states[GameplayStateId.SetDrop] = new SetDropState(this);

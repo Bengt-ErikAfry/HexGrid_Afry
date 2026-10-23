@@ -146,7 +146,7 @@ public class ModuleView_Slot : MonoBehaviour
             StartCoroutine(AttackManager.Instance.TryToAttack(SelectionService.Instance.SelectedUnit,
                 SelectionService.Instance.SelectedUnit.target_Unit_Script.gameObject));
         }
-        else if (GameStateMachine.Instance.CurrentId == GameplayStateId.Boarding)
+       /* else if (GameStateMachine.Instance.CurrentId == GameplayStateId.Boarding)
         {
             //Hide ModuleView
             InfoScreenManager.Instance.ModuleView_GameObject.offsetMax = new Vector2(6000, 0);
@@ -154,7 +154,7 @@ public class ModuleView_Slot : MonoBehaviour
 
             //Boarding mode
             BoardingAttack();
-        }
+        }*/
         else
         {
             Debug.LogWarning($"Pressed module slot but not in a state that can handle it. Current state is {GameStateMachine.Instance.CurrentId}");

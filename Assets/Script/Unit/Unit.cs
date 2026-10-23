@@ -56,6 +56,8 @@ public class Unit : MonoBehaviour
         factoryComponent = GetComponent<FactoryComponent>();
         minableComponent = GetComponent<MinableComponent>();
         routeComponent = GetComponent<RouteComponent>();
+
+        grafics = this.transform.GetChild(0);
     }
     private void Start()
     {
@@ -67,21 +69,29 @@ public class Unit : MonoBehaviour
         laserBeam_Script = GetComponent<LaserBeam>();
 
         //Add to GameManager list.
-        GameManager.Instance.unitsList.Add(this);
-        if (isPlayerControlled)
+        if(GameManager.Instance.unitsList.Contains(this))
         {
-            //Add to player unit list
-            GameManager.Instance.playerUnits.Add(this);
+            Debug.LogWarning("Unit already exists in GameManager unitsList: " + this.name);
         }
         else
         {
-            //Add to enemy unit list
-            GameManager.Instance.enemyUnits.Add(this);
+            GameManager.Instance.unitsList.Add(this);
+            if (isPlayerControlled)
+            {
+                //Add to player unit list
+                GameManager.Instance.playerUnits.Add(this);
+            }
+            else
+            {
+                //Add to enemy unit list
+                GameManager.Instance.enemyUnits.Add(this);
+            }
         }
+
 
         StartCoroutine(InitUnit()); //To register for FOG OF WAR to work.
     }
-    private IEnumerator InitUnit()
+    public IEnumerator InitUnit()
     {
         // Wait until TileManager exists and has built its lookup
         yield return new WaitUntil(() => TileManager.Instance != null && TileManager.Instance.HasBuiltLookup);
@@ -96,7 +106,17 @@ public class Unit : MonoBehaviour
         {
             //Enemy units are not registered for fog of war, but you can add any other initialization logic here if needed.
         }
+
+        //Set cordinates for this unit. Used for pathfinding and other tile-based logic.
+        currentTileCoord = TileManager.Instance.WorldToAxial(this.transform.position);
+
+        //Set ship icon in selection view
+        grafics.GetComponent<SpriteRenderer>().sprite = ShipClassesManager.Instance.GetShipIcon(shipType);
+
+        //GameObject name for debuging
+        this.gameObject.name = unitName + " (" + unitId + ")";
     }
+
     public IEnumerator DoEnemyTurn(System.Action onFinished)
     {
         //Selected Unit enemy
