@@ -46,6 +46,7 @@ public class GameManager : MonoBehaviour
 
     public string gameViewLayout = "hex_20Radius_Full.json"; //Default layout to load when starting a new game.
     public string gameViewUnitsSaveFile = "gameViewUnitSave.json"; //Default layout to load when starting a new game.
+    public string gameViewAsteroidsSaveFile = "gameViewAsteroidsSave.json"; //Default layout to load when starting a new game.
 
 
     private void Awake()

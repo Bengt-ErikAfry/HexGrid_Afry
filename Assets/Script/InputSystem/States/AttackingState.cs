@@ -176,7 +176,7 @@ public class AttackingState : IGameState
             SelectionService.Instance.SetSelectedAsteroid(asteroid);
             TileManager.Instance.HighlightTileWorldPosition(worldPos);
             GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
-            Debug.Log($"AttackingState OnTap: asteroid '{asteroid.asteroidJsonFileName}' selected -> switching to Selecting.");
+            Debug.Log($"AttackingState OnTap: asteroid '{asteroid.asteroidTileSatusSave}' selected -> switching to Selecting.");
             return;
         }
 

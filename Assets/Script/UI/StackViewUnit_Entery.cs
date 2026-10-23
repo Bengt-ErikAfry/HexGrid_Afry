@@ -49,7 +49,7 @@ public class StackViewUnit_Entery : MonoBehaviour
                 // If there are multiple asteroids (unlikely) pick the first
                 SelectionService.Instance.SetSelectedAsteroid(asteroid_script);
                 TileManager.Instance.HighlightTileWorldPosition(asteroid_script.transform.position);
-                Debug.Log($"SelectState OnTap: asteroid '{asteroid_script.asteroidJsonFileName}' selected.");
+                Debug.Log($"SelectState OnTap: asteroid '{asteroid_script.asteroidTileSatusSave}' selected.");
             }
 
 

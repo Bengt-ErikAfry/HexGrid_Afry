@@ -39,7 +39,7 @@ public class AsteroidManager : MonoBehaviour
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(asteroid.asteroidJsonFileName))
+        if (string.IsNullOrWhiteSpace(asteroid.asteroidTileSatusSave))
         {
             Debug.LogError("ShowAsteroidView: asteroidJsonFileName is null or empty.");
             return;
@@ -68,11 +68,14 @@ public class AsteroidManager : MonoBehaviour
         SaveManager.Instance?.SaveAllUnits(GameManager.Instance.gameViewUnitsSaveFile);
         SaveManager.Instance?.SaveAllInventories();
 
+        // 3.6) Save all Asteroid data
+        SaveManager.Instance?.SaveAllAsteroids(GameManager.Instance.gameViewAsteroidsSaveFile);
+
         // 4) Hide all active game-view units and asteroids
         SaveManager.Instance?.HideGameViewObjects();
 
         // 5) Load the asteroid interior layout
-        string path = Path.Combine(Application.streamingAssetsPath, asteroid.asteroidJsonFileName);
+        string path = Path.Combine(Application.streamingAssetsPath, asteroid.asteroidTileSatusSave);
         TileManager.Instance?.LoadLayoutFromFile(path);
 
         // 6) Load asteroid-surface units
@@ -122,7 +125,7 @@ public class AsteroidManager : MonoBehaviour
         // 3) Save asteroid fog state before leaving
         if (currentAsteroid != null)
         {
-            TileManager.Instance?.SaveFogState(currentAsteroid.asteroidJsonFileName);
+            TileManager.Instance?.SaveFogState(currentAsteroid.asteroidTileSatusSave);
         }
 
         // 4) Restore the original game-view layout
@@ -153,6 +156,9 @@ public class AsteroidManager : MonoBehaviour
                 TileManager.Instance?.RegisterUnit(unit, range);
             }
         }
+
+        // 7.5) Load all Asteroid data back into the game view
+        SaveManager.Instance?.LoadAllAsteroids(GameManager.Instance.gameViewAsteroidsSaveFile);
 
         // 8) Set normal state
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);

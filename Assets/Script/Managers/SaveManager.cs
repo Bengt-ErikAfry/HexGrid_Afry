@@ -9,15 +9,12 @@ using UnityEngine;
 public class SaveManager : MonoBehaviour
 {
     public GameObject unitPrefab; // Assign the Unit prefab in the Inspector
+    public GameObject asteroidPrefab; // Assign the Asteroid prefab in the Inspector
     public Transform unitFolderForAllUnits; // Assign a parent transform in the Inspector to hold all units
-
+    public Transform asteroidFolderForAllAsteroids; // Assign a parent transform in the Inspector to hold all asteroids
     public static SaveManager Instance { get; private set; }
-
     [Tooltip("Relative filename under Application.persistentDataPath")]
     public string defaultFileName = "units_save.json";
-
-    private readonly List<Unit> hiddenGameViewUnits = new List<Unit>();
-    private readonly List<AsteroidComponent> hiddenGameViewAsteroids = new List<AsteroidComponent>();
 
     private void Awake()
     {
@@ -32,7 +29,7 @@ public class SaveManager : MonoBehaviour
         {
             if (unit == null) continue;
             // ADDED: Prevent hidden units from contributing to fog of war.
-                TileManager.Instance.UnregisterUnit(unit);
+            TileManager.Instance.UnregisterUnit(unit);
             Destroy(unit.gameObject);
         }
 
@@ -47,8 +44,11 @@ public class SaveManager : MonoBehaviour
         GameManager.Instance.unitsList.Clear();
         GameManager.Instance.playerUnits.Clear();
         GameManager.Instance.enemyUnits.Clear();
+        GameManager.Instance.asteroidsList.Clear();
 
         Debug.Log("Game-view units and asteroids hidden.");
+
+        LoadAllAsteroids();
     }
 
     public void LoadAsteroidViewObject(AsteroidComponent asteroid)
@@ -61,7 +61,7 @@ public class SaveManager : MonoBehaviour
         }
 
         // An empty filename means this asteroid has not been entered before.
-        if (string.IsNullOrWhiteSpace(asteroid.unitsOnSurfaceJsonFileName))
+        if (string.IsNullOrWhiteSpace(asteroid.unitsOnSurfaceSave))
         {
             Debug.Log(
                 $"LoadAsteroidViewObject: No saved units for asteroid " +
@@ -72,7 +72,7 @@ public class SaveManager : MonoBehaviour
         // SaveAllUnits writes to persistentDataPath, so load from there too.
         string path = Path.Combine(
             Application.persistentDataPath,
-            asteroid.unitsOnSurfaceJsonFileName);
+            asteroid.unitsOnSurfaceSave);
 
         if (!File.Exists(path))
         {
@@ -128,6 +128,7 @@ public class SaveManager : MonoBehaviour
                 }
 
                 GameObject spawned = Instantiate(unitPrefab, unitFolderForAllUnits);
+                Debug.Log("Spawned child parent is: " + spawned.transform.parent?.name);
                 runtimeUnit = spawned.GetComponent<Unit>();
 
                 if (runtimeUnit == null)
@@ -200,18 +201,9 @@ public class SaveManager : MonoBehaviour
             $"{loadedUnitsById.Count} units for {asteroid.asteroidName}.");
     }
 
-    [System.Serializable]
-    public class ItemInstanceSaveData
-    {
-        public string itemId;          // reference to ItemDefinition.itemId
-        public int amount;             // stack count
-        public int currentHealth;
-        public int currentPowerUpBoost;
-        public bool isOnline;
-        public bool isBroken;
-        public bool isDestroyed;
-        // add any other runtime fields you need to persist
-    }
+    /// <summary>
+    /// /////////////////////////  UNITS
+    /// </summary>
 
     [Serializable]
     private class UnitSaveData
@@ -241,12 +233,6 @@ public class SaveManager : MonoBehaviour
     // References between units are saved as GUIDs (targetUnitId).
     public void SaveAllUnits(string fileName = null)
     {
-        if (GameManager.Instance == null)
-        {
-            Debug.LogWarning("SaveAllUnits: GameManager.Instance is null. Aborting save.");
-            return;
-        }
-
         var wrapper = new UnitsSaveWrapper();
 
         foreach (var u in GameManager.Instance.unitsList)
@@ -408,7 +394,7 @@ public class SaveManager : MonoBehaviour
                     continue;
                 }
 
-                GameObject go = Instantiate(unitPrefab);
+                GameObject go = Instantiate(unitPrefab, unitFolderForAllUnits);
                 runtime = go.GetComponent<Unit>();
                 if (runtime == null)
                 {
@@ -616,7 +602,216 @@ public class SaveManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// /////////////////////////  ASTEROIDS
+    /// </summary>
+
+    [Serializable]
+    private class AsteroidSaveData
+    {
+        public string asteroidID;           // GUID for this unit in the save file
+        public string asteroidName;
+        public Vector2Int currentTileCoord;
+        public string asteroidTileSatusSave;
+        public string unitsOnSurfaceSave; // Filename for saved units on the asteroid surface
+        public string asteroidSpritePath; // Reference to the asteroid's sprite (if needed)
+    }
+
+    [Serializable]
+    private class AsteroidSaveWrapper
+    {
+        public List<AsteroidSaveData> asteroids = new List<AsteroidSaveData>();
+    }
+
+    //Helper to below SaveAllAsteroids to get the resource path of a sprite. This is useful for saving the sprite reference in a way that can be loaded later.
+    private string GetResourcePath(Sprite sprite)
+    {
+        if (sprite == null) return string.Empty;
+
+#if UNITY_EDITOR
+        string assetPath = UnityEditor.AssetDatabase.GetAssetPath(sprite);
+        if (!string.IsNullOrEmpty(assetPath))
+        {
+            // If sprite is inside Assets/Resources, convert to Resources-relative path
+            const string resourcesFolder = "Assets/Resources/";
+            if (assetPath.StartsWith(resourcesFolder))
+            {
+                return assetPath.Substring(resourcesFolder.Length).Replace(".png", "").Replace(".jpg", "");
+            }
+
+            return assetPath;
+        }
+#endif
+
+        // Runtime fallback: if you already know the resource path
+        return sprite.name;
+    }
+
+    public void SaveAllAsteroids(string fileName = "asteroids_save.json")
+    {
+        var wrapper = new AsteroidSaveWrapper();
+
+        foreach (var a in GameManager.Instance.asteroidsList)
+        {
+            if (a == null) continue;
+
+            // Ensure asteroid has a stable id (generate once if missing)
+            if (string.IsNullOrEmpty(a.asteroidID))
+            {
+                a.asteroidID = Guid.NewGuid().ToString();
+            }
+
+            var save = new AsteroidSaveData
+            {
+                asteroidID = a.asteroidID,
+                asteroidName = a.asteroidName,
+                currentTileCoord = a.currentTileCoord,
+                asteroidTileSatusSave = a.asteroidTileSatusSave,
+                unitsOnSurfaceSave = a.unitsOnSurfaceSave,
+
+                asteroidSpritePath = a.asteroidIcon != null
+                ? GetResourcePath(a.asteroidIcon)
+                : ""
+            };
+
+            wrapper.asteroids.Add(save);
+        }
+
+        string fname = string.IsNullOrEmpty(fileName) ? defaultFileName : fileName;
+        string path = Path.Combine(Application.persistentDataPath, fname);
+        try
+        {
+            string json = JsonUtility.ToJson(wrapper, true);
+            File.WriteAllText(path, json);
+            Debug.Log($"SaveManager: Saved {wrapper.asteroids.Count} asteroids to {path}");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"SaveManager: Failed to save asteroids to {path}: {ex.Message}");
+        }
+    }
+
+    public void LoadAllAsteroids(string fileName = null)
+    {
+        string fname = string.IsNullOrEmpty(fileName) ? defaultFileName : fileName;
+        string path = Path.Combine(Application.persistentDataPath, fname);
+        if (!File.Exists(path))
+        {
+            Debug.LogWarning($"SaveManager.LoadAllUnits: file not found: {path}");
+            return;
+        }
+
+        StartCoroutine(LoadAsteroidsRoutine(path));
+    }
+
+    private IEnumerator LoadAsteroidsRoutine(string path)
+    {
+        // Wait until managers and tile lookup are ready
+        yield return new WaitUntil(() => GameManager.Instance != null && TileManager.Instance != null && TileManager.Instance.HasBuiltLookup);
+
+        AsteroidSaveWrapper wrapper = null;
+        try
+        {
+            string json = File.ReadAllText(path);
+            wrapper = JsonUtility.FromJson<AsteroidSaveWrapper>(json);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"SaveManager: Failed to read/parse save file: {ex.Message}");
+            yield break;
+        }
+
+        if (wrapper == null || wrapper.asteroids == null)
+        {
+            Debug.LogWarning("SaveManager: Save file contained no asteroid data.");
+            yield break;
+        }
+
+
+        // Build map of saved GUID -> saved data
+        var savedGuidToData = wrapper.asteroids.ToDictionary(s => s.asteroidID, s => s);
+
+        // Build runtime map GUID -> Unit by matching saved entries to existing runtime units (prefer unitId).
+        var guidToRuntimeUnit = new Dictionary<string, AsteroidComponent>();
+        foreach (var saved in wrapper.asteroids)
+        {
+            if (saved == null) continue;
+
+            AsteroidComponent asteroid = GameManager.Instance.asteroidsList
+                .FirstOrDefault(a => a != null && a.asteroidID == saved.asteroidID);
+
+            if (asteroid == null)
+            {
+                if (asteroidPrefab == null)
+                {
+                    Debug.LogWarning("Missing asteroidPrefab");
+                    continue;
+                }
+
+                GameObject go = Instantiate(asteroidPrefab, asteroidFolderForAllAsteroids);
+                asteroid = go.GetComponent<AsteroidComponent>();
+
+                if (asteroid == null)
+                {
+                    Debug.LogWarning("Prefab has no AsteroidComponent");
+                    Destroy(go);
+                    continue;
+                }
+
+                asteroid.asteroidID = saved.asteroidID;
+                GameManager.Instance.asteroidsList.Add(asteroid);
+            }
+
+            ApplySavedAsteroidData(asteroid, saved);
+        }
+
+
+
+        //A check to see that the saved GUID is the same as the runtime GUID. If not, it will log a warning.
+        Debug.Log("Saved asteroids:");
+        foreach (var s in wrapper.asteroids)
+        {
+            Debug.Log($"saved asteroidId={s.asteroidID}, name={s.asteroidName}");
+        }
+
+        Debug.Log("Runtime asteroids:");
+        foreach (var u in GameManager.Instance.asteroidsList)
+        {
+            if (u != null)
+                Debug.Log($"runtime asteroidId={u.asteroidID}, name={u.asteroidName}");
+        }
+
+
+
+        Debug.Log($"SaveManager: Loaded {guidToRuntimeUnit.Count} asteroid(s) asteroid reference(s) from {path}");
+    }
+
+    private void ApplySavedAsteroidData(
+        AsteroidComponent runtimeAsteroid,
+        AsteroidSaveData savedAsteroid)
+    {
+        runtimeAsteroid.asteroidID = savedAsteroid.asteroidID;
+        runtimeAsteroid.asteroidName = savedAsteroid.asteroidName;
+        runtimeAsteroid.currentTileCoord = savedAsteroid.currentTileCoord;
+        runtimeAsteroid.asteroidTileSatusSave = savedAsteroid.asteroidTileSatusSave;
+        runtimeAsteroid.unitsOnSurfaceSave = savedAsteroid.unitsOnSurfaceSave;
+    }
+
+
     // ////////////////////// Inventory Save/Load //////////////////////
+
+    [System.Serializable]
+    public class ItemInstanceSaveData
+    {
+        public string itemId;          // reference to ItemDefinition.itemId
+        public int amount;             // stack count
+        public int currentHealth;
+        public int currentPowerUpBoost;
+        public bool isOnline;
+        public bool isBroken;
+        public bool isDestroyed;
+        // add any other runtime fields you need to persist
+    }
 
     [System.Serializable]
     public class InventorySaveData

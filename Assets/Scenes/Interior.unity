@@ -4316,7 +4316,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 397377846}
+  - {fileID: 1179570546}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &134372150
@@ -12440,107 +12440,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2275307062788586400, guid: e5b832ab649861640b7ade216816e555, type: 3}
   m_PrefabInstance: {fileID: 396928954}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &397377845
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 397377846}
-  - component: {fileID: 397377847}
-  - component: {fileID: 397377849}
-  - component: {fileID: 397377848}
-  m_Layer: 0
-  m_Name: Asteroid
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &397377846
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 397377845}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.77, y: 2.98, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1052435440}
-  m_Father: {fileID: 134101426}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &397377847
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 397377845}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aca969c12443de4458c2a9ae16bde65d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AsteroidComponent
-  asteroidID: 
-  currentTileCoord: {x: 0, y: 0}
-  asteroidJsonFileName: hex_template_test.json
-  unitsOnSurfaceJsonFileName: 
-  asteroidName: Asteroid A1
-  asteroidIcon: {fileID: -1064938584130821537, guid: 5d6e7c2934f8a0c4caf76b0d4b617de3, type: 3}
---- !u!65 &397377848
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 397377845}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!54 &397377849
-Rigidbody:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 397377845}
-  serializedVersion: 5
-  m_Mass: 1
-  m_LinearDamping: 0
-  m_AngularDamping: 0.05
-  m_CenterOfMass: {x: 0, y: 0, z: 0}
-  m_InertiaTensor: {x: 1, y: 1, z: 1}
-  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ImplicitCom: 1
-  m_ImplicitTensor: 1
-  m_UseGravity: 1
-  m_IsKinematic: 1
-  m_Interpolate: 0
-  m_Constraints: 0
-  m_CollisionDetection: 0
 --- !u!1001 &397595774
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -27934,10 +27833,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Asteroid
   asteroidID: 
-  currentTileCoord: {x: 0, y: 0}
-  asteroidJsonFileName: 
-  unitsOnSurfaceJsonFileName: 
   asteroidName: 
+  currentTileCoord: {x: 0, y: 0}
+  asteroidTileSatusSave: 
+  unitsOnSurfaceSave: 
   asteroidIcon: {fileID: 0}
 --- !u!114 &928467291
 MonoBehaviour:
@@ -31788,97 +31687,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2275307062788586400, guid: e5b832ab649861640b7ade216816e555, type: 3}
   m_PrefabInstance: {fileID: 1051728256}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1052435439
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1052435440}
-  - component: {fileID: 1052435441}
-  m_Layer: 0
-  m_Name: Grafix
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1052435440
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1052435439}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 397377846}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &1052435441
-SpriteRenderer:
-  serializedVersion: 2
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1052435439}
-  m_Enabled: 1
-  m_CastShadows: 0
-  m_ReceiveShadows: 0
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 0
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_ForceMeshLod: -1
-  m_MeshLodSelectionBias: 0
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 0
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_MaskInteraction: 0
-  m_Sprite: {fileID: -1064938584130821537, guid: 5d6e7c2934f8a0c4caf76b0d4b617de3, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
-  m_FlipY: 0
-  m_DrawMode: 0
-  m_Size: {x: 2.52, y: 2.48}
-  m_AdaptiveModeThreshold: 0.5
-  m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
-  m_SpriteSortPoint: 0
 --- !u!1001 &1055863377
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -34822,7 +34630,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveManager
   unitPrefab: {fileID: 5983776126068702836, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
+  asteroidPrefab: {fileID: 8036387217346746266, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
   unitFolderForAllUnits: {fileID: 946487650}
+  asteroidFolderForAllAsteroids: {fileID: 134101426}
   defaultFileName: units_save.json
 --- !u!1 &1158803917
 GameObject:
@@ -35335,6 +35145,68 @@ PrefabInstance:
 Transform:
   m_CorrespondingSourceObject: {fileID: 2275307062788586400, guid: e5b832ab649861640b7ade216816e555, type: 3}
   m_PrefabInstance: {fileID: 1176960768}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &1179570545
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 134101426}
+    m_Modifications:
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -1.77
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 2.98
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8036387217346746266, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: m_Name
+      value: AsteroidPrefab
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+--- !u!4 &1179570546 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+  m_PrefabInstance: {fileID: 1179570545}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1182152404
 GameObject:
@@ -45123,6 +44995,7 @@ MonoBehaviour:
   motherShip_Unit_Script: {fileID: 0}
   gameViewLayout: hex_20Radius_Full.json
   gameViewUnitsSaveFile: gameViewUnitSave.json
+  gameViewAsteroidsSaveFile: gameViewAsteroidsSave.json
 --- !u!114 &1511860459
 MonoBehaviour:
   m_ObjectHideFlags: 0
