@@ -31,6 +31,7 @@ public class ItemDefinition : ScriptableObject
 
     [Header("Craftable")]
     public int craftingTime; // in seconds
+    public GameObject craftingResult;
     [System.Serializable]
     public struct MaterialRequirement
     {
@@ -120,7 +121,8 @@ public enum ItemType
     Units,
     Weapon,
     Module,
-    Building
+    Building,
+    MiningOutpost
 }
 public enum AmmoType
 {

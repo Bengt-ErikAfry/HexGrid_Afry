@@ -919,4 +919,13 @@ public class TileManager : MonoBehaviour
         }
         return units;
     }
+
+    public bool IsTileVisible(Vector2Int axial)
+    {
+        if (tileLookup.TryGetValue(axial, out var tile))
+        {
+            return tile.tileVisibilityState == TileVisibilityState.Visible;
+        }
+        return false;
+    }
 }

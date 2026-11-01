@@ -48,7 +48,10 @@ public class GameManager : MonoBehaviour
     public string gameViewUnitsSaveFile = "gameViewUnitSave.json"; //Default layout to load when starting a new game.
     public string gameViewAsteroidsSaveFile = "gameViewAsteroidsSave.json"; //Default layout to load when starting a new game.
     public Transform UnitsInOrbit; // a place holder for units in orbit so i do not need to destroy or save/load them when player open an asterois.
-    public Transform unitInGameview; 
+    public Transform unitInGameview;
+
+    public List<GameObject> spawnedInventoryUnits = new();
+    public Unit expandedUnit;
 
     private void Awake()
     {

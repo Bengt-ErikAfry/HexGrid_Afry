@@ -14,18 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: 78a7ad2c77f248cf926ce6f6ee3e7f3f
   itemName: AssembltShip Corvette class Template
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9b5b7e00627fbf948b303397fb71654c, type: 3}
   itemType: 4
   moduleType: 0
   itemCanStack: 0
   maxHealth: 100
   description: 
   size: 1
+  colorOnOreMap: {r: 1, g: 1, b: 1, a: 1}
   energyCost: 5
   energyConsumtion_Boost: 1.5
   wear: 2
   wearModifier_Boost: 2
   craftingTime: 0
+  craftingResult: {fileID: 0}
   requiredItems: []
   damage: 10
   range: 3
@@ -48,3 +50,5 @@ MonoBehaviour:
   energyProduction_Boost: 1.5
   energyStorage_Boost: 1.5
   storageSpace: 0
+  SurvayRange: 2
+  SurvayRangeIncresePerBoost: 1

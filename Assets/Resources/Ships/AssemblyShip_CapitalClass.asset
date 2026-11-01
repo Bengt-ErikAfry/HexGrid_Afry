@@ -14,18 +14,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemDefinition
   itemId: 13e441559b1d4cf3860914f9c4d3c51f
   itemName: MotherShip
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 4f1cf9f8f8b01e743bf12e13c2622e8e, type: 3}
   itemType: 4
   moduleType: 0
   itemCanStack: 0
   maxHealth: 0
   description: 
   size: 0
+  colorOnOreMap: {r: 1, g: 1, b: 1, a: 1}
   energyCost: 0
   energyConsumtion_Boost: 0
   wear: 0
   wearModifier_Boost: 0
   craftingTime: 0
+  craftingResult: {fileID: 0}
   requiredItems: []
   damage: 0
   range: 0
@@ -48,3 +50,5 @@ MonoBehaviour:
   energyProduction_Boost: 0
   energyStorage_Boost: 0
   storageSpace: 0
+  SurvayRange: 2
+  SurvayRangeIncresePerBoost: 1

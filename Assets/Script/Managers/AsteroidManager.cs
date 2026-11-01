@@ -18,10 +18,11 @@ public class AsteroidManager : MonoBehaviour
     public Transform uintInOrbitView;
     public Transform unitInOrbitListContent;
     public GameObject unitInOrbitPrefab;
-    //public string unitToPlaceUnitId; // This is the unit that will be placed on the asteroid surface when the player selects a unit from orbit.
+    public GameObject unitInOrbitInventoryUnitPrefab;
     public Unit unitScriptToPlace;  // Use this insted of unitID.
     public SpriteRenderer asteroidBackgroundRenderer; // Will be loaded when asteroid is loaded and changed when player click the display ore map button..
     public bool isOreMapDisplayed = false; // Track whether the ore map is currently displayed or not.
+    public Unit itemSourceShip; //Used when player place a building on the surface to knowwhat inventory to delete items from.
     public static AsteroidManager Instance { get; private set; }
 
     public List<Unit> unitsInOrbit = new List<Unit>();
@@ -243,6 +244,29 @@ public class AsteroidManager : MonoBehaviour
         UpdateUnitInOrbitView();
 
         //Go back to selecting
+        GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
+    }
+
+    public void PlaceBuildingOnSurface(Vector2Int coordClicked)
+    {
+        //Remove buliding from inventory.
+        if (unitScriptToPlace == null)
+        {
+            Debug.LogWarning("No building selected to place.");
+            return;
+        }
+
+        var itemDef = unitScriptToPlace.shipRuntimeData?.itemDefinition;
+
+        if (itemDef != null && itemSourceShip.unitInventory != null)
+        {
+            itemSourceShip.unitInventory.RemoveItem(new ItemInstance { ItemDefinition = itemDef }, 1);
+        }
+        else
+        {
+            Debug.LogWarning("Could not find the building item in the source inventory.");
+        }
+
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
     }
 

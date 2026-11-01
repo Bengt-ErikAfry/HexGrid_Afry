@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: 3733a83d086842ce98af5324b561ffbf
   itemName: MiningOutpost
   icon: {fileID: -2078329216665749850, guid: 0b66cc391e15c76458007dd739e7c94c, type: 3}
-  itemType: 8
+  itemType: 9
   moduleType: 0
   itemCanStack: 0
   maxHealth: 100
@@ -27,6 +27,7 @@ MonoBehaviour:
   wear: 2
   wearModifier_Boost: 2
   craftingTime: 2
+  craftingResult: {fileID: 537292097832041501, guid: f8cc2a5d2b363594dbb48be71d62207c, type: 3}
   requiredItems:
   - item: {fileID: 11400000, guid: 6447b0cc648b72c469fb6d4d4c9a05ee, type: 2}
     amount: 2

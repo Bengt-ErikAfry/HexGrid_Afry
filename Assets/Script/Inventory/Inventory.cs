@@ -163,6 +163,20 @@ public class Inventory : MonoBehaviour
                                          && slot.item.ItemDefinition == def
                                          && slot.amount > 0);
     }
+
+    public List<InventoryItemInstance> GetItemInstanceListOfItemType(ItemType itemType)
+    {
+        List<InventoryItemInstance> result = new List<InventoryItemInstance>();
+
+        foreach (var item in itemInstance)
+        {
+            if (item.item.ItemDefinition.itemType == itemType)
+                result.Add(item);
+        }
+
+        return result;
+    }
+
     public List<InventoryItemInstance> GetInventoryItemInstanceOfType(ItemDefinition def)
     {
         List<InventoryItemInstance> result = new List<InventoryItemInstance>();

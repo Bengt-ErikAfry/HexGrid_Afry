@@ -95,6 +95,12 @@ public class PlaceOrbitalUnitState : IGameState
                 Debug.Log("Place Satelite.");
                 AsteroidManager.Instance.PlaceSateliteOnSurface(clickedCoord);
             }
+            else if(AsteroidManager.Instance.unitScriptToPlace.unitType == UnitType.Building && TileManager.Instance.IsTileVisible(clickedCoord))
+            {
+                //Place a building
+                Debug.Log("Place Building.");
+                AsteroidManager.Instance.PlaceBuildingOnSurface(clickedCoord);
+            }
             else
             {
                 //Other unit.
