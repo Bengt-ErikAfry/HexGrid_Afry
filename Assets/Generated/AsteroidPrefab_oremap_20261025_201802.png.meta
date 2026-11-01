@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e65723735c3e25c4f88e66602ef2f48c
+guid: 14ce4a573708eb0419a7d3ea8e2f509f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7235384768728663274
-    second: Asteroid_oremap_20260727_185351_0
+      213: -7625737936201675582
+    second: AsteroidPrefab_oremap_20261025_201802_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Asteroid_oremap_20260727_185351_0
+      name: AsteroidPrefab_oremap_20261025_201802_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 30
-        width: 503
-        height: 443
+        x: 12
+        y: 38
+        width: 488
+        height: 436
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ae40859cc10496460800000000000000
-      internalID: 7235384768728663274
+      spriteID: 2cc8a7affbfeb2690800000000000000
+      internalID: -7625737936201675582
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Asteroid_oremap_20260727_185351_0: 7235384768728663274
+      AsteroidPrefab_oremap_20261025_201802_0: -7625737936201675582
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

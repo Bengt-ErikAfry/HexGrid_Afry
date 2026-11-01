@@ -165,6 +165,26 @@ public class TileManager : MonoBehaviour
         else visibilityRefCount[coord] = v;
     }
 
+    //Use this for satelites and asteroid units
+    public void RevealTilesAroundAxial(Vector2Int center, int range)
+    {
+        if (tileLookup == null)
+        {
+            Debug.LogWarning("TileManager tileLookup == mull");
+            return;
+        }
+
+        var tilesToReveal = HexMath.HexesInRangeAxial(center, range, 10000);
+
+        foreach (var coord in tilesToReveal)
+        {
+            if (!tileLookup.TryGetValue(coord, out var tile))
+                continue;
+
+            tile.tileVisibilityState = TileVisibilityState.Visible;
+            tile.ApplyVisibilityVisuals();
+        }
+    }
     // --- Lookup builders -------------------------------------------------
 
     // Build or rebuild the coordinate -> tile component lookup.
@@ -658,6 +678,9 @@ public class TileManager : MonoBehaviour
         // Editor export may contain a full asset path; at runtime we prefer a prefab name.
         public string prefabName;
         public string prefabPath;
+        public string state;
+        public float oreAmount;
+        public float greenRatio;
     }
 
     [Serializable]
@@ -834,14 +857,18 @@ public class TileManager : MonoBehaviour
             var axial = new Vector2Int(c.x, c.y);
             var prefab = ResolvePrefabForCell(c);
             var tile = SpawnTileAt(axial, prefab);
-            if (tile != null) created++;
+            if (tile != null)
+            {
+                tile.oreAmount = c.oreAmount > 0f ? c.oreAmount : c.greenRatio;
+                created++;
+            }
         }
 
         // Rebuild any internal structures
         BuildTileLookup();
         BuildDoorLookup();
 
-        Debug.Log($"LoadLayoutFromJsonText: instantiated {created} tiles (template radius={templ.worldRadius}, hexSize={templ.hexSize}).");
+        Debug.Log($"LoadLayoutFromJsonText: instantiated {created} tiles from file (template radius={templ.worldRadius}, hexSize={templ.hexSize}).");
     }
 
     // Convenience: load layout from a file path (useful for StreamingAssets or persistent paths).
@@ -857,6 +884,7 @@ public class TileManager : MonoBehaviour
         }
 
         string json = File.ReadAllText(filePath);
+        Debug.Log($"LoadLayoutFromFile: read {json.Length} bytes from {filePath}");
         LoadLayoutFromJsonText(json);
 
         // Use the filename (without extension) as the layout id for fog state files

@@ -20,10 +20,10 @@ public class MoveToAction : RouteAction
         Vector3 target = waypointObject == null ? waypointPosition : waypointObject.transform.position;
 
         // Visual helpers (UI only) — okay to call from action (not from movement service)
-        HexHighlighter.Instance.HighlightHexUnderWorldPosition(target);
+        //HexHighlighter.Instance.HighlightHexUnderWorldPosition(target);
 
         // Calculate path once
-        HexGridManager.Instance.CalculatePath(target);
+        //HexGridManager.Instance.CalculatePath(target);
         List<Vector2Int> path = SelectionService.Instance.SelectedUnit.currentMovePath;
 
         if (path == null || path.Count < 2)

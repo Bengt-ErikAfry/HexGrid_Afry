@@ -110,7 +110,7 @@ public class SelectingState : IGameState
             // Show Route if existing
             if (unit.routeComponent != null && unit.routeComponent.routeActions.Count > 0)
             {
-                HexGridManager.Instance.CalculateRoutePath(unit);
+              //  HexGridManager.Instance.CalculateRoutePath(unit);
             }
 
             TileManager.Instance.HighlightTileWorldPosition(worldPos);

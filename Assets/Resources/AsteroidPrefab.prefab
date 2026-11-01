@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3129527068372558737}
   - component: {fileID: 8165755203918938927}
+  - component: {fileID: 4710679202828961904}
   - component: {fileID: 6185473028302117810}
   - component: {fileID: 2178239784325704408}
   m_Layer: 0
@@ -144,6 +145,29 @@ MonoBehaviour:
   asteroidTileSatusSave: hex_asteridTemp.json
   unitsOnSurfaceSave: units_on_surface.json
   asteroidIcon: {fileID: -1064938584130821537, guid: 5d6e7c2934f8a0c4caf76b0d4b617de3, type: 3}
+--- !u!114 &4710679202828961904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8036387217346746266}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c864d80dc1666d3408d050436893ef4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MinableComponent
+  oreMap: {fileID: -7625737936201675582, guid: 14ce4a573708eb0419a7d3ea8e2f509f, type: 3}
+  minableResourceList:
+  - item: {fileID: 11400000, guid: 6447b0cc648b72c469fb6d4d4c9a05ee, type: 2}
+    amount: 80
+  - item: {fileID: 11400000, guid: dc5792da4d3351448b8e7e27c53603b7, type: 2}
+    amount: 20
+  howMutchOfObjectAreOre: 50
+  objectMass: 100
+  storedAmount: 0
+  veinsAmount: 2
+  patchesAmount: 1
 --- !u!54 &6185473028302117810
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -153,7 +177,7 @@ Rigidbody:
   m_GameObject: {fileID: 8036387217346746266}
   serializedVersion: 5
   m_Mass: 1
-  m_LinearDamping: 0
+  m_LinearDamping: 3.04
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}

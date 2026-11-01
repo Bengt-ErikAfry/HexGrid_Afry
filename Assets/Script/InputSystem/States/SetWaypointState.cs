@@ -35,15 +35,15 @@ public class SetWaypointState : IGameState
             //InputManager.Instance.selectedObject = null;
             //InputManager.Instance.selectedObject_Unit_Script = null;
 
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
             Debug.Log("after SetWaypointState invoke" + GameStateMachine.Instance.Current);
 
             //Debug where clicked
-            Debug.Log("SetWaypointState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+            //Debug.Log("SetWaypointState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 
             UIManager.Instance.HideSelectedUnitView();
 
-            RouteManager.Instance.AddWaypointToRoute(SelectionService.Instance.SelectedUnit, HexHighlighter.Instance.highlightGO.transform.position);
+            RouteManager.Instance.AddWaypointToRoute(SelectionService.Instance.SelectedUnit, SelectionService.Instance.SelectedUnit.transform.position);
             InfoScreenManager.Instance.ShowInfoScreen();
             InfoScreenManager.Instance.ShowRoute();
             RouteManager.Instance.UpdateRouteViewFor(SelectionService.Instance.SelectedUnit);
@@ -58,14 +58,14 @@ public class SetWaypointState : IGameState
         // If your HexHighlighter exposes a WorldToHex, prefer that for consistency.
         // Here I assume you have a method like HexGrid.Instance.WorldToHex(Vector3 worldPos)
         Vector3 clickPoint = hits[0].point;
-        var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
+        var clickedHex = TileManager.Instance.WorldToAxial(clickPoint); // <-- swap to your actual hex system
 
         // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
         List<Unit> unitsInClickedHex = hits
             .Select(h => h.collider.transform.root.GetComponent<Unit>())
             .Where(u => u != null)
             .Distinct() // prevent duplicates if a unit has multiple colliders
-            .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
+            .Where(u => TileManager.Instance.WorldToAxial(u.transform.position) == clickedHex)
             .ToList();
 
         // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
@@ -113,7 +113,7 @@ public class SetWaypointState : IGameState
         }
 
         // Highlight selected tile (keep your current behavior)
-        HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+        //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
 
         Debug.Log("after SetWaypointState invoke" + GameStateMachine.Instance.Current);
 
@@ -155,7 +155,7 @@ public class SetWaypointState : IGameState
         }*/
 
         //Debug where clicked
-        Debug.Log("SetWaypointState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+        //Debug.Log("SetWaypointState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
         
         InfoScreenManager.Instance.ShowInfoScreen();
         InfoScreenManager.Instance.ShowRoute();

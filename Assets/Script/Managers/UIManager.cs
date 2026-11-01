@@ -114,19 +114,9 @@ public class UIManager : MonoBehaviour
         //Show UI for selected unit (or hide if null)
         ShowSelectedUnitView(unit);
 
-        // Hide old path when nothing is selected, or when the selected unit has no route.
-        if (HexGridManager.Instance == null) return;
-
         if (unit == null)
         {
             return;
-        }
-
-        // If the selected unit has route actions, visualize the full route; otherwise clear any visible path.
-        var rc = unit.GetComponent<RouteComponent>();
-        if (rc != null && rc.routeActions != null && rc.routeActions.Count > 0)
-        {
-            HexGridManager.Instance.CalculateRoutePath(unit);
         }
     }
 
@@ -281,7 +271,7 @@ public class UIManager : MonoBehaviour
         if(rc.IsRouteStarted)
         {
             RouteExecutor.Instance.StopRouteFor(unit_script);
-            HexGridManager.Instance?.ClearPath();
+            //HexGridManager.Instance?.ClearPath();
             rc.IsRouteStarted = false;
             routeButtonText.text = "Run Route";
             return;

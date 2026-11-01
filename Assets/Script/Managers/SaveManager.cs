@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class SaveManager : MonoBehaviour
 {
@@ -22,33 +23,144 @@ public class SaveManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
-    public void HideGameViewObjects()
+    public void HideGameViewObjects(AsteroidComponent asteroidToShow)
     {
-        //Destroy all units.
-        foreach (var unit in GameManager.Instance.unitsList)
+        Debug.Log($"Hiding game-view units and asteroids.{asteroidToShow.asteroidName}");
+
+        if (AsteroidManager.Instance != null && AsteroidManager.Instance.unitInOrbitListContent != null)
+        {
+            foreach (var unit in GameManager.Instance.unitsList.ToList())
+            {
+                if (unit == null) continue;
+                if (unit.currentTileCoord == asteroidToShow.currentTileCoord)
+                {
+                    unit.transform.SetParent(GameManager.Instance.UnitsInOrbit, false);
+                    unit.transform.localPosition = Vector3.zero;
+                    unit.transform.localRotation = Quaternion.identity;
+                    unit.gameObject.SetActive(true);
+                    unit.transform.GetChild(0).gameObject.SetActive(false);
+                }
+            }
+        }
+
+        foreach (var unit in GameManager.Instance.unitsList.ToList())
         {
             if (unit == null) continue;
-            // ADDED: Prevent hidden units from contributing to fog of war.
+
+
             TileManager.Instance.UnregisterUnit(unit);
+
+            GameManager.Instance.unitsList.Remove(unit);
+            GameManager.Instance.playerUnits.Remove(unit);
+            GameManager.Instance.enemyUnits.Remove(unit);
+
+            if (unit.currentTileCoord != asteroidToShow.currentTileCoord)
+            {
+                if (unit.currentTileCoord == asteroidToShow.currentTileCoord)
+                {
+                    unit.transform.SetParent(GameManager.Instance.UnitsInOrbit, false);
+                    unit.transform.localPosition = Vector3.zero;
+                    unit.transform.localRotation = Quaternion.identity;
+                    unit.gameObject.SetActive(true);
+                    unit.transform.GetChild(0).gameObject.SetActive(false);
+                }
+                else
+                {
+                    Destroy(unit.gameObject);
+                }
+            }
+
+            foreach (var asteroid in GameManager.Instance.asteroidsList.ToList())
+            {
+                if (asteroid == null) continue;
+
+                GameManager.Instance.asteroidsList.Remove(asteroid);
+
+                if (asteroid.currentTileCoord == asteroidToShow.currentTileCoord)
+                {
+                    asteroid.transform.localPosition = Vector3.zero;
+                    asteroid.transform.localRotation = Quaternion.identity;
+                    asteroid.gameObject.SetActive(true);
+                    asteroid.transform.GetChild(0).gameObject.SetActive(false);
+                }
+                else
+                {
+                    Destroy(asteroid.gameObject);
+                }
+            }
+
+            /*
+            GameManager.Instance.unitsList.RemoveAll(u => u == null || u.currentTileCoord != asteroidToShow.currentTileCoord);
+            GameManager.Instance.playerUnits.RemoveAll(u => u == null || u.currentTileCoord != asteroidToShow.currentTileCoord);
+            GameManager.Instance.enemyUnits.RemoveAll(u => u == null || u.currentTileCoord != asteroidToShow.currentTileCoord);
+            */
+
+            GameManager.Instance.unitsList.Clear();
+            GameManager.Instance.playerUnits.Clear();
+            GameManager.Instance.enemyUnits.Clear();
+            GameManager.Instance.asteroidsList.Clear();
+
+            Debug.Log("Game-view units and asteroids hidden.");
+        }
+    }
+
+    public void HideAsteroidViewObjects()
+    {
+        Debug.Log($"Hiding astroid-view units and asteroids.{AsteroidManager.Instance.currentAsteroidComponent.asteroidName}");
+
+        var asteroidToKeep = AsteroidManager.Instance != null ? AsteroidManager.Instance.currentAsteroidComponent : null;
+
+        if (asteroidToKeep != null)
+        {
+            foreach (var unit in GameManager.Instance.unitsList.ToList())
+            {
+                if (unit == null) continue;
+                if (unit.currentTileCoord == asteroidToKeep.currentTileCoord)
+                {
+                    if (AsteroidManager.Instance != null && AsteroidManager.Instance.unitInOrbitListContent != null)
+                    {
+                        unit.transform.SetParent(AsteroidManager.Instance.unitInOrbitListContent, false);
+                        unit.transform.localPosition = Vector3.zero;
+                        unit.transform.localRotation = Quaternion.identity;
+                        unit.gameObject.SetActive(true);
+                    }
+                }
+            }
+        }
+
+        foreach (var unit in GameManager.Instance.unitsList.ToList())
+        {
+            if (unit == null) continue;
+            if (asteroidToKeep != null && unit.currentTileCoord == asteroidToKeep.currentTileCoord)
+            {
+                continue;
+            }
+
+            TileManager.Instance.UnregisterUnit(unit);
+
+            GameManager.Instance.unitsList.Remove(unit);
+            GameManager.Instance.playerUnits.Remove(unit);
+            GameManager.Instance.enemyUnits.Remove(unit);
+
             Destroy(unit.gameObject);
         }
 
-        //Destroy all asteroids.
-        foreach (var asteroid in GameManager.Instance.asteroidsList)
+        if (asteroidToKeep != null)
         {
-            if (asteroid == null) continue;
-            Destroy(asteroid.gameObject);
+            GameManager.Instance.unitsList.RemoveAll(u => u == null || u.currentTileCoord != asteroidToKeep.currentTileCoord);
+            GameManager.Instance.playerUnits.RemoveAll(u => u == null || u.currentTileCoord != asteroidToKeep.currentTileCoord);
+            GameManager.Instance.enemyUnits.RemoveAll(u => u == null || u.currentTileCoord != asteroidToKeep.currentTileCoord);
+        }
+        else
+        {
+            GameManager.Instance.unitsList.Clear();
+            GameManager.Instance.playerUnits.Clear();
+            GameManager.Instance.enemyUnits.Clear();
         }
 
-        // Only have active units in list.
-        GameManager.Instance.unitsList.Clear();
-        GameManager.Instance.playerUnits.Clear();
-        GameManager.Instance.enemyUnits.Clear();
         GameManager.Instance.asteroidsList.Clear();
 
-        Debug.Log("Game-view units and asteroids hidden.");
-
-        LoadAllAsteroids();
+        Debug.Log("Asteroid-view units and asteroids hidden.");
     }
 
     public void LoadAsteroidViewObject(AsteroidComponent asteroid)
@@ -206,7 +318,7 @@ public class SaveManager : MonoBehaviour
     /// </summary>
 
     [Serializable]
-    private class UnitSaveData
+    public class UnitSaveData
     {
         public string unitId;           // GUID for this unit in the save file
         public string unitName;
@@ -231,24 +343,25 @@ public class SaveManager : MonoBehaviour
 
     // Save all units. Each runtime unit keeps its stable GUID stored in the save file.
     // References between units are saved as GUIDs (targetUnitId).
-    public void SaveAllUnits(string fileName = null)
+    public void SaveAllUnits(string fileName = null, AsteroidComponent asteroidToExclude = null)
     {
         var wrapper = new UnitsSaveWrapper();
 
         foreach (var u in GameManager.Instance.unitsList)
         {
-            if (u == null) continue;
+            if (u == null)
+                continue;
 
-            // Ensure unit has a stable id (generate once if missing)
+            if (asteroidToExclude != null && u.currentTileCoord == asteroidToExclude.currentTileCoord)
+                continue;
+
             if (string.IsNullOrEmpty(u.unitId))
-            {
                 u.unitId = Guid.NewGuid().ToString();
-            }
 
             var modulesSave = new List<ItemInstanceSaveData>();
+
             if (u.moduleRuntimeList != null)
             {
-                // Preserve slot count: save one entry per module slot (even if ItemDefinition is null)
                 foreach (var mod in u.moduleRuntimeList)
                 {
                     if (mod == null)
@@ -258,31 +371,29 @@ public class SaveManager : MonoBehaviour
                             itemId = null,
                             amount = 0,
                             currentHealth = 0,
+                            currentPowerUpBoost = 1,
+                            nextTurnPowerUpboost = 1,
                             isOnline = false,
                             isBroken = false,
                             isDestroyed = false
                         });
+                        continue;
                     }
-                    else
+
+                    modulesSave.Add(new ItemInstanceSaveData
                     {
-                        modulesSave.Add(new ItemInstanceSaveData
-                        {
-                            itemId = mod.ItemDefinition != null ? mod.ItemDefinition.itemId : null,
-                            amount = 1, // modules on unit are single instances
-                            currentHealth = mod.currentHealth,
-                            isOnline = mod.isOnline,
-                            isBroken = mod.isBroken,
-                            isDestroyed = mod.isDestroyd
-                        });
-                    }
+                        itemId = mod.ItemDefinition != null ? mod.ItemDefinition.itemId : null,
+                        amount = 1,
+                        currentHealth = mod.currentHealth,
+                        currentPowerUpBoost = mod.currentPowerUpBoost,
+                        nextTurnPowerUpboost = mod.nextTurnPowerUpboost,
+                        isOnline = mod.isOnline,
+                        isBroken = mod.isBroken,
+                        isDestroyed = mod.isDestroyd
+                    });
                 }
             }
-            else
-            {
-                modulesSave = new List<ItemInstanceSaveData>();
-            }
 
-            // Convert target last known position to axial coord (if present)
             Vector2Int targetLastKnownCoord = Vector2Int.zero;
             if (u.target_LastKnownPos != Vector3.zero && TileManager.Instance != null)
             {
@@ -303,8 +414,10 @@ public class SaveManager : MonoBehaviour
                 target_lastKnownTileCoord = targetLastKnownCoord,
                 followtarget = u.followTarget,
                 hasMinedThisTurn = u.hasMinedThisTurn,
-                currentMovePath = (u.currentMovePath != null && u.currentMovePath.Count > 0) ? new List<Vector2Int>(u.currentMovePath) : new List<Vector2Int>(),
-                moduleRuntimeList = modulesSave ?? new List<ItemInstanceSaveData>()
+                currentMovePath = u.currentMovePath != null && u.currentMovePath.Count > 0
+                    ? new List<Vector2Int>(u.currentMovePath)
+                    : new List<Vector2Int>(),
+                moduleRuntimeList = modulesSave
             };
 
             wrapper.units.Add(save);
@@ -312,6 +425,7 @@ public class SaveManager : MonoBehaviour
 
         string fname = string.IsNullOrEmpty(fileName) ? defaultFileName : fileName;
         string path = Path.Combine(Application.persistentDataPath, fname);
+
         try
         {
             string json = JsonUtility.ToJson(wrapper, true);
@@ -472,6 +586,8 @@ public class SaveManager : MonoBehaviour
                     if (m != null)
                     {
                         instance.currentHealth = m.currentHealth;
+                        instance.currentPowerUpBoost = m.currentPowerUpBoost;
+                        instance.nextTurnPowerUpboost = m.nextTurnPowerUpboost;
                         instance.isOnline = m.isOnline;
                         instance.isBroken = m.isBroken;
                         instance.isDestroyd = m.isDestroyed;
@@ -480,6 +596,8 @@ public class SaveManager : MonoBehaviour
                     {
                         instance.currentHealth = 0;
                         instance.currentMaxHealth = 0;
+                        instance.currentPowerUpBoost = 1;
+                        instance.nextTurnPowerUpboost = 1;
                         instance.isOnline = false;
                         instance.isBroken = false;
                         instance.isDestroyd = false;
@@ -491,7 +609,7 @@ public class SaveManager : MonoBehaviour
             }
 
             // Init the new unit (e.g., update visuals, health bars, etc.)
-            StartCoroutine(runtime.InitUnit()); //To register for FOG OF WAR to work.
+            StartCoroutine(runtime.InitUnit(false)); //To register for FOG OF WAR to work.
         }
 
         // Resolve cross-unit references (target_Unit_Script)
@@ -529,10 +647,11 @@ public class SaveManager : MonoBehaviour
         Debug.Log($"SaveManager: Loaded {guidToRuntimeUnit.Count} unit(s) and resolved {resolved} unit reference(s) from {path}");
     }
 
-    private void ApplySavedUnitData(
-        Unit runtimeUnit,
-        UnitSaveData savedUnit)
+    private void ApplySavedUnitData(Unit runtimeUnit, UnitSaveData savedUnit)
     {
+        if (runtimeUnit == null || savedUnit == null)
+            return;
+
         runtimeUnit.unitName = savedUnit.unitName;
         runtimeUnit.unitType = savedUnit.unitType;
         runtimeUnit.shipType = savedUnit.shipType;
@@ -543,19 +662,15 @@ public class SaveManager : MonoBehaviour
         runtimeUnit.followTarget = savedUnit.followtarget;
         runtimeUnit.hasMinedThisTurn = savedUnit.hasMinedThisTurn;
 
-        runtimeUnit.currentMovePath =
-            savedUnit.currentMovePath != null
-                ? new List<Vector2Int>(savedUnit.currentMovePath)
-                : new List<Vector2Int>();
+        runtimeUnit.currentMovePath = savedUnit.currentMovePath != null
+            ? new List<Vector2Int>(savedUnit.currentMovePath)
+            : new List<Vector2Int>();
 
-        if (savedUnit.target_lastKnownTileCoord != Vector2Int.zero)
+        if (savedUnit.target_lastKnownTileCoord != Vector2Int.zero && TileManager.Instance != null)
         {
-            runtimeUnit.target_LastKnownPos =
-                TileManager.Instance.AxialToWorldCenter(
-                    savedUnit.target_lastKnownTileCoord);
+            runtimeUnit.target_LastKnownPos = TileManager.Instance.AxialToWorldCenter(savedUnit.target_lastKnownTileCoord);
         }
 
-        // Restore modules.
         runtimeUnit.moduleRuntimeList = new List<ItemInstance>();
 
         if (savedUnit.moduleRuntimeList == null)
@@ -565,43 +680,249 @@ public class SaveManager : MonoBehaviour
         {
             var module = new ItemInstance();
 
-            if (savedModule != null &&
-                !string.IsNullOrWhiteSpace(savedModule.itemId))
+            if (savedModule != null && !string.IsNullOrWhiteSpace(savedModule.itemId))
             {
-                ItemDefinition definition = null;
-
-                if (ItemDatabase.Instance != null)
-                {
-                    definition =
-                        ItemDatabase.Instance.GetById(savedModule.itemId);
-                }
-
-                if (definition == null)
-                {
-                    definition = Resources
-                        .LoadAll<ItemDefinition>("ItemDefinitions")
-                        .FirstOrDefault(item =>
-                            item != null &&
-                            item.itemId == savedModule.itemId);
-                }
-
-                module.ItemDefinition = definition;
+                module.ItemDefinition = ResolveSavedItemDefinition(savedModule.itemId);
             }
 
             if (savedModule != null)
             {
                 module.currentHealth = savedModule.currentHealth;
-                module.currentPowerUpBoost =
-                    savedModule.currentPowerUpBoost;
+                module.currentPowerUpBoost = savedModule.currentPowerUpBoost;
+                module.nextTurnPowerUpboost = savedModule.nextTurnPowerUpboost;
                 module.isOnline = savedModule.isOnline;
                 module.isBroken = savedModule.isBroken;
                 module.isDestroyd = savedModule.isDestroyed;
+
+                // Keep these defaults if they were not saved, but do not replace real values with false/1.
+                if (module.currentPowerUpBoost <= 0)
+                    module.currentPowerUpBoost = 1;
+                if (module.nextTurnPowerUpboost <= 0)
+                    module.nextTurnPowerUpboost = 1;
+            }
+            else
+            {
+                module.currentPowerUpBoost = 1;
+                module.nextTurnPowerUpboost = 1;
+                module.isOnline = false;
+                module.isBroken = false;
+                module.isDestroyd = false;
             }
 
             runtimeUnit.moduleRuntimeList.Add(module);
         }
     }
+    public ItemDefinition ResolveSavedItemDefinition(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+            return null;
 
+        if (ItemDatabase.Instance != null)
+        {
+            var dbDef = ItemDatabase.Instance.GetById(itemId);
+            if (dbDef != null)
+                return dbDef;
+        }
+
+        // Important: do NOT restrict to a single folder like "ItemDefinitions".
+        // Your modules live under Resources/Modules, Resources/Ships, etc.
+        var allDefs = Resources.LoadAll<ItemDefinition>("");
+        foreach (var def in allDefs)
+        {
+            if (def != null && def.itemId == itemId)
+                return def;
+        }
+
+        return null;
+    }
+    // Used in asteroid view to load a saved unit by its unitId. If a runtime instance already exists, it returns that instance. Otherwise, it instantiates a new unit from the prefab and applies the saved data.
+    public Unit LoadSavedUnitById(string unitId, string saveFileName = "units_save.json", Vector2Int axialcoord = default(Vector2Int))
+    {
+        if (string.IsNullOrEmpty(unitId))
+        {
+            Debug.LogWarning("LoadSavedUnitById: unitId is empty.");
+            return null;
+        }
+
+        string path = Path.Combine(Application.persistentDataPath, saveFileName);
+        if (!File.Exists(path))
+        {
+            Debug.LogWarning($"LoadSavedUnitById: file not found -> {path}");
+            return null;
+        }
+
+        string json = File.ReadAllText(path);
+        UnitsSaveWrapper wrapper = JsonUtility.FromJson<UnitsSaveWrapper>(json);
+
+        if (wrapper == null || wrapper.units == null || wrapper.units.Count == 0)
+        {
+            Debug.LogWarning("LoadSavedUnitById: no unit data in save file.");
+            return null;
+        }
+
+        UnitSaveData savedUnit = wrapper.units
+            .FirstOrDefault(u => u != null && u.unitId == unitId);
+
+        if (savedUnit == null)
+        {
+            Debug.LogWarning($"LoadSavedUnitById: no saved unit found for unitId={unitId}");
+            return null;
+        }
+
+        // 1) Check if a runtime instance already exists
+        Unit existingUnit = GameManager.Instance != null
+            ? GameManager.Instance.unitsList.FirstOrDefault(u =>
+                u != null && u.unitId == savedUnit.unitId)
+            : null;
+
+        if (existingUnit != null)
+            return existingUnit;
+
+        // 2) Instantiate a new unit from prefab
+        if (unitPrefab == null)
+        {
+            Debug.LogWarning($"LoadSavedUnitById: unitPrefab is null for unitId={unitId}");
+            return null;
+        }
+
+        GameObject obj = Instantiate(unitPrefab, unitFolderForAllUnits);
+        Unit runtimeUnit = obj.GetComponent<Unit>();
+
+        if (runtimeUnit == null)
+        {
+            Debug.LogWarning($"LoadSavedUnitById: prefab does not contain a Unit component. unitId={unitId}");
+            Destroy(obj);
+            return null;
+        }
+
+        // 3) Apply saved data
+        runtimeUnit.unitId = savedUnit.unitId;
+        runtimeUnit.unitName = savedUnit.unitName;
+        runtimeUnit.unitType = savedUnit.unitType;
+        runtimeUnit.shipType = savedUnit.shipType;
+        runtimeUnit.currentTileCoord = savedUnit.currentTileCoord;
+        runtimeUnit.movedThisTurn = savedUnit.movedThisTurn;
+        runtimeUnit.isPlayerControlled = savedUnit.isPlayerControlled;
+        runtimeUnit.haveAttackedThisTurn = savedUnit.haveAttackedThisTurn;
+        runtimeUnit.followTarget = savedUnit.followtarget;
+        runtimeUnit.hasMinedThisTurn = savedUnit.hasMinedThisTurn;
+        runtimeUnit.currentMovePath = savedUnit.currentMovePath != null
+            ? new List<Vector2Int>(savedUnit.currentMovePath)
+            : new List<Vector2Int>();
+
+        if (savedUnit.target_lastKnownTileCoord != Vector2Int.zero && TileManager.Instance != null)
+        {
+            runtimeUnit.target_LastKnownPos = TileManager.Instance.AxialToWorldCenter(savedUnit.target_lastKnownTileCoord);
+        }
+
+        // Restore modules
+        runtimeUnit.moduleRuntimeList = new List<ItemInstance>();
+
+        if (savedUnit.moduleRuntimeList != null)
+        {
+            foreach (var savedModule in savedUnit.moduleRuntimeList)
+            {
+                var item = new ItemInstance();
+
+                if (savedModule != null && !string.IsNullOrWhiteSpace(savedModule.itemId))
+                {
+                    ItemDefinition def = null;
+
+                    if (ItemDatabase.Instance != null)
+                    {
+                        def = ItemDatabase.Instance.GetById(savedModule.itemId);
+                    }
+
+                    if (def == null)
+                    {
+                        def = Resources.LoadAll<ItemDefinition>("ItemDefinitions")
+                            .FirstOrDefault(x => x != null && x.itemId == savedModule.itemId);
+                    }
+
+                    item.ItemDefinition = def;
+                }
+
+                if (savedModule != null)
+                {
+                    item.currentHealth = savedModule.currentHealth;
+                    item.currentPowerUpBoost = savedModule.currentPowerUpBoost;
+                    item.nextTurnPowerUpboost = savedModule.nextTurnPowerUpboost;
+                    item.isOnline = savedModule.isOnline;
+                    item.isBroken = savedModule.isBroken;
+                    item.isDestroyd = savedModule.isDestroyed;
+                }
+
+                runtimeUnit.moduleRuntimeList.Add(item);
+            }
+        }
+
+        // 4) Place it in world
+        if (TileManager.Instance != null)
+        {
+            runtimeUnit.transform.position = TileManager.Instance.AxialToWorldCenter(axialcoord);
+        }
+        runtimeUnit.currentTileCoord = savedUnit.currentTileCoord;
+
+        // 5) add it to manager lists
+        if (GameManager.Instance != null)
+        {
+            if (!GameManager.Instance.unitsList.Contains(runtimeUnit))
+                GameManager.Instance.unitsList.Add(runtimeUnit);
+
+            if (runtimeUnit.isPlayerControlled && !GameManager.Instance.playerUnits.Contains(runtimeUnit))
+                GameManager.Instance.playerUnits.Add(runtimeUnit);
+            else if (!runtimeUnit.isPlayerControlled && !GameManager.Instance.enemyUnits.Contains(runtimeUnit))
+                GameManager.Instance.enemyUnits.Add(runtimeUnit);
+        }
+
+        // 6) put it back into scene
+        runtimeUnit.gameObject.SetActive(true);
+
+        // 7) if this unit needs fog registration / visual init, do it
+        if (TileManager.Instance != null)
+        {
+            StartCoroutine(runtimeUnit.InitUnit(false));
+        }
+
+        return runtimeUnit;
+    }
+
+    // Just to get the saved data NOT THE UNIT script.
+    public UnitSaveData GetUnitSaveDataById(string unitId, string fileToLookIn)
+    {
+        if (string.IsNullOrEmpty(unitId))
+        {
+            Debug.LogWarning("GetUnitScriptById: unitId is empty.");
+            return null;
+        }
+
+        string path = Path.Combine(Application.persistentDataPath, fileToLookIn);
+        if (!File.Exists(path))
+        {
+            Debug.LogWarning($"GetUnitScriptById: file not found -> {path}");
+            return null;
+        }
+
+        string json = File.ReadAllText(path);
+        UnitsSaveWrapper wrapper = JsonUtility.FromJson<UnitsSaveWrapper>(json);
+
+        if (wrapper == null || wrapper.units == null || wrapper.units.Count == 0)
+        {
+            Debug.LogWarning("GetUnitScriptById: no unit data in save file.");
+            return null;
+        }
+
+        UnitSaveData savedUnit = wrapper.units
+            .FirstOrDefault(u => u != null && u.unitId == unitId);
+
+        if (savedUnit == null)
+        {
+            Debug.LogWarning($"LoadSavedUnitById: no saved unit found for unitId={unitId}");
+            return null;
+        }
+
+        return savedUnit;
+    }
     /// <summary>
     /// /////////////////////////  ASTEROIDS
     /// </summary>
@@ -654,6 +975,8 @@ public class SaveManager : MonoBehaviour
         foreach (var a in GameManager.Instance.asteroidsList)
         {
             if (a == null) continue;
+
+            if(a == AsteroidManager.Instance.currentAsteroidComponent) continue; // Skip the AsteroidTo view.
 
             // Ensure asteroid has a stable id (generate once if missing)
             if (string.IsNullOrEmpty(a.asteroidID))
@@ -807,6 +1130,7 @@ public class SaveManager : MonoBehaviour
         public int amount;             // stack count
         public int currentHealth;
         public int currentPowerUpBoost;
+        public int nextTurnPowerUpboost;
         public bool isOnline;
         public bool isBroken;
         public bool isDestroyed;

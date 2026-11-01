@@ -268,16 +268,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Unit
-  unitId: 
-  unitName: Unit
-  unitType: 0
-  shipType: 0
-  currentTileCoord: {x: 0, y: 0}
+  unitId: da164231-962e-447d-a7a2-fff5d085937f
+  unitName: Satelite
+  unitType: 6
+  shipType: 4
+  currentTileCoord: {x: -2, y: 2}
   movedThisTurn: 0
   detectionRange: 5
   otherInDetectionRange: []
   detectedByOther: []
-  grafics: {fileID: 0}
+  grafics: {fileID: 7710299103765584663}
   isPlayerControlled: 1
   haveAttackedThisTurn: 0
   gunnerHitChance: 50
@@ -328,8 +328,8 @@ MonoBehaviour:
   minableComponent: {fileID: 0}
   routeComponent: {fileID: 0}
   shipRuntimeData:
-    itemDefinition: {fileID: 0}
-    shipType: 0
+    itemDefinition: {fileID: 11400000, guid: a829159d837d2ba4b8578e1e66270cfd, type: 2}
+    shipType: 4
     currentAvalibulePowerUpBoost: 0
     nextTurnAvalibulePowerUpBoost: 0
     currentMovmentRange: 0

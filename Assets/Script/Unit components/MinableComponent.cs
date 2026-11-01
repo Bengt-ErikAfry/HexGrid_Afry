@@ -10,25 +10,23 @@ using UnityEditor;
 [DisallowMultipleComponent]
 public class MinableComponent : MonoBehaviour
 {
-    [Header("Tiles")]
-    public List<TileData> tilesData = new List<TileData>();
-    // replaced per-request: use canonical hex geometry instead of nrOfTiles
-    [Tooltip("Hex 'radius' in cells (cube distance). World will be a hex of this radius.")]
-    public int worldRadius = 2;
+    //[Header("Tiles")]
+    //public List<TileData> tilesData = new List<TileData>();
 
-    [Tooltip("Hex size in world units (center to corner distance).")]
-    public float hexSize = 1f;
-
-    public Sprite backgroundSprite;
-    public int scrollLimit;
+    //public Sprite backgroundSprite;
+    //public int scrollLimit;
 
     [Header("Resource")]
+    [SerializeField]
+    public Sprite oreMap;
     public List<InventoryItemAmount> minableResourceList = new List<InventoryItemAmount>();
-    public int totalAmount = 0;      // remaining resource in the ground
+    public int howMutchOfObjectAreOre = 0;      // 0-100%
+    public int objectMass = 0;        // the total mass of the minable object (for physics, etc.)
     public int storedAmount = 0;     // produced and ready for pickup (via outposts)
     public float veinsAmount = 0;
     public float patchesAmount = 0;
-
+}
+    /*
     // Missing multiplier used by ExtractUsingTool — added here.
     [Tooltip("Multiplier applied to module mining speed when extracting from this minable.")]
     public float deliverMultiplier = 1f;
@@ -62,35 +60,7 @@ public class MinableComponent : MonoBehaviour
         {
              Debug.LogError("HexGridComponent not found on child of MinableComponent for " + this.transform.parent.name);
         }
-        */
-    }
-
-    private void Start()
-    {
-        // Initialize tiles if not already set
-        if (tilesData.Count == 0)
-        {
-            // Build axial region from worldRadius and create tile entries in canonical order
-            var cells = HexMath.AxialRegion(worldRadius);
-            // Sort by ring distance then q then r - matches other consumers
-            cells.Sort((a, b) =>
-            {
-                int da = Mathf.Max(Mathf.Abs(a.x), Mathf.Abs(a.y), Mathf.Abs(-a.x - a.y));
-                int db = Mathf.Max(Mathf.Abs(b.x), Mathf.Abs(b.y), Mathf.Abs(-b.x - b.y));
-                if (da != db) return da.CompareTo(db);
-                if (a.x != b.x) return a.x.CompareTo(b.x);
-                return a.y.CompareTo(b.y);
-            });
-
-            foreach (var cell in cells)
-            {
-                var newTileData = new TileData {};
-                // store axial indices in tileData (row = r, col = q)
-                newTileData.tileIndexRow = cell.y;
-                newTileData.tileIndexCol = cell.x;
-                tilesData.Add(newTileData);
-            }
-        }
+        
     }
 
     // Called per player turn (Option A). Produces resources from outposts into storedAmount.
@@ -240,4 +210,4 @@ public class MinableComponent : MonoBehaviour
         Debug.Log($"Cleared mining tiles for Minable '{gameObject.name}'.");
     }
 #endif
-}
+}*/

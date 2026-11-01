@@ -1,21 +1,27 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Assemblies;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 using Button = UnityEngine.UI.Button;
 using Image = UnityEngine.UI.Image;
-using System;
-using System.IO;
 
 
 public class AsteroidManager : MonoBehaviour
 {
-    public AsteroidComponent currentAsteroid;
+    public AsteroidComponent currentAsteroidComponent;
+    public MinableComponent currentMinableComponent;
     public Transform uintInOrbitView;
     public Transform unitInOrbitListContent;
     public GameObject unitInOrbitPrefab;
-
+    //public string unitToPlaceUnitId; // This is the unit that will be placed on the asteroid surface when the player selects a unit from orbit.
+    public Unit unitScriptToPlace;  // Use this insted of unitID.
+    public SpriteRenderer asteroidBackgroundRenderer; // Will be loaded when asteroid is loaded and changed when player click the display ore map button..
+    public bool isOreMapDisplayed = false; // Track whether the ore map is currently displayed or not.
     public static AsteroidManager Instance { get; private set; }
 
     public List<Unit> unitsInOrbit = new List<Unit>();
@@ -58,21 +64,21 @@ public class AsteroidManager : MonoBehaviour
             TileManager.Instance?.SaveFogState(GameManager.Instance.gameViewLayout);
         }
 
-        // 3) Save which units are in the orbit/current view, if you need to restore them later
-        //    This is only for later restoration, not for fog registration.
-        unitsInOrbit = TileManager.Instance != null
-            ? TileManager.Instance.GetUnitsOnTile(asteroid.currentTileCoord)
-            : new List<Unit>();
+        // 3) save all units in orbit.
+        unitsInOrbit = TileManager.Instance?.GetUnitsOnTile(asteroid.currentTileCoord) ?? new List<Unit>();
+
+        // 3.1) set current asteroid
+        currentAsteroidComponent = asteroid;
 
         // 3.5) SaveAllUnits and SaveAllInventories to ensure the current state is preserved before switching views
-        SaveManager.Instance?.SaveAllUnits(GameManager.Instance.gameViewUnitsSaveFile);
+        SaveManager.Instance?.SaveAllUnits(GameManager.Instance.gameViewUnitsSaveFile, asteroid);
         SaveManager.Instance?.SaveAllInventories();
 
         // 3.6) Save all Asteroid data
         SaveManager.Instance?.SaveAllAsteroids(GameManager.Instance.gameViewAsteroidsSaveFile);
 
         // 4) Hide all active game-view units and asteroids
-        SaveManager.Instance?.HideGameViewObjects();
+        SaveManager.Instance?.HideGameViewObjects(asteroid);
 
         // 5) Load the asteroid interior layout
         string path = Path.Combine(Application.streamingAssetsPath, asteroid.asteroidTileSatusSave);
@@ -96,17 +102,19 @@ public class AsteroidManager : MonoBehaviour
         }
 
         // 8) Remember the asteroid for restoring later
-        currentAsteroid = asteroid;
+        //SaveCurrentAsteroid(asteroid);
 
         // 9) Set state
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
 
         // 10) populate the orbital units UI
         uintInOrbitView.transform.gameObject.SetActive(true);
-        AddUnitToOrbit();
+        UpdateUnitInOrbitView();
 
         Debug.Log($"Entered asteroid view: {asteroid.asteroidName}");
     }
+
+
     public void HideAsteroidView()
     {
         // 1) Clear path and selection visuals
@@ -123,10 +131,17 @@ public class AsteroidManager : MonoBehaviour
         UIManager.Instance?.HideAllUI();
 
         // 3) Save asteroid fog state before leaving
-        if (currentAsteroid != null)
+        if (currentAsteroidComponent != null)
         {
-            TileManager.Instance?.SaveFogState(currentAsteroid.asteroidTileSatusSave);
+            TileManager.Instance?.SaveFogState(currentAsteroidComponent.asteroidTileSatusSave);
         }
+
+        // 3.5 ) SaveAllUnits and SaveAllInventories to ensure the current state is preserved before switching views
+        SaveManager.Instance?.SaveAllUnits(currentAsteroidComponent.unitsOnSurfaceSave);
+        SaveManager.Instance?.SaveAllInventories();
+
+        // 4) Hide all active game-view units and asteroids
+        SaveManager.Instance?.HideAsteroidViewObjects();
 
         // 4) Restore the original game-view layout
         if (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.gameViewLayout))
@@ -163,10 +178,21 @@ public class AsteroidManager : MonoBehaviour
         // 8) Set normal state
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
 
+        // 8.5 Move units in orbit back to gameview
+        foreach (var unit in AsteroidManager.Instance.unitsInOrbit)
+        {
+            unit.transform.SetParent(GameManager.Instance.unitInGameview, false);
+            unit.transform.localPosition = TileManager.Instance.AxialToWorldCenter(unit.currentTileCoord);
+            unit.transform.GetChild(0).gameObject.SetActive(true);
+        }
+
+        // 9) Clean up the temporary asteroid GameObject
+        currentAsteroidComponent = null;
+        currentMinableComponent = null;
+
         Debug.Log("Returned from asteroid view.");
     }
-
-    public void AddUnitToOrbit()
+    public void UpdateUnitInOrbitView()
     {
         //Clear Lsit
         foreach (Transform child in unitInOrbitListContent)
@@ -175,9 +201,8 @@ public class AsteroidManager : MonoBehaviour
         }
 
         //Populate the list with units that are currently in orbit
-        foreach (var unit in unitsInOrbit)
+        foreach (var unit in unitsInOrbit.Where(u => u != null && u.gameObject != null))
         {
-            if (unit == null) continue;
             var unitInOrbitListEnery = Instantiate(unitInOrbitPrefab, unitInOrbitListContent);
             OrbitingUnitPrefab_Entery entry = unitInOrbitListEnery.GetComponent<OrbitingUnitPrefab_Entery>();
             if (entry != null)
@@ -189,5 +214,60 @@ public class AsteroidManager : MonoBehaviour
                 Debug.LogError("OrbitingUnitPrefab_Entery component not found on the prefab.");
             }
         }
+    }
+
+    public void PlaceSateliteOnSurface(Vector2Int coordClicked)
+    {
+        //Reveal tiles around the satelite based on its sensor range
+        int sensorRange = ModuleManager.Instance.GetSensorRange(unitScriptToPlace.moduleRuntimeList);
+        Debug.Log($"PlaceSateliteOnSurface: SensorRange = {sensorRange}");
+        TileManager.Instance.RevealTilesAroundAxial(coordClicked, sensorRange);
+
+        //Remove satelite from hiracy
+        foreach (Transform unitTransform in GameManager.Instance.UnitsInOrbit)
+        {
+            if (unitTransform == null) continue;
+            Unit unitScript = unitTransform.GetComponent<Unit>();
+            if(unitScript == null) continue;
+
+            if (unitScript.unitId == unitScriptToPlace.unitId)
+            {
+                Destroy(unitTransform.gameObject);
+            }
+        }
+
+        //Remove satelite from the list of units in orbit
+        unitsInOrbit.Remove(unitScriptToPlace);
+
+        //Update unitsinorbit UI
+        UpdateUnitInOrbitView();
+
+        //Go back to selecting
+        GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
+    }
+
+    public void ToggleOreMap()
+    {
+        if (asteroidBackgroundRenderer == null)
+        {
+            Debug.LogError("Asteroid background renderer is not assigned.");
+            return;
+        }
+
+        // Toggle the visibility of the asteroid background
+        if(isOreMapDisplayed)
+        {
+            // Hide the ore map and show the normal asteroid view
+            isOreMapDisplayed = false;
+            asteroidBackgroundRenderer.sprite = currentAsteroidComponent.asteroidIcon; // Assuming you have a different sprite for the ore map, you can toggle between them here.
+        }
+        else
+        {
+            // Show the ore map and hide the normal asteroid view
+            isOreMapDisplayed = true;
+            asteroidBackgroundRenderer.sprite = currentAsteroidComponent.GetComponent<MinableComponent>().oreMap; // Assuming you have a different sprite for the ore map, you can toggle between them here.
+
+        }
+
     }
 }

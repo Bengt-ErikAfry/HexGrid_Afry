@@ -22,7 +22,7 @@ public class RouteSlotUI : MonoBehaviour
             }
             else
             {
-                label.text = $"Waypoint: {HexGridLinesBaker.Instance.GetGridPosFromWorldPos(moveTo.waypointPosition)}";
+                label.text = $"Waypoint: {TileManager.Instance.WorldToAxial(moveTo.waypointPosition)}";
             }
         }
 

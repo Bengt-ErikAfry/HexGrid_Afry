@@ -33,12 +33,12 @@ public class StackViewUnit_Entery : MonoBehaviour
             {
                 //Select unit
                 SelectionService.Instance.SetSelectedUnit(unit_script);
-
+                /*
                 // Show Route if existing
                 if (unit_script.routeComponent != null && unit_script.routeComponent.routeActions.Count > 0)
                 {
                     HexGridManager.Instance.CalculateRoutePath(unit_script);
-                }
+                }*/
 
                 TileManager.Instance.HighlightTileWorldPosition(unit_script.transform.position);
                 Debug.Log($"SelectState OnTap: single unit '{unit_script.unitName}' selected.");

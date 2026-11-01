@@ -4,549 +4,1459 @@
     "cells": [
         {
             "x": 0,
-            "y": -5,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 1,
-            "y": -5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 2,
-            "y": -5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 3,
-            "y": -5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 4,
-            "y": -5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 5,
-            "y": -5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.4218009412288666
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.4520142078399658
+                }
+            ]
         },
         {
             "x": -1,
-            "y": -4,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9400948882102966
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.004151838831603527
+                }
+            ]
+        },
+        {
+            "x": -1,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9152843356132507
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.05272511765360832
+                }
+            ]
         },
         {
             "x": 0,
-            "y": -4,
+            "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.33293840289115908
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.40343600511550906
+                }
+            ]
+        },
+        {
+            "x": 0,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 1.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": 1,
-            "y": -4,
+            "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.4603080451488495
+                }
+            ]
         },
         {
-            "x": 2,
-            "y": -4,
+            "x": 1,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 3,
-            "y": -4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 4,
-            "y": -4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 5,
-            "y": -4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.763938307762146
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -2,
-            "y": -3,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.78387850522995
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -2,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.3824748396873474
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -2,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.6806871891021729
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.07168246805667877
+                }
+            ]
         },
         {
             "x": -1,
-            "y": -3,
+            "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.21077561378479005
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.384843111038208
+                }
+            ]
+        },
+        {
+            "x": -1,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9614928960800171
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.031990520656108859
+                }
+            ]
         },
         {
             "x": 0,
-            "y": -3,
+            "y": -2,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.6907582879066467
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.23045024275779725
+                }
+            ]
+        },
+        {
+            "x": 0,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 1.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": 1,
-            "y": -3,
+            "y": -2,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.6321089863777161
+                }
+            ]
+        },
+        {
+            "x": 1,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 1.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": 2,
-            "y": -3,
+            "y": -2,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
-            "x": 3,
-            "y": -3,
+            "x": 2,
+            "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
-            "x": 4,
-            "y": -3,
+            "x": 2,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 5,
-            "y": -3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.33761683106422427
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -3,
-            "y": -2,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9946619272232056
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.001186239649541676
+                }
+            ]
+        },
+        {
+            "x": -3,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.711033284664154
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -3,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.30706363916397097
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -3,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.018364928662776948
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -2,
-            "y": -2,
+            "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.21599532663822175
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.5907764434814453
+                }
+            ]
+        },
+        {
+            "x": -2,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.3236514627933502
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.6247777342796326
+                }
+            ]
         },
         {
             "x": -1,
             "y": -2,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.9293636679649353
+                }
+            ]
+        },
+        {
+            "x": -1,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9342027306556702
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.042679313570261
+                }
+            ]
         },
         {
             "x": 0,
-            "y": -2,
+            "y": -3,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.3601895868778229
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.16469193994998933
+                }
+            ]
+        },
+        {
+            "x": 0,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.7233412265777588
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.24703791737556458
+                }
+            ]
         },
         {
             "x": 1,
-            "y": -2,
+            "y": -3,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.3402489721775055
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.5358625054359436
+                }
+            ]
+        },
+        {
+            "x": 1,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9947460889816284
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": 2,
-            "y": -2,
+            "y": -3,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 2,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.8161121010780335
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 3,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": 3,
             "y": -2,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
-            "x": 4,
-            "y": -2,
+            "x": 3,
+            "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
-            "x": 5,
-            "y": -2,
+            "x": 3,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.09074733406305313
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -4,
-            "y": -1,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9028435945510864
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.08175355195999146
+                }
+            ]
+        },
+        {
+            "x": -4,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.4481942057609558
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -4,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.08353080600500107
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -4,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.1663747876882553
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -4,
+            "y": 4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.5099067687988281
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -3,
             "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.8401420712471008
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.14031971991062165
+                }
+            ]
+        },
+        {
+            "x": -3,
+            "y": 4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.059241704642772678
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -2,
-            "y": -1,
+            "y": -2,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.1380331814289093
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.8619668483734131
+                }
+            ]
+        },
+        {
+            "x": -2,
+            "y": 4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.5338078141212463
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.31079477071762087
+                }
+            ]
         },
         {
             "x": -1,
-            "y": -1,
+            "y": -3,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.6152948141098023
+                }
+            ]
+        },
+        {
+            "x": -1,
+            "y": 4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.09300947934389115
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.9058057069778442
+                }
+            ]
         },
         {
             "x": 0,
-            "y": -1,
+            "y": -4,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 0,
+            "y": 4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 1.0
+                }
+            ]
         },
         {
             "x": 1,
-            "y": -1,
+            "y": -4,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.5053317546844482
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.26895734667778017
+                }
+            ]
+        },
+        {
+            "x": 1,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.11441914737224579
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0729713961482048
+                }
+            ]
         },
         {
             "x": 2,
-            "y": -1,
+            "y": -4,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.39620402455329897
+                }
+            ]
+        },
+        {
+            "x": 2,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.024289099499583246
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": 3,
-            "y": -1,
+            "y": -4,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 3,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.5316755771636963
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.1373593807220459
+                }
+            ]
+        },
+        {
+            "x": 4,
+            "y": -4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 4,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 4,
+            "y": -2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": 4,
             "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
-            "x": 5,
-            "y": -1,
+            "x": 4,
+            "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.6498815417289734
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.045616112649440768
+                }
+            ]
         },
         {
             "x": -5,
             "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 1.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -5,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9911084771156311
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -5,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.018946122378110887
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -5,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.45373666286468508
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -5,
+            "y": 4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 1.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": -5,
+            "y": 5,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 1.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -4,
-            "y": 0,
+            "y": -1,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.25548312067985537
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.6395969390869141
+                }
+            ]
+        },
+        {
+            "x": -4,
+            "y": 5,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.2649674117565155
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
         },
         {
             "x": -3,
-            "y": 0,
+            "y": -2,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.9615156650543213
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.03848430886864662
+                }
+            ]
+        },
+        {
+            "x": -3,
+            "y": 5,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.21965660154819489
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.5825932621955872
+                }
+            ]
         },
         {
             "x": -2,
-            "y": 0,
+            "y": -3,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.03973902761936188
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.9602609872817993
+                }
+            ]
+        },
+        {
+            "x": -2,
+            "y": 5,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.45589107275009158
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.5441089272499085
+                }
+            ]
         },
         {
             "x": -1,
-            "y": 0,
+            "y": -4,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.10551274567842484
+                }
+            ]
+        },
+        {
+            "x": -1,
+            "y": 5,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 1.0
+                }
+            ]
         },
         {
             "x": 0,
-            "y": 0,
+            "y": -5,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 0,
+            "y": 5,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.08294392377138138
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.4894859790802002
+                }
+            ]
         },
         {
             "x": 1,
-            "y": 0,
+            "y": -5,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.059869591146707538
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.17131002247333527
+                }
+            ]
+        },
+        {
+            "x": 1,
+            "y": 4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.6538233757019043
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.06994665414094925
+                }
+            ]
         },
         {
             "x": 2,
-            "y": 0,
+            "y": -5,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.21314387023448945
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.558910608291626
+                }
+            ]
+        },
+        {
+            "x": 2,
+            "y": 3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.02965599112212658
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.017200473695993425
+                }
+            ]
         },
         {
             "x": 3,
-            "y": 0,
+            "y": -5,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 3,
+            "y": 2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.39964476227760317
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.2948490083217621
+                }
+            ]
         },
         {
             "x": 4,
-            "y": 0,
+            "y": -5,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 4,
+            "y": 1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.15471251308918
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.42620036005973818
+                }
+            ]
+        },
+        {
+            "x": 5,
+            "y": -5,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 5,
+            "y": -4,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 5,
+            "y": -3,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 5,
+            "y": -2,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.0
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.0
+                }
+            ]
+        },
+        {
+            "x": 5,
+            "y": -1,
+            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.13337285816669465
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.1665678769350052
+                }
+            ]
         },
         {
             "x": 5,
             "y": 0,
             "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -5,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -4,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -3,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -2,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -1,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 0,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 1,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 2,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 3,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 4,
-            "y": 1,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -5,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -4,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -3,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -2,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -1,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 0,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 1,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 2,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 3,
-            "y": 2,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -5,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -4,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -3,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -2,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -1,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 0,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 1,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 2,
-            "y": 3,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -5,
-            "y": 4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -4,
-            "y": 4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -3,
-            "y": 4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -2,
-            "y": 4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -1,
-            "y": 4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 0,
-            "y": 4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 1,
-            "y": 4,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -5,
-            "y": 5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -4,
-            "y": 5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -3,
-            "y": 5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -2,
-            "y": 5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": -1,
-            "y": 5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
-        },
-        {
-            "x": 0,
-            "y": 5,
-            "prefabPath": "Assets/Resources/Tiles/tile_Empty_Prefab.prefab",
-            "state": ""
+            "state": "",
+            "ore": [
+                {
+                    "itemName": "Iron Ore",
+                    "amount": 0.34656399488449099
+                },
+                {
+                    "itemName": "Copper ore",
+                    "amount": 0.10841232538223267
+                }
+            ]
         }
     ]
 }

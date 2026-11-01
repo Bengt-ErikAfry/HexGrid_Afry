@@ -10,7 +10,7 @@ public class BoardingManager : MonoBehaviour
     [Header("Grid")]
     public GameObject tilePrefab;       // small UI button prefab representing a surface slot
     public Transform tileParent;   // parent in the UI canvas to place slots into 
-    public HexGridComponent uiHexGrid;              // authoritative grid used for UI layout
+    
     public float uiPixelsPerWorldUnit = 100f;      // how many UI pixels equal 1 world unit
 
     // Reintroduced: allow specifying blocked axial coords in inspector
@@ -26,9 +26,9 @@ public class BoardingManager : MonoBehaviour
     [Header("Reference")]
     public GameObject boardingObject_view;
     public GameObject Game_View;
-    public HexGridComponent boardingObjectView_hexGridComponent;
+   
     public GameObject gameHexGrid;
-    public HexGridComponent gameView_hexGridComponent;
+
     public GameObject orbitingUnitView;
     public GameObject orbitingUnitPrefab;
     public Transform orbitingUnitsListContent;

@@ -22,8 +22,8 @@ public class MineAction : RouteAction
         }
 
         // Ensure owner is on the same hex as the asteroid field
-        var ownerHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(owner.transform.position);
-        var asteroidHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(targetAsteroidField.transform.position);
+        var ownerHex = TileManager.Instance.WorldToAxial(owner.transform.position);
+        var asteroidHex = TileManager.Instance.WorldToAxial(targetAsteroidField.transform.position);
         if (ownerHex != asteroidHex)
         {
             // Not at the asteroid yet — retry later (or fail based on flag)

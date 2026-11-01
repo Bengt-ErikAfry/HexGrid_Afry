@@ -177,7 +177,7 @@ public class RouteManager : MonoBehaviour
         InfoScreenManager.Instance.HideInfoScreen();
 
         //Calculate exsisting path for the selected unit
-        HexGridManager.Instance.CalculateRoutePath(SelectionService.Instance.SelectedUnit);
+        //HexGridManager.Instance.CalculateRoutePath(SelectionService.Instance.SelectedUnit);
 
         pickupDropPanel.SetActive(false);
         addRouteType=AddRouteType.Waypoint;

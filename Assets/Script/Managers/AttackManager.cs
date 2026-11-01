@@ -87,7 +87,7 @@ public class AttackManager : MonoBehaviour
         }
 
         // check if target is in range for all weapons
-        int distance = HexGridLinesBaker.Instance.AxialDistance(target.transform.position, attackingUnit.transform.position);
+        int distance = TileManager.Instance.AxialDistance(TileManager.Instance.WorldToAxial(target.transform.position), TileManager.Instance.WorldToAxial(attackingUnit.transform.position));
 
         if (longestRange < distance)
         {

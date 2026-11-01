@@ -42,13 +42,13 @@ public class ShowMiningObjectUIState : IGameState
             // clear selection
             SelectionService.Instance.ClearSelection();
 
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
             Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
 
-            Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+            //Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 
             var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
-            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
+            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, 2);
 
             // select unit via selection service
             SelectionService.Instance.SetSelectedHex(worldPos);
@@ -61,14 +61,14 @@ public class ShowMiningObjectUIState : IGameState
 
         // (2) Determine the clicked hex using the closest hit point (or use your own method if you have one)
         Vector3 clickPoint = hits[0].point;
-        var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
+        var clickedHex = TileManager.Instance.WorldToAxial(clickPoint); // <-- swap to your actual hex system
 
         // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
         List<Unit> unitsInClickedHex = hits
             .Select(h => h.collider.transform.root.GetComponent<Unit>())
             .Where(u => u != null)
             .Distinct() // prevent duplicates if a unit has multiple colliders
-            .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
+            .Where(u => TileManager.Instance.WorldToAxial(u.transform.position) == clickedHex)
             .ToList();
 
         // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
@@ -86,7 +86,7 @@ public class ShowMiningObjectUIState : IGameState
             SelectionService.Instance.ClearSelection();
 
             var worldPos = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
-            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, HexGridLinesBaker.Instance.hexSize);
+            var hexClicked = HexMath.WorldToAxial_PointTop(worldPos, 2);
 
             // select unit via selection service
             SelectionService.Instance.SetSelectedHex(worldPos);
@@ -96,16 +96,17 @@ public class ShowMiningObjectUIState : IGameState
             var unit = unitsInClickedHex[0];
 
             //Highlight hex under selected unit
-            HexHighlighter.Instance.HighlightHexUnderWorldPosition(unit.transform.position);
+            //HexHighlighter.Instance.HighlightHexUnderWorldPosition(unit.transform.position);
 
             // select unit via selection service
             SelectionService.Instance.SetSelectedUnit(unit);
 
+            /*
             //Show Route if exsisting
             if (unit.routeComponent.routeActions.Count > 0)
             {
                 HexGridManager.Instance.CalculateRoutePath(unit);
-            }
+            }*/
 
             Debug.Log($"SelectAsteroid mode selected and {unit.unitName} is clicked.");
 
@@ -132,6 +133,7 @@ public class ShowMiningObjectUIState : IGameState
 
     public void OnDrag(Vector2 delta)
     {
+        /*
         Debug.Log("OnDrag called with delta: " + delta);
         // If the mining UI is open, move its content instead of panning the world camera.
         var mining = MiningUIManager.Instance;
@@ -151,7 +153,7 @@ public class ShowMiningObjectUIState : IGameState
 
         // Fallback: pan the world camera (existing behavior)
         var move = new Vector3(-delta.x * 0.01f, -delta.y * 0.01f, 0);
-        Camera.main.transform.Translate(move, Space.World);
+        Camera.main.transform.Translate(move, Space.World);*/
     }
 
     public void OnPinch(float amount)

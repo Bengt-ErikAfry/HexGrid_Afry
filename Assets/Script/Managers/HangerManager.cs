@@ -354,8 +354,8 @@ public class HangerManager : MonoBehaviour
             newShipUnit_Script.moduleRuntimeList.Add(item);
         }
 
-        //Setup all Module values
-        ModuleManager.Instance.SetUpShipStats(newShipUnit_Script);
+        //Setup all Module values on frech ship. This is to prevent saved values to be over writen when spawning saved units.
+        newShipUnit_Script.isFreshlyCreatedUnit = true;
 
         //Calculate movment range.
         newShipUnit_Script.shipRuntimeData.currentMovmentRange = GetAllModuleValues(ModuleType.Engine, item => item.currentRange);

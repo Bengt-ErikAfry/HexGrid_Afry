@@ -24,8 +24,8 @@ public class DropAction : RouteAction
         }
 
         // Ensure same hex as owner
-        Vector2 ownerHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(owner.transform.position);
-        Vector2 inventoryHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(dropOfInventory.transform.position);
+        Vector2 ownerHex = TileManager.Instance.WorldToAxial(owner.transform.position);
+        Vector2 inventoryHex = TileManager.Instance.WorldToAxial(dropOfInventory.transform.position);
         if (ownerHex != inventoryHex)
         {
             Debug.Log($"DropAction: Owner {owner.unitName} is not on the same hex as the drop inventory. Owner hex: {ownerHex}, Inventory hex: {inventoryHex}");

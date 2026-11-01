@@ -6,6 +6,8 @@ public class HexGrid_TilePrefab : MonoBehaviour
 {
     public int tileIndexRow;
     public int tileIndexCol;
+    [Header("Ore data")]
+    public float oreAmount;
     public TileVisibilityState tileVisibilityState = TileVisibilityState.Unexplored;
     public GameObject tileHighlightGameObject;
     public GameObject tileVisibleStateGameObject;
@@ -35,6 +37,11 @@ public class HexGrid_TilePrefab : MonoBehaviour
         if (walls == null) return false;
         if (dirIndex < 0 || dirIndex >= walls.Length) return false;
         return walls[dirIndex];
+    }
+
+    public void SetOreAmount(float oreValue)
+    {
+        oreAmount = Mathf.Max(0f, oreValue);
     }
 
     public void SetHighlight(bool highlight, Color highlightColor)

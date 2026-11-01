@@ -16,11 +16,12 @@ MonoBehaviour:
   itemName: Ore Rick
   icon: {fileID: -1064938584130821537, guid: 5d6e7c2934f8a0c4caf76b0d4b617de3, type: 3}
   itemType: 0
-  moduleType: 6
+  moduleType: 0
   itemCanStack: 0
   maxHealth: 100
   description: 
   size: 1
+  colorOnOreMap: {r: 1, g: 1, b: 1, a: 1}
   energyCost: 5
   energyConsumtion_Boost: 1.5
   wear: 2

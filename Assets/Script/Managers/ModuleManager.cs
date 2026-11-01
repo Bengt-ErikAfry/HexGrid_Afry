@@ -1,3 +1,5 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -182,5 +184,44 @@ public class ModuleManager : MonoBehaviour
             }
         }
         return false;
+    }
+
+    public int GetSensorRange(List<ItemInstance> moduleRuntimeList)
+    {
+        if (moduleRuntimeList == null)
+        {
+            Debug.LogWarning("GetSensorRange: moduleRuntimeList == null");
+            return 0;
+        }
+
+        int totalRange = 0;
+
+        foreach (var module in moduleRuntimeList)
+        {
+            if (module == null || module.ItemDefinition == null)
+            {
+                Debug.Log($"GetSensorRange: module({module}) == null or module.ItemDefinition({module.ItemDefinition}) == null");
+                continue;
+            }
+
+            if (module.ItemDefinition.moduleType != ModuleType.SurvayArray)
+            { 
+                Debug.Log($"GetSensorRange: module type is not survayarray : {module.ItemDefinition.moduleType}");
+                continue;
+            }
+
+            if (!module.isOnline || module.isBroken || module.isDestroyd)
+            {
+                Debug.Log($"GetSensorRange: module.isOnline = {module.isOnline} module.isBroken = {module.isBroken} module.isDestroyd = {module.isDestroyd}");
+                continue;
+            }
+
+            int moduleRange = module.ItemDefinition.SurvayRange +
+                              (module.currentPowerUpBoost * module.ItemDefinition.SurvayRangeIncresePerBoost);
+
+            totalRange += moduleRange;
+        }
+
+        return totalRange;
     }
 }

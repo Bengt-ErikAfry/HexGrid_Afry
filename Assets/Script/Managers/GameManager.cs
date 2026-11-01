@@ -47,7 +47,8 @@ public class GameManager : MonoBehaviour
     public string gameViewLayout = "hex_20Radius_Full.json"; //Default layout to load when starting a new game.
     public string gameViewUnitsSaveFile = "gameViewUnitSave.json"; //Default layout to load when starting a new game.
     public string gameViewAsteroidsSaveFile = "gameViewAsteroidsSave.json"; //Default layout to load when starting a new game.
-
+    public Transform UnitsInOrbit; // a place holder for units in orbit so i do not need to destroy or save/load them when player open an asterois.
+    public Transform unitInGameview; 
 
     private void Awake()
     {
@@ -72,16 +73,6 @@ public class GameManager : MonoBehaviour
 
         //Setup player and enemy lists based on unitsList.
         SortPlayerAndEnemyList();
-
-        // Read unit stats from itemdefinitions and apply them to the units.
-        //ModuleManager.Instance.SetUpShipStats();
-        foreach (var playerUnit in playerUnits)
-        {
-            ModuleManager.Instance.SetUpShipStats(playerUnit);
-        }
-
-        //SetUp Enemy ship modules
-        ModuleManager.Instance.SetUpEnemyShipModules();
 
         // existing initialization...
         //Kick off first player turn (delayed one frame so other singletons finish Start)
@@ -335,9 +326,9 @@ public class GameManager : MonoBehaviour
         GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
 
         //Clear previous path
-        HexGridManager.Instance.ClearPath();
-        HexGridManager.Instance.ClearMarkers();
-        HexHighlighter.Instance.HideHighlight();
+        //HexGridManager.Instance.ClearPath();
+        //HexGridManager.Instance.ClearMarkers();
+        //HexHighlighter.Instance.HideHighlight();
 
         //Reset all enemy movment this turn and attack
         for (int i = 0; i < enemyUnits.Count; i++)
@@ -368,8 +359,8 @@ public class GameManager : MonoBehaviour
         foreach (var playerUnit in playerUnits)
         {
             //Check if player unit is in asteroid orbit
-            Vector2Int playerUnitCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(playerUnit.transform.position);
-            Vector2Int OrbitPosHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(OrbitPos);
+            Vector2Int playerUnitCurrentHexPos = TileManager.Instance.WorldToAxial(playerUnit.transform.position);
+            Vector2Int OrbitPosHexPos = TileManager.Instance.WorldToAxial(OrbitPos);
             if (playerUnitCurrentHexPos == OrbitPosHexPos)
             {
                 unitsInOrbitList.Add(playerUnit);
@@ -383,7 +374,7 @@ public class GameManager : MonoBehaviour
     public int GetAmountOfItemsInOrbit(GameObject objectTocheckAgainst, ItemDefinition itemToGet)
     {
         //Get objectPos hexpos
-        Vector2Int objectCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(objectTocheckAgainst.transform.position);
+        Vector2Int objectCurrentHexPos = TileManager.Instance.WorldToAxial(objectTocheckAgainst.transform.position);
 
         //Reset nr of missiles in orbit
         int nrOfItemsInOrbit = 0;
@@ -391,7 +382,7 @@ public class GameManager : MonoBehaviour
         //Get all playerUnit pos
         foreach (var playerUnit in GameManager.Instance.playerUnits)
         {
-            Vector2Int playerUnitCurrentHexPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(playerUnit.transform.position);
+            Vector2Int playerUnitCurrentHexPos = TileManager.Instance.WorldToAxial(playerUnit.transform.position);
 
             if (playerUnitCurrentHexPos == objectCurrentHexPos)
             {

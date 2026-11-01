@@ -41,10 +41,10 @@ public class MinableObject_SelectingState : IGameState
             // clear selection
             SelectionService.Instance.ClearSelection();
 
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
             Debug.Log("after SelectState invoke" + GameStateMachine.Instance.Current);
 
-            Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+           // Debug.Log("SelectState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 
             UIManager.Instance.HideSelectedUnitView();
             return;
@@ -55,7 +55,7 @@ public class MinableObject_SelectingState : IGameState
 
         // (2) Determine the clicked hex using the closest hit point (or use your own method if you have one)
         Vector3 clickPoint = hits[0].point;
-        var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
+        var clickedHex = TileManager.Instance.WorldToAxial(clickPoint); // <-- swap to your actual hex system
 
         Debug.Log($"{hits[0].collider.gameObject.name} parent={hits[0].collider.transform.parent?.name} root={hits[0].collider.transform.root.name}");
 
@@ -64,7 +64,7 @@ public class MinableObject_SelectingState : IGameState
             .Select(h => h.collider.transform.GetComponent<Unit>())
             .Where(u => u != null)
             .Distinct() // prevent duplicates if a unit has multiple colliders
-            .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
+            .Where(u => TileManager.Instance.WorldToAxial(u.transform.position) == clickedHex)
             .ToList();
 
         // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
@@ -86,12 +86,13 @@ public class MinableObject_SelectingState : IGameState
             var unit = unitsInClickedHex[0];
 
             //Highlight hex under selected unit
-            HexHighlighter.Instance.HighlightHexUnderWorldPosition(unit.transform.position);
+           // HexHighlighter.Instance.HighlightHexUnderWorldPosition(unit.transform.position);
 
             // select unit via selection service
             SelectionService.Instance.SetSelectedUnit(unit);
 
             //Show Route if exsisting
+            /*
             if (unit.routeComponent != null)
             {
                 if (unit.routeComponent.routeActions.Count > 0)
@@ -99,6 +100,7 @@ public class MinableObject_SelectingState : IGameState
                     HexGridManager.Instance.CalculateRoutePath(unit);
                 }
             }
+            */
 
             Debug.Log($"SelectAsteroid mode selected and {unit.unitName} is clicked.");
         }

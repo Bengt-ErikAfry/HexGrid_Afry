@@ -33,11 +33,11 @@ public class SetDropState : IGameState
 
         if (hits.Length == 0)
         {
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+            //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
             Debug.Log("after SetPickupState invoke" + GameStateMachine.Instance.Current);
 
             //Debug where clicked
-            Debug.Log("SetPickupState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+            //Debug.Log("SetPickupState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 
             UIManager.Instance.HideSelectedUnitView();
 
@@ -56,14 +56,14 @@ public class SetDropState : IGameState
         // If your HexHighlighter exposes a WorldToHex, prefer that for consistency.
         // Here I assume you have a method like HexGrid.Instance.WorldToHex(Vector3 worldPos)
         Vector3 clickPoint = hits[0].point;
-        var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
+        var clickedHex = TileManager.Instance.WorldToAxial(clickPoint); // <-- swap to your actual hex system
 
         // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
         List<Unit> unitsInClickedHex = hits
             .Select(h => h.collider.transform.root.GetComponent<Unit>())
             .Where(u => u != null)
             .Distinct() // prevent duplicates if a unit has multiple colliders
-            .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
+            .Where(u => TileManager.Instance.WorldToAxial(u.transform.position) == clickedHex)
             .ToList();
 
         // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
@@ -108,12 +108,12 @@ public class SetDropState : IGameState
         }
 
         // Highlight selected tile (keep your current behavior)
-        HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
+        //HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
 
         Debug.Log("after SetPickupState invoke" + GameStateMachine.Instance.Current);
 
         //Debug where clicked
-        Debug.Log("SetPickupState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+        //Debug.Log("SetPickupState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
 
         InfoScreenManager.Instance.ShowInfoScreen();
         InfoScreenManager.Instance.ShowRoute();

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,9 +32,34 @@ public class HexLayoutEditor : EditorWindow
     Color highlightColor = new Color(0.1f, 0.8f, 0.2f, 0.35f);
 
     // Runtime state
+    string unitSaveJsonFile = "units_on_surface.json";
     Dictionary<Vector2Int, GameObject> placed = new();
     GameObject parentContainer;
     Vector2Int hoveredCell;
+
+    [Serializable]
+    private class UnitSaveDataJson
+    {
+        public string unitId;
+        public string unitName;
+        public UnitType unitType;
+        public ShipType shipType;
+        public Vector2Int currentTileCoord;
+        public int movedThisTurn;
+        public bool isPlayerControlled;
+        public bool haveAttackedThisTurn;
+        public string targetUnitId;
+        public Vector2Int target_lastKnownTileCoord;
+        public bool followtarget;
+        public bool hasMinedThisTurn;
+        public List<Vector2Int> currentMovePath = new List<Vector2Int>();
+    }
+
+    [Serializable]
+    private class UnitsSaveWrapperJson
+    {
+        public List<UnitSaveDataJson> units = new List<UnitSaveDataJson>();
+    }
 
     [MenuItem("Window/Hex Layout Editor")]
     public static void ShowWindow() => GetWindow<HexLayoutEditor>("Hex Layout Editor");
@@ -55,6 +81,7 @@ public class HexLayoutEditor : EditorWindow
     {
         EditorGUILayout.LabelField("Hex Layout Editor", EditorStyles.boldLabel);
         tilePrefab = (GameObject)EditorGUILayout.ObjectField("Tile Prefab", tilePrefab, typeof(GameObject), false);
+        unitSaveJsonFile = EditorGUILayout.TextField("Unit Save JSON", unitSaveJsonFile);
         parentName = EditorGUILayout.TextField("Parent Name", parentName);
 
         EditorGUILayout.Space();
@@ -79,6 +106,16 @@ public class HexLayoutEditor : EditorWindow
         if (GUILayout.Button("Import JSON Template"))
         {
             ImportTemplateFromFile();
+        }
+
+        if (GUILayout.Button("Load JSON unitsSave"))
+        {
+            LoadUnitsFromAsteroidSave();
+        }
+
+        if (GUILayout.Button("Save JSON unitSave"))
+        {
+            SaveUnitsToAsteroidSave();
         }
 
         if (GUILayout.Button("Fill All Tiles"))
@@ -299,6 +336,147 @@ public class HexLayoutEditor : EditorWindow
             EditorUtility.RevealInFinder(path);
             Debug.Log($"Saved hex template to {path}");
         }
+    }
+
+    void SaveUnitsToAsteroidSave()
+    {
+        string fileName = string.IsNullOrWhiteSpace(unitSaveJsonFile) ? "units_on_surface.json" : unitSaveJsonFile;
+        unitSaveJsonFile = fileName;
+
+        var saveManager = FindObjectOfType<SaveManager>();
+        if (saveManager == null)
+        {
+            EditorUtility.DisplayDialog("No SaveManager", "Could not find SaveManager in the scene.", "OK");
+            return;
+        }
+
+        var parent = saveManager.unitFolderForAllUnits;
+        if (parent == null)
+        {
+            EditorUtility.DisplayDialog("No unit folder", "SaveManager.unitFolderForAllUnits is not assigned.", "OK");
+            return;
+        }
+
+        //Get tilemanager
+        var tileManager = FindObjectOfType<TileManager>();
+
+        var wrapper = new UnitsSaveWrapperJson();
+        foreach (Transform child in parent)
+        {
+            var unit = child.GetComponent<Unit>();
+            if (unit == null) continue;
+            if (string.IsNullOrEmpty(unit.unitId)) unit.unitId = Guid.NewGuid().ToString();
+
+            wrapper.units.Add(new UnitSaveDataJson
+            {
+                unitId = unit.unitId,
+                unitName = unit.unitName,
+                unitType = unit.unitType,
+                shipType = unit.shipType,
+                currentTileCoord = tileManager.WorldToAxial(unit.transform.position),
+                movedThisTurn = unit.movedThisTurn,
+                isPlayerControlled = unit.isPlayerControlled,
+                haveAttackedThisTurn = unit.haveAttackedThisTurn,
+                targetUnitId = unit.target_Unit_Script != null ? unit.target_Unit_Script.unitId : null,
+                target_lastKnownTileCoord = Vector2Int.zero,
+                followtarget = unit.followTarget,
+                hasMinedThisTurn = unit.hasMinedThisTurn,
+                currentMovePath = unit.currentMovePath != null ? new List<Vector2Int>(unit.currentMovePath) : new List<Vector2Int>()
+            });
+        }
+
+        string path = Path.Combine(Application.persistentDataPath, fileName);
+        File.WriteAllText(path, JsonUtility.ToJson(wrapper, true));
+
+        EditorUtility.DisplayDialog("Units saved", $"Saved {wrapper.units.Count} unit(s) to {path}", "OK");
+    }
+
+    void LoadUnitsFromAsteroidSave()
+    {
+        string fileName = string.IsNullOrWhiteSpace(unitSaveJsonFile) ? "units_on_surface.json" : unitSaveJsonFile;
+        unitSaveJsonFile = fileName;
+
+        var saveManager = FindObjectOfType<SaveManager>();
+        if (saveManager == null)
+        {
+            EditorUtility.DisplayDialog("No SaveManager", "Could not find SaveManager in the scene.", "OK");
+            return;
+        }
+
+        var parent = saveManager.unitFolderForAllUnits;
+        if (parent == null)
+        {
+            EditorUtility.DisplayDialog("No unit folder", "SaveManager.unitFolderForAllUnits is not assigned.", "OK");
+            return;
+        }
+
+        string path = Path.Combine(Application.persistentDataPath, fileName);
+        if (!File.Exists(path))
+        {
+            EditorUtility.DisplayDialog("Missing save file", $"No unit save file found at {path}", "OK");
+            return;
+        }
+
+        for (int i = parent.childCount - 1; i >= 0; i--)
+        {
+            Undo.DestroyObjectImmediate(parent.GetChild(i).gameObject);
+        }
+
+        string json = File.ReadAllText(path);
+        var wrapper = JsonUtility.FromJson<UnitsSaveWrapperJson>(json);
+        if (wrapper == null || wrapper.units == null)
+        {
+            EditorUtility.DisplayDialog("Load failed", "Unit save file is empty or invalid.", "OK");
+            return;
+        }
+
+        for (int i = 0; i < wrapper.units.Count; i++)
+        {
+            var save = wrapper.units[i];
+            if (save == null) continue;
+
+            GameObject unitGo;
+            if (saveManager.unitPrefab != null)
+            {
+                unitGo = (GameObject)PrefabUtility.InstantiatePrefab(saveManager.unitPrefab);
+                if (unitGo == null)
+                    unitGo = (GameObject)Object.Instantiate(saveManager.unitPrefab);
+            }
+            else
+            {
+                unitGo = new GameObject(string.IsNullOrEmpty(save.unitName) ? "Unit" : save.unitName);
+            }
+
+            var unit = unitGo.GetComponent<Unit>();
+            if (unit == null)
+                unit = unitGo.AddComponent<Unit>();
+
+            unit.unitId = string.IsNullOrEmpty(save.unitId) ? Guid.NewGuid().ToString() : save.unitId;
+            unit.unitName = save.unitName;
+            unit.unitType = save.unitType;
+            unit.shipType = save.shipType;
+            unit.currentTileCoord = save.currentTileCoord;
+            unit.movedThisTurn = save.movedThisTurn;
+            unit.isPlayerControlled = save.isPlayerControlled;
+            unit.haveAttackedThisTurn = save.haveAttackedThisTurn;
+            unit.followTarget = save.followtarget;
+            unit.hasMinedThisTurn = save.hasMinedThisTurn;
+            unit.currentMovePath = save.currentMovePath != null ? new List<Vector2Int>(save.currentMovePath) : new List<Vector2Int>();
+
+            if (TileManager.Instance != null)
+                unitGo.transform.position = TileManager.Instance.AxialToWorldCenter(save.currentTileCoord);
+            else
+                unitGo.transform.position = HexMath.AxialToWorldCenter_PointTop(save.currentTileCoord, hexSize);
+
+            unitGo.transform.SetParent(parent, false);
+            unitGo.name = string.IsNullOrEmpty(unit.unitName) ? "Unit" : unit.unitName;
+
+            unit.ApplyRuntimeVisuals();
+            if (TileManager.Instance != null && TileManager.Instance.HasBuiltLookup)
+                unit.StartInitUnitCorutine();
+        }
+
+        EditorUtility.DisplayDialog("Units loaded", $"Loaded {wrapper.units.Count} unit(s) from {path}", "OK");
     }
 
     void ImportTemplateFromFile()

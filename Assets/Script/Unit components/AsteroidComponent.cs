@@ -14,8 +14,8 @@ public class AsteroidComponent : MonoBehaviour
     public string asteroidID;   //Used when saving insted of using a object reference.
     public string asteroidName; //For desplying in UI. Set in inspector.
     public Vector2Int currentTileCoord; //Set when the asteroid is spawned. Used to find the asteroid when loading a save file.
-    public string asteroidTileSatusSave = "hex_asteridTemp.json"; //created when player first show the planet. Then stays the same.
-    public string unitsOnSurfaceSave = "units_on_surface.json"; //created when player first show the planet. Then stays the same.
+    public string asteroidTileSatusSave; //created when player first show the planet. Then stays the same.
+    public string unitsOnSurfaceSave; //created when player first show the planet. Then stays the same.
     public Sprite asteroidIcon; //For desplying in UI. Set in inspector.
 
     private void Awake()

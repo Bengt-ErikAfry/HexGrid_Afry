@@ -74,8 +74,8 @@ public class MiningComponent : MonoBehaviour
 
     void HandleMoveToAsteroid()
     {
-        Vector2Int minerCurrentPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(this.transform.position);
-        Vector2Int asteroidFieldCurrentPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(currentMission.targetAsteroidField.transform.position);
+        Vector2Int minerCurrentPos = TileManager.Instance.WorldToAxial(this.transform.position);
+        Vector2Int asteroidFieldCurrentPos = TileManager.Instance.WorldToAxial(currentMission.targetAsteroidField.transform.position);
 
         Debug.Log($"Miner: {this.gameObject.name} HandelMoveToAsteroid called at pos {minerCurrentPos} asteroid pos {asteroidFieldCurrentPos}");
 
@@ -89,7 +89,7 @@ public class MiningComponent : MonoBehaviour
             //Can move
 
             //Set path
-            HexGridManager.Instance.CalculatePath(currentMission.targetAsteroidField.transform.position);
+            //HexGridManager.Instance.CalculatePath(currentMission.targetAsteroidField.transform.position);
 
             //Lock player input when unit moves
             GameStateMachine.Instance.SetState(GameplayStateId.BlockPlayerInput);
@@ -181,8 +181,8 @@ public class MiningComponent : MonoBehaviour
     {
         Debug.Log($"Miner: {this.gameObject.name} HandleReturnToMothership called");
 
-        Vector2Int minerCurrentPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(this.transform.position);
-        Vector2Int motherShipCurrentPos = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(GameManager.Instance.MotherShip.transform.position);
+        Vector2Int minerCurrentPos = TileManager.Instance.WorldToAxial(this.transform.position);
+        Vector2Int motherShipCurrentPos = TileManager.Instance.WorldToAxial(GameManager.Instance.MotherShip.transform.position);
 
         Debug.Log($"Miner: {this.gameObject.name} moves to motehrship minerCurrentPos {minerCurrentPos} motherShipCurrentPos {motherShipCurrentPos}");
 
@@ -217,7 +217,7 @@ public class MiningComponent : MonoBehaviour
             //Can move
 
             //Set path
-            HexGridManager.Instance.CalculatePath(GameManager.Instance.MotherShip.transform.position);
+            //HexGridManager.Instance.CalculatePath(GameManager.Instance.MotherShip.transform.position);
 
             //Lock player input when unit moves
             GameStateMachine.Instance.SetState(GameplayStateId.BlockPlayerInput);

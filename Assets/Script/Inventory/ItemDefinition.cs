@@ -21,6 +21,7 @@ public class ItemDefinition : ScriptableObject
     public int maxHealth = 100;
     public string description;
     public float size = 1;
+    public Color colorOnOreMap = Color.white;
 
     //Comon Module stats that all modules have.
     public int energyCost = 5;
@@ -79,7 +80,13 @@ public class ItemDefinition : ScriptableObject
     [Header("Storage")]
     public int storageSpace = 0;
 
+    [Header("SurvayArray")]
+    public int SurvayRange = 2;
+    public int SurvayRangeIncresePerBoost = 1;
+
     public HashSet<Vector2Int> blockedCells = new HashSet<Vector2Int>(); // fill externally if you have obstacles
+
+
 
     [ContextMenu("Generate Item ID")]
     public void EnsureItemId()
@@ -112,7 +119,8 @@ public enum ItemType
     Ship,
     Units,
     Weapon,
-    Module
+    Module,
+    Building
 }
 public enum AmmoType
 {

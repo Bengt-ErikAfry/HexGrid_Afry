@@ -195,6 +195,9 @@ public class InfoScreenManager : MonoBehaviour
     //Called from UI button INFO
     public void ShowInfoScreen()
     {
+        //Hide objectInorbit view
+        AsteroidManager.Instance.uintInOrbitView.transform.gameObject.SetActive(false);
+
         //Check if a unit is selected
         if (SelectionService.Instance.SelectedUnit == null)
         {
@@ -229,7 +232,7 @@ public class InfoScreenManager : MonoBehaviour
             else
             {
                 //Minable Object
-                MiningUIManager.Instance.ShowMinable(SelectionService.Instance.SelectedUnit.minableComponent);
+
             }
         }
     }
@@ -249,7 +252,19 @@ public class InfoScreenManager : MonoBehaviour
             GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
         }
 
-        UIManager.Instance.ActivateSelectedUnit();
+        if(AsteroidManager.Instance.currentAsteroidComponent != null)
+        {
+            //Show units in orbit view
+            AsteroidManager.Instance.uintInOrbitView.transform.gameObject.SetActive(true);
+
+            //Show Selected unit view
+            UIManager.Instance.ShowSelectedUnitView(SelectionService.Instance.SelectedUnit);
+        }
+        else
+        {
+            //Asteroid view not open.
+            UIManager.Instance.ActivateSelectedUnit();
+        }
     }
 
     public void HideAll()

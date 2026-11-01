@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static SaveManager;
+
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -22,111 +24,201 @@ public class PlaceOrbitalUnitState : IGameState
             UIManager.Instance.activeState.text = "Active state: PlaceOrbitalUnitState State";
         }
 
-        //Hide selected highligher
-        HexHighlighter.Instance.HideHighlight();
+        //Hide buttons
+        UIManager.Instance.HideAllUI();
     }
     // Exit State.
     public void Exit() { }
 
     public void OnTap(Vector2 screenPos)
     {
+        //Reset collections and highlights when player taps on the screen, so that player can select new unit or asteroid.
+        SelectionService.Instance.ClearSelection();
+        TileManager.Instance.ClearHighlightedTiles();
+        UIManager.Instance.HideStackView();
+
         Debug.Log("OnTap called.");
         if (CameraManager.Instance.isMovingCamera) return;
 
         var cam = Camera.main;
         Ray ray = cam.ScreenPointToRay(screenPos);
 
-        // (1) Hit everything along the ray. You can restrict with a layerMask if you have an "Enemy" layer.
-        // Example: LayerMask enemyMask = LayerMask.GetMask("Enemy");
-        // RaycastHit[] hits = Physics.RaycastAll(ray, 500f, enemyMask, QueryTriggerInteraction.Ignore);
+        // 1) Get physics hits along ray (3D colliders) — keep for debug/fallback
         RaycastHit[] hits = Physics.RaycastAll(ray, 500f, ~0, QueryTriggerInteraction.Ignore);
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
 
-        if (hits.Length == 0)
+        // Send ray to a plane at z=0 to get the world position of the tap.
+        Plane plane = new Plane(Vector3.forward, Vector3.zero);
+        if (!plane.Raycast(ray, out float enter))
         {
-            // clear selection
-            //SelectionService.Instance.ClearSelection();
+            Debug.LogWarning("Tap ray missed the gameplay plane.");
+            return;
+        }
+        Vector3 worldPos = ray.GetPoint(enter);
 
-            HexHighlighter.Instance.HighlightHexUnderScreenPosition(screenPos);
-            Debug.Log("after PlaceOrbitalUnitState invoke" + GameStateMachine.Instance.Current);
+        Debug.Log($"Tap at screenPos {screenPos}, worldPos {worldPos}, hits={hits.Length}");
 
-            Debug.Log("PlaceOrbitalUnitState OnTap at screenPos " + screenPos + " and Grid " + HexGridLinesBaker.Instance.GetGridPosFromWorldPos(HexHighlighter.Instance.highlightGO.transform.position) + " and WorldPos " + HexHighlighter.Instance.highlightGO.transform.position);
+        // Get the hex tile that was clicked on.
+        HexGrid_TilePrefab hexClicked = TileManager.Instance.GetTileFromWorldPosition(worldPos);
+        if (hexClicked == null)
+        {
+            // 1) player clicked outside tilegrid
 
-            //UIManager.Instance.HideSelectedUnitView();
+            Debug.Log("SelectState OnTap: clicked outside tile grid -> cleared selection/highlights.");
             return;
         }
 
-        // Sort closest to farthest — useful for resolving the clicked hex
-        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        // Compute authoritative axial coordinate for the clicked world position.
+        Vector2Int clickedCoord = TileManager.Instance.WorldToAxial(worldPos);
+        Debug.Log($"SelectState OnTap at TILE coord {clickedCoord} and WorldPos {worldPos}");
 
-        // (2) Determine the clicked hex using the closest hit point (or use your own method if you have one)
-        Vector3 clickPoint = hits[0].point;
-        var clickedHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(clickPoint); // <-- swap to your actual hex system
-
-        Debug.Log($"{hits[0].collider.gameObject.name} parent={hits[0].collider.transform.parent?.name} root={hits[0].collider.transform.root.name}");
-
-        // (3) Map each hit to its root Unit, then filter to units inside the same clicked hex
-        List<MiningObjectTileData> tileClickedHex = hits
-            .Select(h => h.collider.transform.GetComponent<MiningObjectTileData>())
-            .Where(u => u != null)
-            .Distinct() // prevent duplicates if a unit has multiple colliders
-            .Where(u => HexGridLinesBaker.Instance.GetGridPosFromWorldPos(u.transform.position) == clickedHex)
-            .ToList();
-
-        // (4) Fall back for cases where none of the Units reported in the hex (e.g., you hit ground first):
-        if (tileClickedHex.Count == 0)
+        // Find units located on the same hex (use GameManager authoritative list).
+        var unitsInClickedHex = new List<Unit>();
+        if (GameManager.Instance != null && GameManager.Instance.unitsList != null)
         {
-            var firstUnit = hits.Select(h => h.collider.transform.GetComponent<MiningObjectTileData>())
-                                .FirstOrDefault(u => u != null);
-            if (firstUnit != null)
-                tileClickedHex.Add(firstUnit);
+            unitsInClickedHex = GameManager.Instance.unitsList
+                .Where(u => u != null && TileManager.Instance.WorldToAxial(u.transform.position) == clickedCoord)
+                .Distinct()
+                .ToList();
         }
 
-        // (5) Use result
-        if (tileClickedHex.Count == 0)
+        // Case 2: empty tile (no asteroid and no unit)
+        if (unitsInClickedHex.Count == 0)
         {
-            //SelectionService.Instance.ClearSelection();
-        }
-        else if (tileClickedHex.Count == 1)
-        {
+            SelectionService.Instance.SetSelectedHex(worldPos);
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log("SelectState OnTap: empty tile -> selected hex and highlighted.");
 
-            MiningUIManager.Instance.RemoveUnitFromOrbit(tileClickedHex[0]);
-
-            //Highlight hex under selected unit
-            //HexHighlighter.Instance.HighlightHexUnderWorldPosition(tileClicked.transform.position);
-
-            // select unit via selection service
-            //SelectionService.Instance.SetSelectedUnit(tileClicked);
-
-            //Show Route if exsisting
-            /*if (tileClicked.routeComponent != null)
+            if (AsteroidManager.Instance.unitScriptToPlace.unitType == UnitType.Satelite)
             {
-                if (tileClicked.routeComponent.routeActions.Count > 0)
+                //Place a satelite
+                Debug.Log("Place Satelite.");
+                AsteroidManager.Instance.PlaceSateliteOnSurface(clickedCoord);
+            }
+            else
+            {
+                //Other unit.
+                Debug.Log("Place Other.");
+                //SaveManager.Instance.LoadSavedUnitById(AsteroidManager.Instance.unitScriptToPlace, GameManager.Instance.gameViewUnitsSaveFile, clickedCoord);
+            }
+
+            //Not used anymore when unit in orbit are no longer destroyed when asteroidview is loaded. Use unit script insted.
+            /*
+            //Get unit SaveData to read unittype and range.
+            SaveManager.UnitSaveData unitSaveData = SaveManager.Instance.GetUnitSaveDataById(AsteroidManager.Instance.unitToPlaceUnitId, GameManager.Instance.gameViewUnitsSaveFile);
+
+            if(unitSaveData == null)
+            {
+                Debug.Log("PlaceOrbitalUnitState: saveData for current unit missing.");
+                return;
+            }
+
+            UnitType unitToPlaceUnitType = unitSaveData.unitType;
+
+            if(unitToPlaceUnitType == null)
+            {
+                Debug.LogWarning("PlaceOrbitalUnitState: UnitType missing.");
+                return;
+            }
+
+            // The saved moduleRuntimeList is not a list only saves strings. Need convert it to a list to be abel to look thrue it.
+            //var savedModules = unitSaveData.moduleRuntimeList ?? new List<ItemInstanceSaveData>();
+            var runtimeModules = new List<ItemInstance>();
+
+            foreach (var saved in unitSaveData.moduleRuntimeList)
+            {
+                if (saved == null)
                 {
-                    HexPathClickControllerPointTop_LineStrip.Instance.CalculateRoutePath(tileClicked);
+                    runtimeModules.Add(new ItemInstance
+                    {
+                        ItemDefinition = null,
+                        isOnline = false,
+                        isBroken = false,
+                        isDestroyd = false
+                    });
+                    continue;
                 }
-            }*/
 
-            Debug.Log($"place unit mode selected and {tileClickedHex[0].gameObject.name} is clicked.");
+                var def = SaveManager.Instance.ResolveSavedItemDefinition(saved.itemId);
 
-            /*      ----Remove when new mining system is ok
-            // start mining mission using selected unit
-            var sel = SelectionService.Instance.SelectedUnit;
-            if (sel != null && sel.miningComponent != null)
+                runtimeModules.Add(new ItemInstance
+                {
+                    ItemDefinition = def,
+                    currentPowerUpBoost = saved.currentPowerUpBoost,
+                    isOnline = saved.isOnline,
+                    isBroken = saved.isBroken,
+                    isDestroyd = saved.isDestroyed
+                });
+            }
+
+            if (unitToPlaceUnitType == UnitType.Satelite)
             {
-                sel.miningComponent.StartMiningMission(unit.asteroidFieldComponent);
-                sel.miningComponent.OnTurn();
-            }*/
+                //Place a satelite
+                Debug.Log("Place Satelite.");
+                AsteroidManager.Instance.PlaceSateliteOnSurface(clickedCoord, runtimeModules);
+            }
+            else
+            {
+                //Other unit.
+                Debug.Log("Place Other.");
+                SaveManager.Instance.LoadSavedUnitById(AsteroidManager.Instance.unitToPlaceUnitId, GameManager.Instance.gameViewUnitsSaveFile, clickedCoord);
+            }
+            */
+            return;
         }
-        else
+
+        // Case 5 or multiple units: tile with multiple units OR asteroid + one or more units -> show stack
+        if (unitsInClickedHex.Count > 1 || (unitsInClickedHex.Count >= 1))
         {
-            //UIManager.Instance.ShowStackView(tileClickedHex, screenPos);
-
-            var defaultUnit = tileClickedHex
-                .OrderBy(u => Vector3.SqrMagnitude(u.transform.position - clickPoint))
-                .First();
-
-            // do not auto-set selection here; stack view will let player pick
+            UIManager.Instance.ShowStackView(unitsInClickedHex,null, screenPos);
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log("SelectState OnTap: multiple units or units+asteroid -> showing stack view.");
+            return;
         }
+
+        // Case 3: single unit (no asteroid)
+        if (unitsInClickedHex.Count == 1)
+        {
+            var unit = unitsInClickedHex[0];
+            SelectionService.Instance.SetSelectedUnit(unit);
+
+            // Show Route if existing
+            if (unit.routeComponent != null && unit.routeComponent.routeActions.Count > 0)
+            {
+              //  HexGridManager.Instance.CalculateRoutePath(unit);
+            }
+
+            TileManager.Instance.HighlightTileWorldPosition(worldPos);
+            Debug.Log($"SelectState OnTap: single unit '{unit.unitName}' selected.");
+            return;
+        }
+
+        // Fallback: highlight tile
+        TileManager.Instance.HighlightTileWorldPosition(worldPos);
+    }
+
+    private static ItemDefinition ResolveSavedItemDefinition(string itemId)
+    {
+        if (string.IsNullOrWhiteSpace(itemId))
+            return null;
+
+        if (ItemDatabase.Instance != null)
+        {
+            var dbDef = ItemDatabase.Instance.GetById(itemId);
+            if (dbDef != null)
+                return dbDef;
+        }
+
+        // Important: do NOT restrict to a single folder like "ItemDefinitions".
+        // Your modules live under Resources/Modules, Resources/Ships, etc.
+        var allDefs = Resources.LoadAll<ItemDefinition>("");
+        foreach (var def in allDefs)
+        {
+            if (def != null && def.itemId == itemId)
+                return def;
+        }
+
+        return null;
     }
 
     public void OnDrag(Vector2 delta)

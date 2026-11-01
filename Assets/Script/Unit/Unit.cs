@@ -36,6 +36,7 @@ public class Unit : MonoBehaviour
     public bool hasMinedThisTurn;
     public UnitLocationType unitLocationType = UnitLocationType.GameView;
     public List<Vector2Int> currentMovePath = new(); //used in movementManager to move unit.
+    public bool isFreshlyCreatedUnit = false;
 
 
     [Header("Reference")]
@@ -89,10 +90,82 @@ public class Unit : MonoBehaviour
         }
 
 
-        StartCoroutine(InitUnit()); //To register for FOG OF WAR to work.
+        StartCoroutine(InitUnit(isFreshlyCreatedUnit)); //To register for FOG OF WAR to work.
     }
-    public IEnumerator InitUnit()
+
+    //HexLayoutEditor.cs can obevisly not run a corutine!!!
+    public void ApplyRuntimeVisuals()
     {
+        if (grafics == null)
+        {
+            if (transform.childCount > 0)
+                grafics = transform.GetChild(0);
+        }
+
+        if (grafics == null)
+        {
+            // Some spawned units do not have the standard child structure yet; continue without failing.
+            return;
+        }
+
+        var spr = grafics.GetComponent<SpriteRenderer>();
+        if (spr == null)
+        {
+            spr = GetComponentInChildren<SpriteRenderer>();
+            if (spr != null)
+                grafics = spr.transform;
+        }
+
+        if (spr != null)
+        {
+            GameObject managerObject = GameObject.Find("Managers");
+            ShipClassesManager shipClassesManager = managerObject.GetComponent<ShipClassesManager>();
+            if (shipClassesManager == null)
+            {
+                Debug.LogWarning($"ApplyRuntimeVisuals: ShipClassesManager.Instance is null for {name} (shipType={shipType}).");
+                return;
+            }
+
+            Sprite sprite = shipClassesManager.GetShipIcon(shipType);
+            if (sprite == null && shipType != ShipType.None)
+                sprite = shipClassesManager.GetHullIcon(shipType);
+            if (sprite == null && shipClassesManager.shipClasses != null && shipClassesManager.shipClasses.Count > 0)
+                sprite = shipClassesManager.shipClasses[0].hullIcon;
+
+            if (sprite != null)
+                spr.sprite = sprite;
+            else
+                Debug.LogWarning($"ApplyRuntimeVisuals: no ship icon found for shipType={shipType} on {name}.");
+        }
+
+        if (string.IsNullOrEmpty(unitName) && string.IsNullOrEmpty(unitId))
+            gameObject.name = "Unit";
+        else if (string.IsNullOrEmpty(unitName))
+            gameObject.name = "Unit (" + unitId + ")";
+        else if (string.IsNullOrEmpty(unitId))
+            gameObject.name = unitName;
+        else
+            gameObject.name = unitName + " (" + unitId + ")";
+    }
+
+    public void StartInitUnitCorutine()
+    {
+        Debug.Log("StartInitUnitCorutine called for unit: " + this.name);
+        ApplyRuntimeVisuals();
+
+        if (TileManager.Instance == null || !TileManager.Instance.HasBuiltLookup)
+        {
+            return;
+        }
+
+        StartCoroutine(InitUnit(false));
+    }
+
+    public IEnumerator InitUnit(bool isFreshlyCreatedUnit)
+    {
+        Debug.Log("InitUnit coroutine started for unit: " + this.name);
+        ApplyRuntimeVisuals();
+
         // Wait until TileManager exists and has built its lookup
         yield return new WaitUntil(() => TileManager.Instance != null && TileManager.Instance.HasBuiltLookup);
 
@@ -111,10 +184,25 @@ public class Unit : MonoBehaviour
         currentTileCoord = TileManager.Instance.WorldToAxial(this.transform.position);
 
         //Set ship icon in selection view
-        grafics.GetComponent<SpriteRenderer>().sprite = ShipClassesManager.Instance.GetShipIcon(shipType);
+        if (grafics != null)
+        {
+            var sr = grafics.GetComponent<SpriteRenderer>();
+            if (sr != null && ShipClassesManager.Instance != null)
+            {
+                var sprite = ShipClassesManager.Instance.GetShipIcon(shipType);
+                if (sprite != null)
+                    sr.sprite = sprite;
+            }
+        }
 
         //GameObject name for debuging
         this.gameObject.name = unitName + " (" + unitId + ")";
+
+        if (isFreshlyCreatedUnit)
+        {
+            if (ModuleManager.Instance != null)
+                ModuleManager.Instance.SetUpShipStats(this);
+        }
     }
 
     public IEnumerator DoEnemyTurn(System.Action onFinished)
@@ -126,7 +214,7 @@ public class Unit : MonoBehaviour
         CameraManager.Instance.CenterOnSelectedObject();
 
         //Hide Highlighter
-        HexHighlighter.Instance.HideHighlight();
+        //HexHighlighter.Instance.HideHighlight();
 
         //If enemy have targets
         if (otherInDetectionRange.Count > 0)
@@ -137,7 +225,7 @@ public class Unit : MonoBehaviour
             target_Unit_Script = otherInDetectionRange[0].GetComponent<Unit>();
 
             //set path to player
-            HexGridManager.Instance.CalculatePath(otherInDetectionRange[0].transform.position);
+            //HexGridManager.Instance.CalculatePath(otherInDetectionRange[0].transform.position);
 
             // movement — updated to new MovementManager API
             var path = SelectionService.Instance.SelectedUnit.currentMovePath;
@@ -181,7 +269,7 @@ public class Unit : MonoBehaviour
                 if (this.transform.position != target_LastKnownPos)
                 {
                     //set path to last known location
-                    HexGridManager.Instance.CalculatePath(target_LastKnownPos);
+                    //HexGridManager.Instance.CalculatePath(target_LastKnownPos);
 
                     // movement — updated to new MovementManager API
                     var path = SelectionService.Instance.SelectedUnit.currentMovePath;
@@ -313,7 +401,8 @@ public enum UnitType
     CargoHualer,
     EnemyShip,
     Probe,
-    Satelite
+    Satelite,
+    Building
 }
 public enum UnitLocationType
 {

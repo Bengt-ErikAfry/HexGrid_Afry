@@ -20,8 +20,8 @@ public class PickupAction : RouteAction
         }
 
         // Ensure same hex as owner
-        Vector2 ownerHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(owner.transform.position);
-        Vector2 inventoryHex = HexGridLinesBaker.Instance.GetGridPosFromWorldPos(pickupInventory.transform.position);
+        Vector2 ownerHex = TileManager.Instance.WorldToAxial(owner.transform.position);
+        Vector2 inventoryHex = TileManager.Instance.WorldToAxial(pickupInventory.transform.position);
         if (ownerHex != inventoryHex)
         {
             Debug.Log($"PickupAction: Owner {owner.unitName} is not on the same hex as the pickup inventory. Owner hex: {ownerHex}, Inventory hex: {inventoryHex}");
