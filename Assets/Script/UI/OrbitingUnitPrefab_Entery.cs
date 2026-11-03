@@ -112,13 +112,15 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
 
                     GameObject unitGo = Instantiate(miningUnit.item.ItemDefinition.craftingResult, AsteroidManager.Instance.unitInOrbitListContent);
                     GameManager.Instance.spawnedInventoryUnits.Add(unitGo);
+            
                     Unit newUnitScript = unitGo.GetComponent<Unit>();
                     newUnitScript.unitName = miningUnit.item.ItemDefinition.itemName;
+                    newUnitScript.grafics.GetComponent<SpriteRenderer>().sprite = miningUnit.item.ItemDefinition.icon;
                     newUnitScript.shipRuntimeData = new ShipRuntimeData
                     {
                         itemDefinition = miningUnit.item.ItemDefinition
                     };
-                    AsteroidManager.Instance.unitScriptToPlace = enteryUnitScript;
+                    AsteroidManager.Instance.unitScriptToPlace = newUnitScript;
                     AsteroidManager.Instance.itemSourceShip = enteryUnitScript;       // add this field to Unit
 
                     go.GetComponent<OrbitingUnitPrefab_Entery>().SetUnit(newUnitScript);

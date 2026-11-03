@@ -451,7 +451,8 @@ public class UIManager : MonoBehaviour
             ResetUI();
 
             selectedUnitView.SetActive(true);
-            selectedUnitImage.sprite = ShipClassesManager.Instance.GetShipIcon(unit_script.shipType);
+            selectedUnitImage.sprite = unit.shipRuntimeData.itemDefinition.icon;
+            //selectedUnitImage.sprite = ShipClassesManager.Instance.GetShipIcon(unit_script.shipType);
             selectedUnitNameText.text = unit_script.unitName;
             selectedUnitQuickStatsText.text = $"Movment{unit_script.movedThisTurn} / {unit_script.shipRuntimeData.currentMovmentRange}\n Have Attacked: {unit_script.haveAttackedThisTurn}";
         }

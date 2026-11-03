@@ -267,6 +267,9 @@ public class AsteroidManager : MonoBehaviour
             Debug.LogWarning("Could not find the building item in the source inventory.");
         }
 
+        //Add building to the surface
+        TileManager.Instance.AddUnitToTile(unitScriptToPlace, coordClicked);
+
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
     }
 

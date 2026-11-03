@@ -187,12 +187,7 @@ public class Unit : MonoBehaviour
         if (grafics != null)
         {
             var sr = grafics.GetComponent<SpriteRenderer>();
-            if (sr != null && ShipClassesManager.Instance != null)
-            {
-                var sprite = ShipClassesManager.Instance.GetShipIcon(shipType);
-                if (sprite != null)
-                    sr.sprite = sprite;
-            }
+            sr.sprite = shipRuntimeData.itemDefinition.icon;
         }
 
         //GameObject name for debuging

@@ -5595,7 +5595,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1727969721}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.99996704
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -23413,6 +23413,10 @@ PrefabInstance:
       propertyPath: currentMovePath.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4375738509355883776, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
+      propertyPath: shipRuntimeData.itemDefinition
+      value: 
+      objectReference: {fileID: 11400000, guid: 2d9f7acf7dcd0124eb001dc65552cbdc, type: 2}
     - target: {fileID: 5627212664818127557, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.330127
@@ -32688,6 +32692,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e5b832ab649861640b7ade216816e555, type: 3}
+--- !u!1 &1462390854
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1462390855}
+  m_Layer: 0
+  m_Name: Buildings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1462390855
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462390854}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.33008, y: 1.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1467931721
 GameObject:
   m_ObjectHideFlags: 0
@@ -32772,6 +32807,10 @@ PrefabInstance:
       propertyPath: currentMovePath.Array.size
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4375738509355883776, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
+      propertyPath: shipRuntimeData.itemDefinition
+      value: 
+      objectReference: {fileID: 11400000, guid: 2d9f7acf7dcd0124eb001dc65552cbdc, type: 2}
     - target: {fileID: 5627212664818127557, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.330127
@@ -33485,6 +33524,7 @@ MonoBehaviour:
   gameViewAsteroidsSaveFile: gameViewAsteroidsSave.json
   UnitsInOrbit: {fileID: 500157335}
   unitInGameview: {fileID: 946487650}
+  buildings: {fileID: 1462390855}
   spawnedInventoryUnits: []
   expandedUnit: {fileID: 0}
 --- !u!114 &1511860459
@@ -37352,7 +37392,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000043498872}
+  m_AnchoredPosition: {x: 0, y: 0.023671225}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1642706531
@@ -46861,6 +46901,7 @@ MonoBehaviour:
   unitScriptToPlace: {fileID: 0}
   asteroidBackgroundRenderer: {fileID: 41021340}
   isOreMapDisplayed: 0
+  itemSourceShip: {fileID: 0}
   unitsInOrbit: []
 --- !u!4 &2105822833 stripped
 Transform:
@@ -52030,4 +52071,5 @@ SceneRoots:
   - {fileID: 946487650}
   - {fileID: 500157335}
   - {fileID: 134101426}
+  - {fileID: 1462390855}
   - {fileID: 1937141063}

@@ -928,4 +928,23 @@ public class TileManager : MonoBehaviour
         }
         return false;
     }
+
+    public void AddUnitToTile(Unit unit, Vector2Int axial)
+    {
+        if (unit == null) return;
+        if (!tileLookup.ContainsKey(axial))
+        {
+            Debug.LogWarning($"AddUnitToTile: no tile found at axial {axial}. Cannot add unit {unit.name}.");
+            return;
+        }
+        // Update the unit's current tile coordinate
+        unit.currentTileCoord = axial;
+        // Optionally, you can also update the unit's world position to match the tile center
+        var worldPos = AxialToWorldCenter(axial);
+        unit.transform.position = new Vector3(worldPos.x, worldPos.y, unit.transform.position.z);
+        Debug.Log($"AddUnitToTile: added unit {unit.name} to tile at axial {axial} (world pos {worldPos}).");
+    
+        //Move unit to correct herarcy place
+        unit.transform.SetParent(GameManager.Instance.buildings, true);
+    }
 }
