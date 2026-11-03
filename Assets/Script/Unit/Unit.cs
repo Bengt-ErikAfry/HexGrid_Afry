@@ -13,6 +13,7 @@ public class Unit : MonoBehaviour
     public string unitName = "Unit";
     public UnitType unitType;
     public ShipType shipType;   // Deside what icon in selection view to use. Also used for ship stats.
+    public BuildingType buildingType; // If this unit is a building, specify its type.
     public Vector2Int currentTileCoord;
     public int movedThisTurn = 0;
     private Transform col_DetectionRange;
@@ -404,5 +405,10 @@ public enum UnitLocationType
     GameView,
     MinableObject,
     Outpost
+}
+public enum BuildingType
+{
+    None,
+    MiningOutpost
 }
 

@@ -943,8 +943,33 @@ public class TileManager : MonoBehaviour
         var worldPos = AxialToWorldCenter(axial);
         unit.transform.position = new Vector3(worldPos.x, worldPos.y, unit.transform.position.z);
         Debug.Log($"AddUnitToTile: added unit {unit.name} to tile at axial {axial} (world pos {worldPos}).");
-    
+
         //Move unit to correct herarcy place
         unit.transform.SetParent(GameManager.Instance.buildings, true);
+
+        if (unit.buildingType == BuildingType.MiningOutpost)
+        {
+            if (AsteroidManager.Instance.currentAsteroidComponent == null)
+            {
+                Debug.LogWarning($"AddUnitToTile: currentAsteroidComponent is null. Cannot set mining outpost on tile {axial} for unit {unit.name}.");
+                return;
+            }
+
+            MinableComponent asteroidMinabelComponent = AsteroidManager.Instance.currentAsteroidComponent.GetComponent<MinableComponent>();
+            if (asteroidMinabelComponent != null)
+            {
+                Debug.LogWarning("AddUnitToTile: asteroid do not contain a minabelobject");
+                return;
+            }
+
+            //asteroidMinabelComponent.currentAvalibuleMinableResourceList
+            /*
+                .GetComponent<MinableComponent>();
+            else if (AsteroidManager.Instance.currentAsteroidComponent.GetTileAtCoord(axial)
+                .GetComponent<MinableComponent>() != null)
+            {
+                //unit.minableComponent.SetMiningOutpostOnTile(axial);
+            }*/
+        }
     }
 }

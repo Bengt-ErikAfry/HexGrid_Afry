@@ -10,12 +10,6 @@ using UnityEditor;
 [DisallowMultipleComponent]
 public class MinableComponent : MonoBehaviour
 {
-    //[Header("Tiles")]
-    //public List<TileData> tilesData = new List<TileData>();
-
-    //public Sprite backgroundSprite;
-    //public int scrollLimit;
-
     [Header("Resource")]
     [SerializeField]
     public Sprite oreMap;
@@ -25,6 +19,8 @@ public class MinableComponent : MonoBehaviour
     public int storedAmount = 0;     // produced and ready for pickup (via outposts)
     public float veinsAmount = 0;
     public float patchesAmount = 0;
+
+    public List<InventoryItemAmount> currentAvalibuleMinableResourceList = new List<InventoryItemAmount>();
 }
     /*
     // Missing multiplier used by ExtractUsingTool — added here.
