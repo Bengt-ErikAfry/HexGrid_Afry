@@ -8,6 +8,8 @@ public class HexGrid_TilePrefab : MonoBehaviour
     public int tileIndexCol;
     [Header("Ore data")]
     public float oreAmount;
+    public float ironOreAmount;
+    public float copperOreAmount;
     public TileVisibilityState tileVisibilityState = TileVisibilityState.Unexplored;
     public GameObject tileHighlightGameObject;
     public GameObject tileVisibleStateGameObject;

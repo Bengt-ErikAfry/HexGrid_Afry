@@ -934,6 +934,8 @@ public class SaveManager : MonoBehaviour
         public string asteroidName;
         public Vector2Int currentTileCoord;
         public string asteroidTileSatusSave;
+        public string asteroidTemplateFile;
+        public string asteroidRuntimeSaveFile;
         public string unitsOnSurfaceSave; // Filename for saved units on the asteroid surface
         public string asteroidSpritePath; // Reference to the asteroid's sprite (if needed)
     }
@@ -990,6 +992,8 @@ public class SaveManager : MonoBehaviour
                 asteroidName = a.asteroidName,
                 currentTileCoord = a.currentTileCoord,
                 asteroidTileSatusSave = a.asteroidTileSatusSave,
+                asteroidTemplateFile = a.asteroidTemplateFile,
+                asteroidRuntimeSaveFile = a.asteroidRuntimeSaveFile,
                 unitsOnSurfaceSave = a.unitsOnSurfaceSave,
 
                 asteroidSpritePath = a.asteroidIcon != null
@@ -1117,6 +1121,8 @@ public class SaveManager : MonoBehaviour
         runtimeAsteroid.asteroidName = savedAsteroid.asteroidName;
         runtimeAsteroid.currentTileCoord = savedAsteroid.currentTileCoord;
         runtimeAsteroid.asteroidTileSatusSave = savedAsteroid.asteroidTileSatusSave;
+        runtimeAsteroid.asteroidTemplateFile = savedAsteroid.asteroidTemplateFile;
+        runtimeAsteroid.asteroidRuntimeSaveFile = savedAsteroid.asteroidRuntimeSaveFile;
         runtimeAsteroid.unitsOnSurfaceSave = savedAsteroid.unitsOnSurfaceSave;
     }
 

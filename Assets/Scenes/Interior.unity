@@ -836,6 +836,7 @@ MonoBehaviour:
   unitName: Cargo Hualer 2
   unitType: 0
   shipType: 0
+  buildingType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
   detectionRange: 5
@@ -2095,6 +2096,37 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e5b832ab649861640b7ade216816e555, type: 3}
+--- !u!1 &76107111
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 76107112}
+  m_Layer: 0
+  m_Name: GameViewAsteroidContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &76107112
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76107111}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &80906800
 GameObject:
   m_ObjectHideFlags: 0
@@ -5595,7 +5627,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1727969721}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99996704
+  m_Size: 0.9999398
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -15377,6 +15409,7 @@ MonoBehaviour:
   unitName: Asteroid Field
   unitType: 2
   shipType: 0
+  buildingType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
   detectionRange: 0
@@ -15795,6 +15828,7 @@ MonoBehaviour:
   storedAmount: 0
   veinsAmount: 0
   patchesAmount: 0
+  currentAvalibuleMinableResourceList: []
 --- !u!4 &662139923 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2275307062788586400, guid: e5b832ab649861640b7ade216816e555, type: 3}
@@ -20461,6 +20495,7 @@ MonoBehaviour:
   unitName: Asteroid
   unitType: 1
   shipType: 0
+  buildingType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
   detectionRange: 0
@@ -20581,8 +20616,15 @@ MonoBehaviour:
   asteroidName: 
   currentTileCoord: {x: 0, y: 0}
   asteroidTileSatusSave: 
+  asteroidTemplateFile: 
+  asteroidRuntimeSaveFile: 
   unitsOnSurfaceSave: 
   asteroidIcon: {fileID: 0}
+  unitsOnSurface: []
+  runtimeState:
+    asteroidId: 
+    templateFile: 
+    tiles: []
 --- !u!114 &928467291
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20606,6 +20648,7 @@ MonoBehaviour:
   storedAmount: 0
   veinsAmount: 1
   patchesAmount: 2
+  currentAvalibuleMinableResourceList: []
 --- !u!4 &930302992 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2275307062788586400, guid: e5b832ab649861640b7ade216816e555, type: 3}
@@ -33524,6 +33567,7 @@ MonoBehaviour:
   gameViewAsteroidsSaveFile: gameViewAsteroidsSave.json
   UnitsInOrbit: {fileID: 500157335}
   unitInGameview: {fileID: 946487650}
+  asteroidsInGameView: {fileID: 0}
   buildings: {fileID: 1462390855}
   spawnedInventoryUnits: []
   expandedUnit: {fileID: 0}
@@ -37392,7 +37436,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.023671225}
+  m_AnchoredPosition: {x: 0, y: 0.00003965666}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1642706531
@@ -40973,6 +41017,7 @@ MonoBehaviour:
   unitName: Miner
   unitType: 0
   shipType: 0
+  buildingType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
   detectionRange: 3
@@ -44780,6 +44825,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2002812802}
   m_CullTransparentMesh: 1
+--- !u!1 &2004487791
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2004487792}
+  m_Layer: 0
+  m_Name: GameViewUnitContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2004487792
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2004487791}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2006089975
 GameObject:
   m_ObjectHideFlags: 0
@@ -46896,6 +46972,8 @@ MonoBehaviour:
   currentMinableComponent: {fileID: 0}
   uintInOrbitView: {fileID: 1912528003}
   unitInOrbitListContent: {fileID: 1642706530}
+  gameViewUnitContainer: {fileID: 2004487792}
+  gameViewAsteroidContainer: {fileID: 76107112}
   unitInOrbitPrefab: {fileID: 8139552234812692975, guid: dc42ffc7c488bc44db8a0b052924006a, type: 3}
   unitInOrbitInventoryUnitPrefab: {fileID: 648149056705125949, guid: d52d798b2a539c14281d5731b49be69b, type: 3}
   unitScriptToPlace: {fileID: 0}
@@ -51327,6 +51405,7 @@ MonoBehaviour:
   unitName: Pirate 1
   unitType: 0
   shipType: 0
+  buildingType: 0
   currentTileCoord: {x: 0, y: 0}
   movedThisTurn: 0
   detectionRange: 5
@@ -52070,6 +52149,8 @@ SceneRoots:
   - {fileID: 147991281}
   - {fileID: 946487650}
   - {fileID: 500157335}
+  - {fileID: 2004487792}
   - {fileID: 134101426}
+  - {fileID: 76107112}
   - {fileID: 1462390855}
   - {fileID: 1937141063}

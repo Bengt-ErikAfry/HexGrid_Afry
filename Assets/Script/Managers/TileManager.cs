@@ -48,7 +48,7 @@ public class TileManager : MonoBehaviour
     [Serializable]
     private class FogSave { public string layoutName; public List<FogCell> cells = new(); }
 
-    public void SaveFogState(string layoutName)
+    public void SaveTileState(string layoutName)
     {
         var save = new FogSave { layoutName = layoutName };
         foreach (var kv in tileLookup)
@@ -57,13 +57,13 @@ public class TileManager : MonoBehaviour
             var tile = kv.Value;
             save.cells.Add(new FogCell { x = coord.x, y = coord.y, state = tile.tileVisibilityState.ToString() });
         }
-        var path = Path.Combine(Application.persistentDataPath, $"fog_{layoutName}.json");
+        var path = Path.Combine(Application.persistentDataPath, $"TileState_{layoutName}.json");
         File.WriteAllText(path, JsonUtility.ToJson(save));
     }
 
-    public void LoadFogState(string layoutName)
+    public void LoadTileState(string layoutName)
     {
-        var path = Path.Combine(Application.persistentDataPath, $"fog_{layoutName}.json");
+        var path = Path.Combine(Application.persistentDataPath, $"TileState_{layoutName}.json");
         if (!File.Exists(path)) return;
         var json = File.ReadAllText(path);
         var save = JsonUtility.FromJson<FogSave>(json);
@@ -671,6 +671,13 @@ public class TileManager : MonoBehaviour
     ///// Add these types and methods inside the existing TileManager class (append near other public API methods)
 
     [Serializable]
+    public class RuntimeOreEntry
+    {
+        public string itemName;
+        public float amount;
+    }
+
+    [Serializable]
     public class RuntimeHexCell
     {
         public int x;
@@ -679,8 +686,20 @@ public class TileManager : MonoBehaviour
         public string prefabName;
         public string prefabPath;
         public string state;
+        public List<RuntimeOreEntry> ore = new();
         public float oreAmount;
         public float greenRatio;
+
+        public float GetOreAmountForItem(string itemName)
+        {
+            if (ore == null) return 0f;
+            foreach (var entry in ore)
+            {
+                if (string.Equals(entry.itemName, itemName, StringComparison.OrdinalIgnoreCase))
+                    return entry.amount;
+            }
+            return 0f;
+        }
     }
 
     [Serializable]
@@ -859,7 +878,15 @@ public class TileManager : MonoBehaviour
             var tile = SpawnTileAt(axial, prefab);
             if (tile != null)
             {
-                tile.oreAmount = c.oreAmount > 0f ? c.oreAmount : c.greenRatio;
+                float ironOre = c.GetOreAmountForItem("Iron Ore");
+                float copperOre = c.GetOreAmountForItem("Copper ore");
+                float oreValue = Mathf.Max(ironOre, copperOre);
+                if (oreValue <= 0f)
+                    oreValue = c.oreAmount > 0f ? c.oreAmount : c.greenRatio;
+
+                tile.ironOreAmount = ironOre;
+                tile.copperOreAmount = copperOre;
+                tile.oreAmount = oreValue;
                 created++;
             }
         }
@@ -891,7 +918,7 @@ public class TileManager : MonoBehaviour
         string layoutId = Path.GetFileNameWithoutExtension(filePath);
 
         // Apply saved fog state (if any)
-        LoadFogState(layoutId);
+        LoadTileState(layoutId);
 
         // Re-register only currently visible player units so hidden asteroid/game-view units do not reveal the new layout.
         if (GameManager.Instance != null)
@@ -947,29 +974,5 @@ public class TileManager : MonoBehaviour
         //Move unit to correct herarcy place
         unit.transform.SetParent(GameManager.Instance.buildings, true);
 
-        if (unit.buildingType == BuildingType.MiningOutpost)
-        {
-            if (AsteroidManager.Instance.currentAsteroidComponent == null)
-            {
-                Debug.LogWarning($"AddUnitToTile: currentAsteroidComponent is null. Cannot set mining outpost on tile {axial} for unit {unit.name}.");
-                return;
-            }
-
-            MinableComponent asteroidMinabelComponent = AsteroidManager.Instance.currentAsteroidComponent.GetComponent<MinableComponent>();
-            if (asteroidMinabelComponent != null)
-            {
-                Debug.LogWarning("AddUnitToTile: asteroid do not contain a minabelobject");
-                return;
-            }
-
-            //asteroidMinabelComponent.currentAvalibuleMinableResourceList
-            /*
-                .GetComponent<MinableComponent>();
-            else if (AsteroidManager.Instance.currentAsteroidComponent.GetTileAtCoord(axial)
-                .GetComponent<MinableComponent>() != null)
-            {
-                //unit.minableComponent.SetMiningOutpostOnTile(axial);
-            }*/
-        }
     }
 }

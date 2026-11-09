@@ -17,6 +17,8 @@ public class AsteroidManager : MonoBehaviour
     public MinableComponent currentMinableComponent;
     public Transform uintInOrbitView;
     public Transform unitInOrbitListContent;
+    public Transform gameViewUnitContainer; //A container for all units in gameview when asteroid view is open.
+    public Transform gameViewAsteroidContainer; //A container for all asteroids in gameview when asteroid view is open.
     public GameObject unitInOrbitPrefab;
     public GameObject unitInOrbitInventoryUnitPrefab;
     public Unit unitScriptToPlace;  // Use this insted of unitID.
@@ -62,7 +64,7 @@ public class AsteroidManager : MonoBehaviour
         // 2) Save current fog state before replacing the layout
         if (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.gameViewLayout))
         {
-            TileManager.Instance?.SaveFogState(GameManager.Instance.gameViewLayout);
+            TileManager.Instance?.SaveTileState(GameManager.Instance.gameViewLayout);
         }
 
         // 3) save all units in orbit.
@@ -70,27 +72,29 @@ public class AsteroidManager : MonoBehaviour
 
         // 3.1) set current asteroid
         currentAsteroidComponent = asteroid;
+        currentMinableComponent = asteroid.GetComponent<MinableComponent>();
 
         // 3.5) SaveAllUnits and SaveAllInventories to ensure the current state is preserved before switching views
-        SaveManager.Instance?.SaveAllUnits(GameManager.Instance.gameViewUnitsSaveFile, asteroid);
-        SaveManager.Instance?.SaveAllInventories();
+        //SaveManager.Instance?.SaveAllUnits(GameManager.Instance.gameViewUnitsSaveFile, asteroid);
+        //SaveManager.Instance?.SaveAllInventories();
 
         // 3.6) Save all Asteroid data
-        SaveManager.Instance?.SaveAllAsteroids(GameManager.Instance.gameViewAsteroidsSaveFile);
+        //SaveManager.Instance?.SaveAllAsteroids(GameManager.Instance.gameViewAsteroidsSaveFile);
 
         // 4) Hide all active game-view units and asteroids
-        SaveManager.Instance?.HideGameViewObjects(asteroid);
+        //SaveManager.Instance?.HideGameViewObjects(asteroid);
+        MoveAndHideAllGameviewUnits();
 
-        // 5) Load the asteroid interior layout
-        string path = Path.Combine(Application.streamingAssetsPath, asteroid.asteroidTileSatusSave);
-        TileManager.Instance?.LoadLayoutFromFile(path);
+        // 5) Load the asteroid template layout and runtime state from the asteroid's template/save files.
+        asteroid.LoadTemplateAndRuntimeState();
 
         // 6) Load asteroid-surface units
-        SaveManager.Instance?.LoadAsteroidViewObject(asteroid);
+        //SaveManager.Instance?.LoadAsteroidViewObject(asteroid);
+        ShowAsteroidUnits();
 
         // 7) Register only the units that are actually active in this view
         //    This prevents hidden game-view units from still contributing to fog/visibility.
-        if (GameManager.Instance != null)
+        /*if (GameManager.Instance != null)
         {
             foreach (var unit in GameManager.Instance.playerUnits)
             {
@@ -100,7 +104,7 @@ public class AsteroidManager : MonoBehaviour
                 int range = Mathf.CeilToInt(unit.detectionRange);
                 TileManager.Instance?.RegisterUnit(unit, range);
             }
-        }
+        }*/
 
         // 8) Remember the asteroid for restoring later
         //SaveCurrentAsteroid(asteroid);
@@ -131,18 +135,20 @@ public class AsteroidManager : MonoBehaviour
         // 2) Hide UI
         UIManager.Instance?.HideAllUI();
 
-        // 3) Save asteroid fog state before leaving
+        // 3) Save asteroid fog state before leaving and persist the mutable asteroid runtime state (ore + fog)
         if (currentAsteroidComponent != null)
         {
-            TileManager.Instance?.SaveFogState(currentAsteroidComponent.asteroidTileSatusSave);
+            currentAsteroidComponent.SaveTileRuntimeState();
+            //TileManager.Instance?.SaveTileState(currentAsteroidComponent.asteroidTileSatusSave);
         }
 
         // 3.5 ) SaveAllUnits and SaveAllInventories to ensure the current state is preserved before switching views
-        SaveManager.Instance?.SaveAllUnits(currentAsteroidComponent.unitsOnSurfaceSave);
-        SaveManager.Instance?.SaveAllInventories();
+        //SaveManager.Instance?.SaveAllUnits(currentAsteroidComponent.unitsOnSurfaceSave);
+        //SaveManager.Instance?.SaveAllInventories();
 
         // 4) Hide all active game-view units and asteroids
-        SaveManager.Instance?.HideAsteroidViewObjects();
+        //SaveManager.Instance?.HideAsteroidViewObjects();
+        MoveAndHideAllAsteroidUnits();
 
         // 4) Restore the original game-view layout
         if (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.gameViewLayout))
@@ -154,11 +160,12 @@ public class AsteroidManager : MonoBehaviour
         // 5) Restore fog state for the game view
         if (GameManager.Instance != null && !string.IsNullOrEmpty(GameManager.Instance.gameViewLayout))
         {
-            TileManager.Instance?.LoadFogState(GameManager.Instance.gameViewLayout);
+            TileManager.Instance?.LoadTileState(GameManager.Instance.gameViewLayout);
         }
 
         // 6) Re-show the original game-view objects
-        SaveManager.Instance?.LoadAllUnits(GameManager.Instance.gameViewUnitsSaveFile);
+        //SaveManager.Instance?.LoadAllUnits(GameManager.Instance.gameViewUnitsSaveFile);
+        ShowAllGameViewUnits();
 
         // 7) Re-register only active player units that are back in the game view
         if (GameManager.Instance != null)
@@ -193,6 +200,121 @@ public class AsteroidManager : MonoBehaviour
 
         Debug.Log("Returned from asteroid view.");
     }
+
+    public void MoveAndHideAllGameviewUnits()
+    {
+        if (GameManager.Instance == null) return;
+        foreach (var unit in GameManager.Instance.unitsList.ToList())
+        {
+            if (unit == null) continue;
+            if (!unit.gameObject.activeSelf) continue;
+            // Move the unit to the hidden parent
+            unit.transform.SetParent(gameViewUnitContainer, false);
+            unit.transform.localPosition = Vector3.zero; // Optional: Reset position if needed
+            unit.transform.GetChild(0).gameObject.SetActive(false); // Hide the visual representation
+            GameManager.Instance.unitsList.Remove(unit); // Remove from the main list to avoid duplicates
+            if(unit.isPlayerControlled)
+            {
+                GameManager.Instance.playerUnits.Remove(unit);
+            }
+            else
+            {
+                GameManager.Instance.enemyUnits.Remove(unit);
+            }
+        }
+        foreach (var asteroid in GameManager.Instance.asteroidsList.ToList())
+        {
+            if (asteroid == null) continue;
+            if (!asteroid.gameObject.activeSelf) continue;
+            // Move the unit to the hidden parent
+            asteroid.transform.SetParent(gameViewAsteroidContainer, false);
+            asteroid.transform.localPosition = Vector3.zero; // Optional: Reset position if needed
+            asteroid.transform.GetChild(0).gameObject.SetActive(false); // Hide the visual representation
+            GameManager.Instance.asteroidsList.Remove(asteroid); // Remove from the main list to avoid duplicates
+        }
+    }
+
+    public void MoveAndHideAllAsteroidUnits()
+    {
+        if (GameManager.Instance == null) return;
+        foreach (var unit in GameManager.Instance.unitsList)
+        {
+            if (unit == null) continue;
+            if (!unit.gameObject.activeSelf) continue;
+            // Move the unit to the hidden parent
+            unit.transform.SetParent(currentAsteroidComponent.transform, false);
+            unit.transform.localPosition = Vector3.zero; // Optional: Reset position if needed
+            unit.transform.GetChild(0).gameObject.SetActive(false); // Hide the visual representation
+            GameManager.Instance.unitsList.Remove(unit); // Remove from the main list to avoid duplicates
+        }
+    }
+
+    public void ShowAllGameViewUnits()
+    {
+        if (GameManager.Instance == null) return;
+        foreach (Transform unitTF in gameViewUnitContainer)
+        {
+            if (unitTF == null) continue;
+            if (!unitTF.gameObject.activeSelf) continue;
+
+            var unit = unitTF.gameObject.GetComponent<Unit>();
+            if (unit == null) continue;
+            // Move the unit back to the game view parent
+            unit.transform.SetParent(GameManager.Instance.unitInGameview, false);
+            unit.transform.localPosition = TileManager.Instance.AxialToWorldCenter(unit.currentTileCoord);
+            unit.transform.GetChild(0).gameObject.SetActive(true); // Show the visual representation
+            GameManager.Instance.unitsList.Add(unit); // Add back to the main list
+            if(unit.isPlayerControlled)
+            {
+                GameManager.Instance.playerUnits.Add(unit);
+            }
+            else
+            {
+                GameManager.Instance.enemyUnits.Add(unit);
+            }
+        }
+        foreach (Transform asteroidTF in gameViewAsteroidContainer)
+        {
+            if (asteroidTF == null) continue;
+            if (!asteroidTF.gameObject.activeSelf) continue;
+
+            var asteroid = asteroidTF.gameObject.GetComponent<AsteroidComponent>();
+            if (asteroid == null) continue;
+            // Move the unit back to the game view parent
+            asteroid.transform.SetParent(GameManager.Instance.asteroidsInGameView, false);
+            asteroid.transform.localPosition = TileManager.Instance.AxialToWorldCenter(asteroid.currentTileCoord);
+            asteroid.transform.GetChild(0).gameObject.SetActive(true); // Show the visual representation
+            GameManager.Instance.asteroidsList.Add(asteroid); // Add back to the main list
+        }
+    }
+
+    public void ShowAsteroidUnits()
+    {
+        if (currentAsteroidComponent == null)
+        {
+            Debug.LogWarning("ShowAsteroidUnits: currentAsteroidComponent is null.");
+            return;
+        }
+
+        foreach (var unit in currentAsteroidComponent.unitsOnSurface)
+        {
+            if (unit == null) continue;
+            if (!unit.gameObject.activeSelf) continue;
+            unit.transform.SetParent(GameManager.Instance.unitInGameview, false);
+            GameManager.Instance.unitsList.Add(unit);
+            if (unit.isPlayerControlled)
+            {
+                GameManager.Instance.playerUnits.Add(unit);
+            }
+            else
+            {
+                GameManager.Instance.enemyUnits.Add(unit);
+            }
+            unit.transform.localPosition = TileManager.Instance.AxialToWorldCenter(unit.currentTileCoord);
+            unit.transform.GetChild(0).gameObject.SetActive(true);
+        }
+    }
+
     public void UpdateUnitInOrbitView()
     {
         //Clear Lsit
@@ -270,7 +392,55 @@ public class AsteroidManager : MonoBehaviour
         //Add building to the surface
         TileManager.Instance.AddUnitToTile(unitScriptToPlace, coordClicked);
 
+        //Add to unit list
+        GameManager.Instance.unitsList.Add(unitScriptToPlace);
+
+        //add mining caoacity to the asteroid based on the building's mining module
+        UpdateMiningAmount();
+
+        //Update unitsinorbit UI
+        UpdateUnitInOrbitView();
+
+        //Set state back to selecting after placing the building
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
+    }
+
+    public void UpdateMiningAmount()
+    {
+        if (currentAsteroidComponent == null || unitScriptToPlace == null)
+        {
+            Debug.LogWarning("Cannot update mining amount: currentAsteroidComponent or unitScriptToPlace is null.");
+            return;
+        }
+
+        //Reset the list
+        currentMinableComponent.currentAvalibuleMinableResourceList.Clear();
+
+
+        //Set a temp variabel for ore
+        float totalIronOre = 0f;
+        float totalCopperOre = 0f;
+
+        //Get the amount of ore in all miningtiles.
+        foreach (var unit in GameManager.Instance.unitsList)
+        {
+            if (unit == null) continue;
+            if(unit.unitType != UnitType.Building) continue;
+            if(unit.shipRuntimeData == null) continue;
+            if(unit.shipRuntimeData.itemDefinition == null) continue;
+            if(unit.shipRuntimeData.itemDefinition.itemType == ItemType.MiningOutpost)
+            {
+                //Get the amount of ore in current tile.
+                if (currentAsteroidComponent.runtimeState.TryGetValue(unit.currentTileCoord, out var tileState))
+                {
+                    totalIronOre += tileState.ironOreAmount;
+                    totalCopperOre += tileState.copperOreAmount;
+                }
+            }
+        }
+
+        Debug.Log($"Total Iron Ore: {totalIronOre}, Total Copper Ore: {totalCopperOre}");
+        //Add the mining capacity of the building to the asteroid's total mining capacity.
     }
 
     public void ToggleOreMap()

@@ -60,7 +60,7 @@ public class BoardingManager : MonoBehaviour
 
         //Load the interior ship layout into the hexgrid.
         string path = Path.Combine(Application.streamingAssetsPath, "hex_ShipIntrior_test.json");
-        TileManager.Instance.SaveFogState("hex_20Radius_Full");
+        TileManager.Instance.SaveTileState("hex_20Radius_Full");
         TileManager.Instance.LoadLayoutFromFile(path);
     }
 
