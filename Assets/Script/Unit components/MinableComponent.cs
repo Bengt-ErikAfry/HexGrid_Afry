@@ -21,7 +21,7 @@ public class MinableComponent : MonoBehaviour
     public float patchesAmount = 0;
 
     public List<InventoryItemAmount> currentAvalibuleMinableResourceList = new List<InventoryItemAmount>();
-}
+
     /*
     // Missing multiplier used by ExtractUsingTool — added here.
     [Tooltip("Multiplier applied to module mining speed when extracting from this minable.")]
@@ -32,7 +32,7 @@ public class MinableComponent : MonoBehaviour
     public event Action OnDepleted;
     public event Action OnProduced; // fired when outpost production added to storedAmount
     public event Action<Vector2Int> OnTileSurveyedByAxial; // axial (q,r)
-
+    */
     //[Header("HexGrid")]
     //public HexGridComponent hexGridComponent;   //Sets on awake.
 
@@ -48,162 +48,184 @@ public class MinableComponent : MonoBehaviour
             GameManager.Instance.OnNewTurn -= HandleNewTurn;
     }
 
+    
     public void Awake()
     {
-        /*
-        hexGridComponent = transform.GetChild(0).GetComponent<HexGridComponent>();
-        if(hexGridComponent == null )
+        foreach (var item in minableResourceList)
         {
-             Debug.LogError("HexGridComponent not found on child of MinableComponent for " + this.transform.parent.name);
+            if (item.item != null && item.amount > 0)
+            {
+                currentAvalibuleMinableResourceList.Add(item);
+            }
         }
-        
+
     }
 
+    
     // Called per player turn (Option A). Produces resources from outposts into storedAmount.
     private void HandleNewTurn()
     {
-        //ProduceFromOutposts();
+        Debug.Log($"MinableComponent.HandleNewTurn: producing from outposts for '{gameObject.name}'");
+        ProduceFromOutposts();
     }
 
-    // Unit-based extraction: compute extraction amount based on module mining speed and site multiplier.
-    // This is the operation used by MineAction for manual mining by a unit.
-    // Returns how many units were extracted from ground (not from storedAmount).
-    public int ExtractUsingTool(int moduleMiningSpeed)
+    // Produces resources from outposts into storedAmount.
+    private void ProduceFromOutposts()
     {
-        if (moduleMiningSpeed <= 0 || totalAmount <= 0) return 0;
+        //Get the list of units on surface.
 
-        int extracted = Mathf.FloorToInt(moduleMiningSpeed * deliverMultiplier);
-        extracted = Mathf.Max(0, extracted);
-        extracted = Mathf.Min(extracted, totalAmount);
-        totalAmount -= extracted;
+        //Go thrue the list and check if the unit is a mingingoutpost
 
-        if (totalAmount <= 0) OnDepleted?.Invoke();
+        //Get the tile from that unit pos
 
-        return extracted;
+        //Get the tile yeild and add it to the storedAmount
+
+        //If player are in the asteroid view of that minabelcomponent. show a +ore animation above the outpost unit.
+        //If player are in the gameview show a +ore animation above the asteroid.
     }
+}
 
-    // Units (or UI) can withdraw produced (storedAmount) that outposts produced.
-    // Returns how many units actually taken.
-    public int TryWithdrawStored(int amount)
+
+/*
+// Unit-based extraction: compute extraction amount based on module mining speed and site multiplier.
+// This is the operation used by MineAction for manual mining by a unit.
+// Returns how many units were extracted from ground (not from storedAmount).
+public int ExtractUsingTool(int moduleMiningSpeed)
+{
+    if (moduleMiningSpeed <= 0 || totalAmount <= 0) return 0;
+
+    int extracted = Mathf.FloorToInt(moduleMiningSpeed * deliverMultiplier);
+    extracted = Mathf.Max(0, extracted);
+    extracted = Mathf.Min(extracted, totalAmount);
+    totalAmount -= extracted;
+
+    if (totalAmount <= 0) OnDepleted?.Invoke();
+
+    return extracted;
+}
+
+// Units (or UI) can withdraw produced (storedAmount) that outposts produced.
+// Returns how many units actually taken.
+public int TryWithdrawStored(int amount)
+{
+    if (amount <= 0 || storedAmount <= 0) return 0;
+    int take = Mathf.Min(amount, storedAmount);
+    storedAmount -= take;
+    return take;
+}
+
+// Reveal by axial coordinate (q,r). Updates tilesData and raises event.
+public void RevealTileByAxial(Vector2Int axial)
+{
+    // find slot index that matches axial (q = col, r = row) — ensure the axial exists in data
+    int idx = tilesData.FindIndex(t => t.tileIndexCol == axial.x && t.tileIndexRow == axial.y);
+    if (idx < 0) return;
+
+    // Try to find a corresponding MiningObjectTileData instance in the scene (children of this Minable or elsewhere).
+    // We only change the visual fog GameObject; we do NOT modify the data model (tilesData) or fire events.
+    var views = MiningUIManager.Instance.tileParent.GetComponentsInChildren<MiningObjectTileData>(true);
+    foreach (var v in views)
     {
-        if (amount <= 0 || storedAmount <= 0) return 0;
-        int take = Mathf.Min(amount, storedAmount);
-        storedAmount -= take;
-        return take;
-    }
-
-    // Reveal by axial coordinate (q,r). Updates tilesData and raises event.
-    public void RevealTileByAxial(Vector2Int axial)
-    {
-        // find slot index that matches axial (q = col, r = row) — ensure the axial exists in data
-        int idx = tilesData.FindIndex(t => t.tileIndexCol == axial.x && t.tileIndexRow == axial.y);
-        if (idx < 0) return;
-
-        // Try to find a corresponding MiningObjectTileData instance in the scene (children of this Minable or elsewhere).
-        // We only change the visual fog GameObject; we do NOT modify the data model (tilesData) or fire events.
-        var views = MiningUIManager.Instance.tileParent.GetComponentsInChildren<MiningObjectTileData>(true);
-        foreach (var v in views)
+        if (v == null || v.tileData == null) continue;
+        if (v.tileData.tileIndexCol == axial.x && v.tileData.tileIndexRow == axial.y)
         {
-            if (v == null || v.tileData == null) continue;
-            if (v.tileData.tileIndexCol == axial.x && v.tileData.tileIndexRow == axial.y)
+            if (v.fogGO != null)
             {
-                if (v.fogGO != null)
-                {
-                    v.fogGO.SetActive(false);
-                }
-                // found the visual; stop searching
-                return;
+                v.fogGO.SetActive(false);
             }
+            // found the visual; stop searching
+            return;
         }
-
-        // If no visual instance was found, do nothing to data or events.
-        // (Optional) you can log for debugging:
-        // Debug.Log($"RevealTileByAxial: no instantiated tile view found for axial {axial} on Minable '{name}'.");
-
     }
 
-    public void SurvayTile(Vector2Int axial)
-    {
-        // find slot index that matches axial (q = col, r = row)
-        int idx = tilesData.FindIndex(t => t.tileIndexCol == axial.x && t.tileIndexRow == axial.y);
-        if (idx < 0) return;
-        var td = tilesData[idx];
-        if (td.isSurveyed) return; // already revealed
-        td.isSurveyed = true;
-        // notify listeners (UI, other systems)
-        OnTileSurveyedByAxial?.Invoke(axial);
-    }
+    // If no visual instance was found, do nothing to data or events.
+    // (Optional) you can log for debugging:
+    // Debug.Log($"RevealTileByAxial: no instantiated tile view found for axial {axial} on Minable '{name}'.");
 
-    // Convenience: reveal by world position (uses this minable's hexSize)
-    public void RevealTileByWorldPos(Vector3 worldPos)
-    {
-        var axial = HexMath.GetGridPosFromWorldPos(new Vector3(worldPos.x, worldPos.y, worldPos.z), hexSize);
-        RevealTileByAxial(axial);
-    }
+}
 
-    // Helper: get number of outposts currently active
-    public int GetOutpostCount()
+public void SurvayTile(Vector2Int axial)
+{
+    // find slot index that matches axial (q = col, r = row)
+    int idx = tilesData.FindIndex(t => t.tileIndexCol == axial.x && t.tileIndexRow == axial.y);
+    if (idx < 0) return;
+    var td = tilesData[idx];
+    if (td.isSurveyed) return; // already revealed
+    td.isSurveyed = true;
+    // notify listeners (UI, other systems)
+    OnTileSurveyedByAxial?.Invoke(axial);
+}
+
+// Convenience: reveal by world position (uses this minable's hexSize)
+public void RevealTileByWorldPos(Vector3 worldPos)
+{
+    var axial = HexMath.GetGridPosFromWorldPos(new Vector3(worldPos.x, worldPos.y, worldPos.z), hexSize);
+    RevealTileByAxial(axial);
+}
+
+// Helper: get number of outposts currently active
+public int GetOutpostCount()
+{
+    int c = 0;
+    // Count placed outposts from the tiles list (tiles contain TileData with outpost flags)
+    if (tilesData != null)
     {
-        int c = 0;
-        // Count placed outposts from the tiles list (tiles contain TileData with outpost flags)
-        if (tilesData != null)
+        foreach (var t in tilesData)
         {
-            foreach (var t in tilesData)
-            {
-                if (t == null) continue;
-                if (t.hasMiningOutpost && !t.hasAbandonMiningOutpost) c++;
-            }
+            if (t == null) continue;
+            if (t.hasMiningOutpost && !t.hasAbandonMiningOutpost) c++;
         }
-        return c;
     }
+    return c;
+}
 
 #if UNITY_EDITOR
-    // Context menu to populate tiles in editor so that tiles match the hex defined by worldRadius.
-    [ContextMenu("Populate Tiles From Radius")]
-    public void PopulateTilesFromRadiusEditor()
+// Context menu to populate tiles in editor so that tiles match the hex defined by worldRadius.
+[ContextMenu("Populate Tiles From Radius")]
+public void PopulateTilesFromRadiusEditor()
+{
+    // Build canonical cell list for the radius
+    var cells = HexMath.AxialRegion(worldRadius);
+    // Sort by ring distance then q then r - canonical ordering
+    cells.Sort((a, b) =>
     {
-        // Build canonical cell list for the radius
-        var cells = HexMath.AxialRegion(worldRadius);
-        // Sort by ring distance then q then r - canonical ordering
-        cells.Sort((a, b) =>
-        {
-            int da = Mathf.Max(Mathf.Abs(a.x), Mathf.Abs(a.y), Mathf.Abs(-a.x - a.y));
-            int db = Mathf.Max(Mathf.Abs(b.x), Mathf.Abs(b.y), Mathf.Abs(-b.x - b.y));
-            if (da != db) return da.CompareTo(db);
-            if (a.x != b.x) return a.x.CompareTo(b.x);
-            return a.y.CompareTo(b.y);
-        });
+        int da = Mathf.Max(Mathf.Abs(a.x), Mathf.Abs(a.y), Mathf.Abs(-a.x - a.y));
+        int db = Mathf.Max(Mathf.Abs(b.x), Mathf.Abs(b.y), Mathf.Abs(-b.x - b.y));
+        if (da != db) return da.CompareTo(db);
+        if (a.x != b.x) return a.x.CompareTo(b.x);
+        return a.y.CompareTo(b.y);
+    });
 
-        // Populate tilesData list to match the canonical cell list
-        tilesData = new List<TileData>(cells.Count);
-        foreach (var cell in cells)
+    // Populate tilesData list to match the canonical cell list
+    tilesData = new List<TileData>(cells.Count);
+    foreach (var cell in cells)
+    {
+        var td = new TileData
         {
-            var td = new TileData
-            {
-                tileIndexCol = cell.x,
-                tileIndexRow = cell.y,
-                isSurveyed = false,
-                hasMiningOutpost = false,
-                hasAbandonMiningOutpost = false,
-                oreAmount = 0f,
-                isPlayerTurnOver = false,
-                isBlocked = false
-                // other TileData fields keep their defaults
-            };
-            tilesData.Add(td);
-        }
-
-        EditorUtility.SetDirty(this);
-        Debug.Log($"Populated {tilesData.Count} mining TileData entries for Minable '{gameObject.name}' (radius {worldRadius}).");
+            tileIndexCol = cell.x,
+            tileIndexRow = cell.y,
+            isSurveyed = false,
+            hasMiningOutpost = false,
+            hasAbandonMiningOutpost = false,
+            oreAmount = 0f,
+            isPlayerTurnOver = false,
+            isBlocked = false
+            // other TileData fields keep their defaults
+        };
+        tilesData.Add(td);
     }
 
-    // Context menu to clear tiles created by the editor tool.
-    [ContextMenu("Clear Tiles (Editor)")]
-    private void ClearTilesEditor()
-    {
-        tilesData = new List<TileData>();
-        EditorUtility.SetDirty(this);
-        Debug.Log($"Cleared mining tiles for Minable '{gameObject.name}'.");
-    }
+    EditorUtility.SetDirty(this);
+    Debug.Log($"Populated {tilesData.Count} mining TileData entries for Minable '{gameObject.name}' (radius {worldRadius}).");
+}
+
+// Context menu to clear tiles created by the editor tool.
+[ContextMenu("Clear Tiles (Editor)")]
+private void ClearTilesEditor()
+{
+    tilesData = new List<TileData>();
+    EditorUtility.SetDirty(this);
+    Debug.Log($"Cleared mining tiles for Minable '{gameObject.name}'.");
+}
 #endif
 }*/

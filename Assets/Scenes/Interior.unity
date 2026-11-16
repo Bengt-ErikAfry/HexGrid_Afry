@@ -5627,7 +5627,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1727969721}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.9999398
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -26421,6 +26421,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3129527068372558737, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
   m_PrefabInstance: {fileID: 1179570545}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1179570550 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8165755203918938927, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+  m_PrefabInstance: {fileID: 1179570545}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aca969c12443de4458c2a9ae16bde65d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AsteroidComponent
 --- !u!1001 &1182026937
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -31616,6 +31627,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1393553880}
   m_CullTransparentMesh: 1
+--- !u!114 &1394368863 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4375738509355883776, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
+  m_PrefabInstance: {fileID: 1474356851}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unit
 --- !u!1001 &1395197405
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -33549,10 +33571,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   FogOfWarDisplay: {fileID: 289098538}
   activateFogOfWar: 1
-  unitsList: []
-  playerUnits: []
+  unitsList:
+  - {fileID: 2144749644}
+  - {fileID: 1699037877}
+  - {fileID: 1394368863}
+  - {fileID: 5627212664044916251}
+  playerUnits:
+  - {fileID: 2144749644}
+  - {fileID: 1699037877}
+  - {fileID: 1394368863}
+  - {fileID: 5627212664044916251}
   enemyUnits: []
-  asteroidsList: []
+  asteroidsList:
+  - {fileID: 1179570550}
   playerTurn: 0
   currentTurnIndex: 0
   playerBluePrints:
@@ -33570,6 +33601,7 @@ MonoBehaviour:
   asteroidsInGameView: {fileID: 0}
   buildings: {fileID: 1462390855}
   spawnedInventoryUnits: []
+  spawnedExpandedEntery: []
   expandedUnit: {fileID: 0}
 --- !u!114 &1511860459
 MonoBehaviour:
@@ -35238,6 +35270,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1540231293}
   m_CullTransparentMesh: 1
+--- !u!1 &1549999538
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1549999539}
+  - component: {fileID: 1549999540}
+  m_Layer: 0
+  m_Name: OrbitViewManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1549999539
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1549999538}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1549999540
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1549999538}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17b4b7508ca0f3740953e28ab80ad04e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitViewManager
 --- !u!1001 &1555163865
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37436,7 +37512,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.00003965666}
+  m_AnchoredPosition: {x: 0, y: 0.000057632053}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1642706531
@@ -39045,6 +39121,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2275307062788586400, guid: e5b832ab649861640b7ade216816e555, type: 3}
   m_PrefabInstance: {fileID: 269028307}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1699037877 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4375738509355883776, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
+  m_PrefabInstance: {fileID: 761451578}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unit
 --- !u!1 &1703548799
 GameObject:
   m_ObjectHideFlags: 0
@@ -47921,6 +48008,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2140135359}
   m_CullTransparentMesh: 1
+--- !u!114 &2144749644 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4375738509355883776, guid: f99dcc04fae6bcf49b04be52345d93b1, type: 3}
+  m_PrefabInstance: {fileID: 1040925731}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unit
 --- !u!222 &6213860524147231
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -50297,6 +50395,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4376787446745741672, guid: b2b95c0fc25ec77448c37e79039f5ac1, type: 3}
   m_PrefabInstance: {fileID: 4613676138193467441}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &5627212664044916251 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3814676077278320915, guid: b2b95c0fc25ec77448c37e79039f5ac1, type: 3}
+  m_PrefabInstance: {fileID: 4613676138193467441}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a93aa18efd317c8418770baa1cd3d03f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Unit
 --- !u!224 &5708578951976723330
 RectTransform:
   m_ObjectHideFlags: 0
@@ -52136,6 +52245,7 @@ SceneRoots:
   - {fileID: 1696404447}
   - {fileID: 1143199925}
   - {fileID: 2098146890}
+  - {fileID: 1549999539}
   - {fileID: 1524528039}
   - {fileID: 610135546}
   - {fileID: 1337159616}

@@ -43,6 +43,24 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
 
         if (enteryUnitScript != null)
         {
+            // Remove previously shown mining units
+            foreach (var go in GameManager.Instance.spawnedInventoryUnits)
+            {
+                Destroy(go);
+            }
+            GameManager.Instance.spawnedInventoryUnits.Clear();
+
+            /*
+            //If Player click the same unit that is already expanded, collapse it and return
+            if (GameManager.Instance.expandedUnit == enteryUnitScript)
+            {
+                // If the same unit was clicked again, just collapse it
+                GameManager.Instance.spawnedInventoryUnits.Clear();
+                GameManager.Instance.expandedUnit= null;
+                AsteroidManager.Instance.UpdateUnitInOrbitView();
+                return;
+            }*/
+
             if (enteryUnitScript.unitType == UnitType.Satelite)
             {
                 // Remove previously shown mining units
@@ -82,13 +100,6 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
                 SelectionService.Instance.SetSelectedUnit(enteryUnitScript);
                 UIManager.Instance.HideAllUI();
 
-                // If the same unit was clicked again, just collapse it
-                if (GameManager.Instance.expandedUnit == enteryUnitScript)
-                {
-                    GameManager.Instance.expandedUnit = null;
-                    return;
-                }
-
                 GameManager.Instance.expandedUnit = enteryUnitScript;
 
                 int insertIndex = this.transform.GetSiblingIndex() + 1;
@@ -104,7 +115,8 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
 
                     GameObject go = Instantiate(AsteroidManager.Instance.unitInOrbitInventoryUnitPrefab, AsteroidManager.Instance.unitInOrbitListContent);
                     go.transform.SetSiblingIndex(insertIndex);
-                    GameManager.Instance.spawnedInventoryUnits.Add(go);
+                    GameManager.Instance.spawnedExpandedEntery.Add(go);
+                    go.GetComponent<OrbitingUnitPrefab_Entery>().enteryUnitScript=miningUnit.item.ItemDefinition.craftingResult.GetComponent<Unit>();
                     insertIndex++;
 
                     if (miningUnit.item.ItemDefinition.craftingResult == null)

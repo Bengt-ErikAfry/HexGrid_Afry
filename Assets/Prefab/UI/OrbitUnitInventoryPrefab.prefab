@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1684180495136126797}
   - component: {fileID: 5456179152830896500}
+  - component: {fileID: -2488292197183975865}
   - component: {fileID: 7465287774186964108}
-  - component: {fileID: 916801610227495407}
   - component: {fileID: 3786816239390442551}
   - component: {fileID: 3450157370395403523}
   m_Layer: 5
@@ -50,6 +50,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 648149056705125949}
   m_CullTransparentMesh: 1
+--- !u!114 &-2488292197183975865
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 648149056705125949}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fea7a6e0f7b71145887ae81de19b754, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::OrbitEntryView
+  iconImage: {fileID: 7465287774186964108}
+  nameText: {fileID: 1293549673685943551}
+  button: {fileID: 3450157370395403523}
 --- !u!114 &7465287774186964108
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -80,22 +95,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &916801610227495407
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 648149056705125949}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4cc14025241466a41a8eda068997230b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::OrbitingUnitPrefab_Entery
-  enteryUnitId: 
-  enteryUnitScript: {fileID: 0}
-  icon: {fileID: 5989776391117979077}
-  nametext: {fileID: 1293549673685943551}
 --- !u!114 &3786816239390442551
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -160,7 +159,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 916801610227495407}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: OrbitingUnitPrefab_Entery, Assembly-CSharp
         m_MethodName: OnClick
         m_Mode: 1

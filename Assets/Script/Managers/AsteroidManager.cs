@@ -19,15 +19,10 @@ public class AsteroidManager : MonoBehaviour
     public Transform unitInOrbitListContent;
     public Transform gameViewUnitContainer; //A container for all units in gameview when asteroid view is open.
     public Transform gameViewAsteroidContainer; //A container for all asteroids in gameview when asteroid view is open.
-    public GameObject unitInOrbitPrefab;
-    public GameObject unitInOrbitInventoryUnitPrefab;
-    public Unit unitScriptToPlace;  // Use this insted of unitID.
     public SpriteRenderer asteroidBackgroundRenderer; // Will be loaded when asteroid is loaded and changed when player click the display ore map button..
     public bool isOreMapDisplayed = false; // Track whether the ore map is currently displayed or not.
     public Unit itemSourceShip; //Used when player place a building on the surface to knowwhat inventory to delete items from.
     public static AsteroidManager Instance { get; private set; }
-
-    public List<Unit> unitsInOrbit = new List<Unit>();
 
     private void Awake()
     {
@@ -68,7 +63,7 @@ public class AsteroidManager : MonoBehaviour
         }
 
         // 3) save all units in orbit.
-        unitsInOrbit = TileManager.Instance?.GetUnitsOnTile(asteroid.currentTileCoord) ?? new List<Unit>();
+        OrbitViewManager.Instance.unitsInOrbit = TileManager.Instance?.GetUnitsOnTile(asteroid.currentTileCoord) ?? new List<Unit>();
 
         // 3.1) set current asteroid
         currentAsteroidComponent = asteroid;
@@ -130,7 +125,7 @@ public class AsteroidManager : MonoBehaviour
 
         // Cleare and hide the orbital units UI
         uintInOrbitView.transform.gameObject.SetActive(false);
-        unitsInOrbit.Clear();
+        OrbitViewManager.Instance.unitsInOrbit.Clear();
 
         // 2) Hide UI
         UIManager.Instance?.HideAllUI();
@@ -187,7 +182,7 @@ public class AsteroidManager : MonoBehaviour
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
 
         // 8.5 Move units in orbit back to gameview
-        foreach (var unit in AsteroidManager.Instance.unitsInOrbit)
+        foreach (var unit in OrbitViewManager.Instance.unitsInOrbit)
         {
             unit.transform.SetParent(GameManager.Instance.unitInGameview, false);
             unit.transform.localPosition = TileManager.Instance.AxialToWorldCenter(unit.currentTileCoord);
@@ -315,29 +310,7 @@ public class AsteroidManager : MonoBehaviour
         }
     }
 
-    public void UpdateUnitInOrbitView()
-    {
-        //Clear Lsit
-        foreach (Transform child in unitInOrbitListContent)
-        {
-            Destroy(child.gameObject);
-        }
-
-        //Populate the list with units that are currently in orbit
-        foreach (var unit in unitsInOrbit.Where(u => u != null && u.gameObject != null))
-        {
-            var unitInOrbitListEnery = Instantiate(unitInOrbitPrefab, unitInOrbitListContent);
-            OrbitingUnitPrefab_Entery entry = unitInOrbitListEnery.GetComponent<OrbitingUnitPrefab_Entery>();
-            if (entry != null)
-            {
-                entry.SetUnit(unit);
-            }
-            else
-            {
-                Debug.LogError("OrbitingUnitPrefab_Entery component not found on the prefab.");
-            }
-        }
-    }
+   
 
     public void PlaceSateliteOnSurface(Vector2Int coordClicked)
     {

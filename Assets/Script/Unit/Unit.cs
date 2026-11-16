@@ -70,25 +70,7 @@ public class Unit : MonoBehaviour
         //Get Components.
         laserBeam_Script = GetComponent<LaserBeam>();
 
-        //Add to GameManager list.
-        if(GameManager.Instance.unitsList.Contains(this))
-        {
-            Debug.LogWarning("Unit already exists in GameManager unitsList: " + this.name);
-        }
-        else
-        {
-            GameManager.Instance.unitsList.Add(this);
-            if (isPlayerControlled)
-            {
-                //Add to player unit list
-                GameManager.Instance.playerUnits.Add(this);
-            }
-            else
-            {
-                //Add to enemy unit list
-                GameManager.Instance.enemyUnits.Add(this);
-            }
-        }
+
 
 
         StartCoroutine(InitUnit(isFreshlyCreatedUnit)); //To register for FOG OF WAR to work.
@@ -198,6 +180,26 @@ public class Unit : MonoBehaviour
         {
             if (ModuleManager.Instance != null)
                 ModuleManager.Instance.SetUpShipStats(this);
+
+            //Add to GameManager list.
+            if (GameManager.Instance.unitsList.Contains(this))
+            {
+                Debug.LogWarning("Unit already exists in GameManager unitsList: " + this.name);
+            }
+            else
+            {
+                GameManager.Instance.unitsList.Add(this);
+                if (isPlayerControlled)
+                {
+                    //Add to player unit list
+                    GameManager.Instance.playerUnits.Add(this);
+                }
+                else
+                {
+                    //Add to enemy unit list
+                    GameManager.Instance.enemyUnits.Add(this);
+                }
+            }
         }
     }
 

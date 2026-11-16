@@ -53,6 +53,7 @@ public class GameManager : MonoBehaviour
     public Transform buildings; //All building uintis on planet surface. Used to hide/show when player open an asteroid.
 
     public List<GameObject> spawnedInventoryUnits = new();
+    public List<GameObject> spawnedExpandedEntery = new();
     public Unit expandedUnit;
 
     private void Awake()
