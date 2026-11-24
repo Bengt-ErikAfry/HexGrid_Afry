@@ -16,7 +16,8 @@ public class AsteroidManager : MonoBehaviour
     public AsteroidComponent currentAsteroidComponent;
     public MinableComponent currentMinableComponent;
     public Transform uintInOrbitView;
-    public Transform unitInOrbitListContent;
+    public Unit unitScriptToPlace; //The unit that player is trying to place on the surface of the asteroid.
+    //public Transform unitInOrbitListContent;
     public Transform gameViewUnitContainer; //A container for all units in gameview when asteroid view is open.
     public Transform gameViewAsteroidContainer; //A container for all asteroids in gameview when asteroid view is open.
     public SpriteRenderer asteroidBackgroundRenderer; // Will be loaded when asteroid is loaded and changed when player click the display ore map button..
@@ -62,9 +63,6 @@ public class AsteroidManager : MonoBehaviour
             TileManager.Instance?.SaveTileState(GameManager.Instance.gameViewLayout);
         }
 
-        // 3) save all units in orbit.
-        OrbitViewManager.Instance.unitsInOrbit = TileManager.Instance?.GetUnitsOnTile(asteroid.currentTileCoord) ?? new List<Unit>();
-
         // 3.1) set current asteroid
         currentAsteroidComponent = asteroid;
         currentMinableComponent = asteroid.GetComponent<MinableComponent>();
@@ -76,6 +74,11 @@ public class AsteroidManager : MonoBehaviour
         // 3.6) Save all Asteroid data
         //SaveManager.Instance?.SaveAllAsteroids(GameManager.Instance.gameViewAsteroidsSaveFile);
 
+        // 3.7) populate the orbital units UI
+        // save all units in orbit.
+        OrbitViewManager.Instance.unitsInOrbit = TileManager.Instance?.GetUnitsOnTile(asteroid.currentTileCoord) ?? new List<Unit>();
+        OrbitViewManager.Instance.ShowOrbitUIView();
+
         // 4) Hide all active game-view units and asteroids
         //SaveManager.Instance?.HideGameViewObjects(asteroid);
         MoveAndHideAllGameviewUnits();
@@ -86,6 +89,9 @@ public class AsteroidManager : MonoBehaviour
         // 6) Load asteroid-surface units
         //SaveManager.Instance?.LoadAsteroidViewObject(asteroid);
         ShowAsteroidUnits();
+
+        // Runtime tile state must be applied after surface units are restored.
+        asteroid.ApplyRuntimeStateToTiles();
 
         // 7) Register only the units that are actually active in this view
         //    This prevents hidden game-view units from still contributing to fog/visibility.
@@ -106,10 +112,6 @@ public class AsteroidManager : MonoBehaviour
 
         // 9) Set state
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
-
-        // 10) populate the orbital units UI
-        uintInOrbitView.transform.gameObject.SetActive(true);
-        UpdateUnitInOrbitView();
 
         Debug.Log($"Entered asteroid view: {asteroid.asteroidName}");
     }
@@ -232,7 +234,7 @@ public class AsteroidManager : MonoBehaviour
     public void MoveAndHideAllAsteroidUnits()
     {
         if (GameManager.Instance == null) return;
-        foreach (var unit in GameManager.Instance.unitsList)
+        foreach (var unit in GameManager.Instance.unitsList.ToList())
         {
             if (unit == null) continue;
             if (!unit.gameObject.activeSelf) continue;
@@ -333,17 +335,29 @@ public class AsteroidManager : MonoBehaviour
         }
 
         //Remove satelite from the list of units in orbit
-        unitsInOrbit.Remove(unitScriptToPlace);
+        OrbitViewManager.Instance.unitsInOrbit.Remove(unitScriptToPlace);
 
         //Update unitsinorbit UI
-        UpdateUnitInOrbitView();
+        OrbitViewManager.Instance.UpdateUnitInOrbitView();
 
         //Go back to selecting
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
+
+        //Remove Unit from game
+        Destroy(unitScriptToPlace.gameObject);
+
+        //Remove from unitToplace
+        unitScriptToPlace = null;
     }
 
     public void PlaceBuildingOnSurface(Vector2Int coordClicked)
     {
+        //Set it active to show it in the game.
+        unitScriptToPlace.gameObject.SetActive(true);
+
+        //Remove object from spawnedInventoryUnits list if it exists there
+        GameManager.Instance.spawnedInventoryUnits.Remove(unitScriptToPlace.gameObject);
+
         //Remove buliding from inventory.
         if (unitScriptToPlace == null)
         {
@@ -368,14 +382,20 @@ public class AsteroidManager : MonoBehaviour
         //Add to unit list
         GameManager.Instance.unitsList.Add(unitScriptToPlace);
 
+        //Add to asteroidComponent
+        currentAsteroidComponent.unitsOnSurface.Add(unitScriptToPlace);
+
         //add mining caoacity to the asteroid based on the building's mining module
         UpdateMiningAmount();
 
         //Update unitsinorbit UI
-        UpdateUnitInOrbitView();
+        OrbitViewManager.Instance.UpdateUnitInOrbitView();
 
         //Set state back to selecting after placing the building
         GameStateMachine.Instance?.SetState(GameplayStateId.Selecting);
+
+        //Remove from unitToplace
+        unitScriptToPlace = null;
     }
 
     public void UpdateMiningAmount()
@@ -387,8 +407,10 @@ public class AsteroidManager : MonoBehaviour
         }
 
         //Reset the list
-        currentMinableComponent.currentAvalibuleMinableResourceList.Clear();
-
+        foreach (var minableResource in currentMinableComponent.currentAvalibuleMinableResourceList)
+        {
+            minableResource.amount = 0;
+        }
 
         //Set a temp variabel for ore
         float totalIronOre = 0f;
@@ -411,6 +433,10 @@ public class AsteroidManager : MonoBehaviour
                 }
             }
         }
+
+        //Save new total in minabelcomponent. This will be used by the minabelcomponent to produce ore per turn.
+        currentMinableComponent.currentAvalibuleMinableResourceList[0].amount = totalIronOre;
+        currentMinableComponent.currentAvalibuleMinableResourceList[1].amount = totalCopperOre;
 
         Debug.Log($"Total Iron Ore: {totalIronOre}, Total Copper Ore: {totalCopperOre}");
         //Add the mining capacity of the building to the asteroid's total mining capacity.

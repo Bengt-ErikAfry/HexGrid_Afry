@@ -902,7 +902,7 @@ public class TileManager : MonoBehaviour
     // Example usage at runtime:
     //   string path = Path.Combine(Application.streamingAssetsPath, "level1.json");
     //   TileManager.Instance.LoadLayoutFromFile(path);
-    public void LoadLayoutFromFile(string filePath)
+    public void LoadLayoutFromFile(string filePath, bool loadFogState = true)
     {
         if (!File.Exists(filePath))
         {
@@ -914,11 +914,17 @@ public class TileManager : MonoBehaviour
         Debug.Log($"LoadLayoutFromFile: read {json.Length} bytes from {filePath}");
         LoadLayoutFromJsonText(json);
 
-        // Use the filename (without extension) as the layout id for fog state files
-        string layoutId = Path.GetFileNameWithoutExtension(filePath);
-
-        // Apply saved fog state (if any)
-        LoadTileState(layoutId);
+        // Asteroid runtime fog state is loaded separately by AsteroidComponent.
+        if (loadFogState)
+        {
+            string layoutId = Path.GetFileNameWithoutExtension(filePath);
+            LoadTileState(layoutId);
+        }
+        else
+        {
+            visibilityRefCount.Clear();
+            unitSeenTiles.Clear();
+        }
 
         // Re-register only currently visible player units so hidden asteroid/game-view units do not reveal the new layout.
         if (GameManager.Instance != null)

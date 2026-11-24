@@ -1,6 +1,7 @@
 using DG.Tweening.Core.Easing;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
     public Unit enteryUnitScript;
     public Image icon;
     public TMP_Text nametext;
+    public Unit sourceShip;
 
     private Outline outline;
 
@@ -21,19 +23,30 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
 
     public void SetUnit(Unit unit)
     {
-        enteryUnitId = unit.unitId;
-        enteryUnitScript = unit;
-
         if (unit == null || unit.gameObject == null)
         {
-            nametext.text = "Missing Unit";
+            enteryUnitId = null;
+            enteryUnitScript = null;
+            if (nametext != null) nametext.text = "Missing Unit";
             if (icon != null) icon.sprite = null;
             return;
         }
 
-        nametext.text = unit.unitName;
-        icon.sprite = unit.shipRuntimeData.itemDefinition.icon;
-        //icon.sprite = ShipClassesManager.Instance.GetShipIcon(unit.shipType);
+        enteryUnitId = unit.unitId;
+        enteryUnitScript = unit;
+        if (nametext != null) nametext.text = unit.unitName;
+
+        if (icon != null)
+        {
+            icon.sprite = unit.shipRuntimeData != null && unit.shipRuntimeData.itemDefinition != null
+                ? unit.shipRuntimeData.itemDefinition.icon
+                : null;
+        }
+    }
+
+    public void SetSourceShip(Unit ship)
+    {
+        sourceShip = ship;
     }
 
     public void OnClick()
@@ -41,15 +54,19 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
         //set state to selecting orbital unit to place
         GameStateMachine.Instance.SetState(GameplayStateId.Selecting);
 
+        //enteryUnitScript.gameObject.SetActive(true);
+
         if (enteryUnitScript != null)
         {
             // Remove previously shown mining units
-            foreach (var go in GameManager.Instance.spawnedInventoryUnits)
+            if (enteryUnitScript.unitType != UnitType.Building)
             {
-                Destroy(go);
+                foreach (var go in GameManager.Instance.spawnedInventoryUnits)
+                {
+                    Destroy(go);
+                }
+                GameManager.Instance.spawnedInventoryUnits.Clear();
             }
-            GameManager.Instance.spawnedInventoryUnits.Clear();
-
             /*
             //If Player click the same unit that is already expanded, collapse it and return
             if (GameManager.Instance.expandedUnit == enteryUnitScript)
@@ -77,6 +94,7 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
 
                 //Tell AsteroidManager what unit to place
                 AsteroidManager.Instance.unitScriptToPlace = enteryUnitScript;
+                AsteroidManager.Instance.itemSourceShip = sourceShip;
 
                 SelectionService.Instance.SetSelectedUnit(enteryUnitScript);
                 UIManager.Instance.HideAllUI();
@@ -90,52 +108,87 @@ public class OrbitingUnitPrefab_Entery : MonoBehaviour
 
                 //Tell AsteroidManager what unit to place
                 AsteroidManager.Instance.unitScriptToPlace = enteryUnitScript;
+                AsteroidManager.Instance.itemSourceShip = sourceShip;
 
                 SelectionService.Instance.SetSelectedUnit(enteryUnitScript);
                 UIManager.Instance.HideAllUI();
             }
             else if (enteryUnitScript.unitType == UnitType.Ship)
             {
-                Debug.Log($"Shit {enteryUnitScript.unitName} clicked");
-                SelectionService.Instance.SetSelectedUnit(enteryUnitScript);
-                UIManager.Instance.HideAllUI();
-
-                GameManager.Instance.expandedUnit = enteryUnitScript;
-
-                int insertIndex = this.transform.GetSiblingIndex() + 1;
-
-                List<InventoryItemInstance> miningUnitsList = enteryUnitScript.unitInventory.GetItemInstanceListOfItemType(ItemType.MiningOutpost);
-
-                foreach (var miningUnit in miningUnitsList)
+                Unit inventoryShip = enteryUnitScript;
+                if (inventoryShip.unitInventory == null)
                 {
-                    if (miningUnit == null || miningUnit.item == null || miningUnit.item.ItemDefinition == null)
-                    {
+                    Debug.LogWarning($"OrbitingUnitPrefab_Entery: Ship '{inventoryShip.unitName}' has no inventory.");
+                    return;
+                }
+
+                foreach (var go in GameManager.Instance.spawnedExpandedEntery)
+                    if (go != null) Destroy(go);
+                GameManager.Instance.spawnedExpandedEntery.Clear();
+
+                foreach (var go in GameManager.Instance.spawnedInventoryUnits)
+                    if (go != null) Destroy(go);
+                GameManager.Instance.spawnedInventoryUnits.Clear();
+
+                GameManager.Instance.expandedUnit = inventoryShip;
+                SelectionService.Instance.SetSelectedUnit(inventoryShip);
+
+                int insertIndex = transform.GetSiblingIndex() + 1;
+                foreach (InventoryItemInstance inventorySlot in inventoryShip.unitInventory.itemInstance)
+                {
+                    if (inventorySlot == null || inventorySlot.item == null || inventorySlot.item.ItemDefinition == null)
                         continue;
-                    }
 
-                    GameObject go = Instantiate(AsteroidManager.Instance.unitInOrbitInventoryUnitPrefab, AsteroidManager.Instance.unitInOrbitListContent);
-                    go.transform.SetSiblingIndex(insertIndex);
-                    GameManager.Instance.spawnedExpandedEntery.Add(go);
-                    go.GetComponent<OrbitingUnitPrefab_Entery>().enteryUnitScript=miningUnit.item.ItemDefinition.craftingResult.GetComponent<Unit>();
-                    insertIndex++;
+                    ItemDefinition itemDefinition = inventorySlot.item.ItemDefinition;
+                    if (itemDefinition.craftingResult == null)
+                        continue;
 
-                    if (miningUnit.item.ItemDefinition.craftingResult == null)
-                        Debug.LogWarning($"OrbitingUnitPrefab_Entery: The crafting result for {miningUnit.item.ItemDefinition.itemName} is null. Please check the item definition.");
+                    Unit deployableTemplate = itemDefinition.craftingResult.GetComponent<Unit>();
+                    if (deployableTemplate == null ||
+                        (deployableTemplate.unitType != UnitType.Satelite && deployableTemplate.unitType != UnitType.Building))
+                        continue;
 
-                    GameObject unitGo = Instantiate(miningUnit.item.ItemDefinition.craftingResult, AsteroidManager.Instance.unitInOrbitListContent);
-                    GameManager.Instance.spawnedInventoryUnits.Add(unitGo);
-            
-                    Unit newUnitScript = unitGo.GetComponent<Unit>();
-                    newUnitScript.unitName = miningUnit.item.ItemDefinition.itemName;
-                    newUnitScript.grafics.GetComponent<SpriteRenderer>().sprite = miningUnit.item.ItemDefinition.icon;
-                    newUnitScript.shipRuntimeData = new ShipRuntimeData
+                    for (int i = 0; i < inventorySlot.amount; i++)
                     {
-                        itemDefinition = miningUnit.item.ItemDefinition
-                    };
-                    AsteroidManager.Instance.unitScriptToPlace = newUnitScript;
-                    AsteroidManager.Instance.itemSourceShip = enteryUnitScript;       // add this field to Unit
+                        if (OrbitViewManager.Instance.OrbitalInventortyEntery_Prefab == null)
+                        {
+                            Debug.LogError("OrbitViewManager: OrbitalInventortyEntery_Prefab is not assigned.");
+                            return;
+                        }
 
-                    go.GetComponent<OrbitingUnitPrefab_Entery>().SetUnit(newUnitScript);
+                        GameObject entryObject = Instantiate(
+                            OrbitViewManager.Instance.OrbitalInventortyEntery_Prefab,
+                            OrbitViewManager.Instance.unitInOrbitListContent);
+                        entryObject.transform.SetSiblingIndex(insertIndex++);
+                        GameManager.Instance.spawnedExpandedEntery.Add(entryObject);
+
+                        GameObject deployableObject = Instantiate(itemDefinition.craftingResult);
+                        deployableObject.SetActive(false);
+                        GameManager.Instance.spawnedInventoryUnits.Add(deployableObject);
+
+                        Unit deployableUnit = deployableObject.GetComponent<Unit>();
+                        if (deployableUnit == null)
+                            continue;
+
+                        deployableUnit.unitName = itemDefinition.itemName;
+                        deployableUnit.shipRuntimeData = new ShipRuntimeData { itemDefinition = itemDefinition };
+                        if (deployableUnit.grafics != null)
+                        {
+                            SpriteRenderer renderer = deployableUnit.grafics.GetComponent<SpriteRenderer>();
+                            if (renderer != null) renderer.sprite = itemDefinition.icon;
+                        }
+
+                        OrbitingUnitPrefab_Entery inventoryEntry =
+                            entryObject.GetComponent<OrbitingUnitPrefab_Entery>();
+                        if (inventoryEntry == null)
+                        {
+                            Debug.LogError("OrbitingUnitPrefab_Entery component not found on inventory entry prefab.");
+                            continue;
+                        }
+
+                        inventoryEntry.SetUnit(deployableUnit);
+                        inventoryEntry.SetSourceShip(inventoryShip);
+                    }
                 }
             }
             else

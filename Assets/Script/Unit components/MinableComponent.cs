@@ -13,14 +13,14 @@ public class MinableComponent : MonoBehaviour
     [Header("Resource")]
     [SerializeField]
     public Sprite oreMap;
-    public List<InventoryItemAmount> minableResourceList = new List<InventoryItemAmount>();
+    public List<OreItemAmount> minableResourceList = new List<OreItemAmount>();
     public int howMutchOfObjectAreOre = 0;      // 0-100%
     public int objectMass = 0;        // the total mass of the minable object (for physics, etc.)
     public int storedAmount = 0;     // produced and ready for pickup (via outposts)
     public float veinsAmount = 0;
     public float patchesAmount = 0;
 
-    public List<InventoryItemAmount> currentAvalibuleMinableResourceList = new List<InventoryItemAmount>();
+    public List<OreItemAmount> currentAvalibuleMinableResourceList = new List<OreItemAmount>();
 
     /*
     // Missing multiplier used by ExtractUsingTool — added here.
@@ -46,19 +46,6 @@ public class MinableComponent : MonoBehaviour
     {
         if (GameManager.Instance != null)
             GameManager.Instance.OnNewTurn -= HandleNewTurn;
-    }
-
-    
-    public void Awake()
-    {
-        foreach (var item in minableResourceList)
-        {
-            if (item.item != null && item.amount > 0)
-            {
-                currentAvalibuleMinableResourceList.Add(item);
-            }
-        }
-
     }
 
     

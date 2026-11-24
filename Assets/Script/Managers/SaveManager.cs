@@ -27,7 +27,7 @@ public class SaveManager : MonoBehaviour
     {
         Debug.Log($"Hiding game-view units and asteroids.{asteroidToShow.asteroidName}");
 
-        if (AsteroidManager.Instance != null && AsteroidManager.Instance.unitInOrbitListContent != null)
+        if (OrbitViewManager.Instance.unitInOrbitListContent != null)
         {
             foreach (var unit in GameManager.Instance.unitsList.ToList())
             {
@@ -117,9 +117,9 @@ public class SaveManager : MonoBehaviour
                 if (unit == null) continue;
                 if (unit.currentTileCoord == asteroidToKeep.currentTileCoord)
                 {
-                    if (AsteroidManager.Instance != null && AsteroidManager.Instance.unitInOrbitListContent != null)
+                    if (OrbitViewManager.Instance != null && OrbitViewManager.Instance.unitInOrbitListContent != null)
                     {
-                        unit.transform.SetParent(AsteroidManager.Instance.unitInOrbitListContent, false);
+                        unit.transform.SetParent(OrbitViewManager.Instance.unitInOrbitListContent, false);
                         unit.transform.localPosition = Vector3.zero;
                         unit.transform.localRotation = Quaternion.identity;
                         unit.gameObject.SetActive(true);

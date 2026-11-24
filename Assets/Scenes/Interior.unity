@@ -5627,7 +5627,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1727969721}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.9999967
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -20624,6 +20624,7 @@ MonoBehaviour:
   runtimeState:
     asteroidId: 
     templateFile: 
+    hasBeenVisited: 0
     tiles: []
 --- !u!114 &928467291
 MonoBehaviour:
@@ -26407,9 +26408,25 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4710679202828961904, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: currentAvalibuleMinableResourceList.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 4710679202828961904, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: currentAvalibuleMinableResourceList.Array.data[0].item
+      value: 
+      objectReference: {fileID: 11400000, guid: 6447b0cc648b72c469fb6d4d4c9a05ee, type: 2}
+    - target: {fileID: 4710679202828961904, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: currentAvalibuleMinableResourceList.Array.data[1].item
+      value: 
+      objectReference: {fileID: 11400000, guid: dc5792da4d3351448b8e7e27c53603b7, type: 2}
     - target: {fileID: 8036387217346746266, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
       propertyPath: m_Name
       value: AsteroidPrefab
+      objectReference: {fileID: 0}
+    - target: {fileID: 8165755203918938927, guid: 548a19a53a55e8b478497ec0db8a989e, type: 3}
+      propertyPath: runtimeState.tiles.Array.size
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -35314,6 +35331,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17b4b7508ca0f3740953e28ab80ad04e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrbitViewManager
+  OrbitUIView: {fileID: 1912528002}
+  unitInOrbitListContent: {fileID: 1642706530}
+  OrbitalInventortyEntery_Prefab: {fileID: 648149056705125949, guid: d52d798b2a539c14281d5731b49be69b, type: 3}
+  OrbitalUnitentery_Prefab: {fileID: 8139552234812692975, guid: dc42ffc7c488bc44db8a0b052924006a, type: 3}
+  unitsInOrbit: []
 --- !u!1001 &1555163865
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37512,7 +37534,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0.000057632053}
+  m_AnchoredPosition: {x: 0, y: 0.0002790424}
   m_SizeDelta: {x: 0, y: 300}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &1642706531
@@ -47058,16 +47080,12 @@ MonoBehaviour:
   currentAsteroidComponent: {fileID: 0}
   currentMinableComponent: {fileID: 0}
   uintInOrbitView: {fileID: 1912528003}
-  unitInOrbitListContent: {fileID: 1642706530}
+  unitScriptToPlace: {fileID: 0}
   gameViewUnitContainer: {fileID: 2004487792}
   gameViewAsteroidContainer: {fileID: 76107112}
-  unitInOrbitPrefab: {fileID: 8139552234812692975, guid: dc42ffc7c488bc44db8a0b052924006a, type: 3}
-  unitInOrbitInventoryUnitPrefab: {fileID: 648149056705125949, guid: d52d798b2a539c14281d5731b49be69b, type: 3}
-  unitScriptToPlace: {fileID: 0}
   asteroidBackgroundRenderer: {fileID: 41021340}
   isOreMapDisplayed: 0
   itemSourceShip: {fileID: 0}
-  unitsInOrbit: []
 --- !u!4 &2105822833 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2275307062788586400, guid: e5b832ab649861640b7ade216816e555, type: 3}

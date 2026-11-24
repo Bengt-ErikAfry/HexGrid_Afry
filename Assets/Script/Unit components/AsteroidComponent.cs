@@ -33,6 +33,7 @@ public class AsteroidComponent : MonoBehaviour
     {
         public string asteroidId;
         public string templateFile;
+        public bool hasBeenVisited;
         public List<TileRuntimeState> tiles = new List<TileRuntimeState>();
 
         public bool TryGetValue(Vector2Int coord, out TileRuntimeState tileState)
@@ -62,6 +63,10 @@ public class AsteroidComponent : MonoBehaviour
 
     public List<Unit> unitsOnSurface = new List<Unit>(); //List of units on the surface of the asteroid. Used for saving and loading. Init when asteroid are loaded. Updated when units are added/removed.
     public AsteroidRuntimeSaveData runtimeState = new AsteroidRuntimeSaveData();
+
+    // This set resets when the game process restarts.
+    private static readonly HashSet<string> visibilityInitializedForSession = new HashSet<string>();
+    private bool restoreRuntimeVisibility;
 
     private void Awake()
     {
@@ -133,7 +138,8 @@ public class AsteroidComponent : MonoBehaviour
             return;
         }
 
-        TileManager.Instance.LoadLayoutFromFile(templatePath);
+        // Asteroid visibility is selected below from template/runtime state, not from generic TileManager fog files.
+        TileManager.Instance.LoadLayoutFromFile(templatePath, false);
 
         runtimeState = new AsteroidRuntimeSaveData
         {
@@ -141,12 +147,36 @@ public class AsteroidComponent : MonoBehaviour
             templateFile = Path.GetFileName(templatePath)
         };
         PopulateRuntimeStateFromTemplate();
+        restoreRuntimeVisibility = false;
 
         string runtimePath = GetRuntimeSavePath();
         if (File.Exists(runtimePath))
         {
             try
             {
+                var saved = JsonUtility.FromJson<AsteroidRuntimeSaveData>(
+                File.ReadAllText(runtimePath));
+
+                if (saved != null && saved.hasBeenVisited &&
+                    saved.tiles != null)
+                {
+                    runtimeState = saved;
+
+                    string sessionKey = string.IsNullOrWhiteSpace(asteroidID)
+                        ? asteroidName
+                        : asteroidID;
+
+                    restoreRuntimeVisibility = !visibilityInitializedForSession.Add(sessionKey);
+
+                    Debug.Log(restoreRuntimeVisibility
+                        ? $"AsteroidComponent: restoring runtime visibility for '{asteroidName}' within this game session."
+                        : $"AsteroidComponent: '{asteroidName}' visibility starts hidden for this game session.");
+                }
+                else
+                {
+                    Debug.Log($"AsteroidComponent: runtime state for '{asteroidName}' is not marked visited; using template state.");
+                }
+                /*
                 var json = File.ReadAllText(runtimePath);
                 var saved = JsonUtility.FromJson<AsteroidRuntimeSaveData>(json);
 
@@ -167,7 +197,7 @@ public class AsteroidComponent : MonoBehaviour
                     {
                         runtimeState = saved;
                     }
-                }
+                }*/
             }
             catch (Exception ex)
             {
@@ -225,9 +255,8 @@ public class AsteroidComponent : MonoBehaviour
                     hasMiningOutpost = false,
                     isSurveyed = false,
                     isBlocked = false,
-                    visibilityState = string.IsNullOrWhiteSpace(cell.state)
-                        ? TileVisibilityState.Unexplored.ToString()
-                        : cell.state
+                    // Template files define layout and resources only. Visibility always starts hidden.
+                    visibilityState = TileVisibilityState.Unexplored.ToString()
                 });
             }
         }
@@ -281,14 +310,22 @@ public class AsteroidComponent : MonoBehaviour
             var coord = new Vector2Int(tileState.x, tileState.y);
             var tile = TileManager.Instance.GetTileAtCoord(coord);
             if (tile == null)
-                continue;
-
-            if (!string.IsNullOrWhiteSpace(tileState.visibilityState) &&
-                Enum.TryParse<TileVisibilityState>(tileState.visibilityState, out var state))
             {
-                tile.tileVisibilityState = state;
-                tile.ApplyVisibilityVisuals();
+                Debug.LogWarning($"AsteroidComponent: no loaded tile at runtime coordinate ({coord.x},{coord.y}) for '{asteroidName}'.");
+                continue;
             }
+
+            if (restoreRuntimeVisibility && runtimeState.hasBeenVisited &&
+                !string.IsNullOrWhiteSpace(tileState.visibilityState) &&
+                Enum.TryParse<TileVisibilityState>(tileState.visibilityState, out var savedVisibility))
+            {
+                tile.tileVisibilityState = savedVisibility;
+            }
+            else
+            {
+                tile.tileVisibilityState = TileVisibilityState.Unexplored;
+            }
+            tile.ApplyVisibilityVisuals();
 
             tile.oreAmount = tileState.oreAmount;
             tile.ironOreAmount = tileState.ironOreAmount;
@@ -308,11 +345,11 @@ public class AsteroidComponent : MonoBehaviour
             return;
 
         CaptureRuntimeStateFromTiles();
+        runtimeState.hasBeenVisited = true;
+        restoreRuntimeVisibility = true;
 
-        /*
         string runtimePath = GetRuntimeSavePath();
-        string json = JsonUtility.ToJson(runtimeState, true);
-        File.WriteAllText(runtimePath, json);
-        */
+        File.WriteAllText(runtimePath, JsonUtility.ToJson(runtimeState, true));
+        Debug.Log($"AsteroidComponent: saved runtime state for '{asteroidName}' to '{runtimePath}' ({runtimeState.tiles.Count} tiles).");
     }
 }
